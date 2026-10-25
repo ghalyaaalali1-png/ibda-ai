@@ -12,6 +12,7 @@ export const routes = {
   start: "/start",
   analysis: "/analysis",
   plan: "/plan",
+  suppliers: "/suppliers",
   howItWorks: "#how-it-works",
   capabilities: "#capabilities",
   uae: "#uae",

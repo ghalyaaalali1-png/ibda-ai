@@ -1,0 +1,219 @@
+"use client";
+
+import { ArrowLeft, ArrowRight, Info, Megaphone, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { useCallback, useMemo, useState } from "react";
+import { Container } from "@/components/ui/Container";
+import { Logo } from "@/components/ui/Logo";
+import { routes } from "@/config/site";
+import { demoProfile, profileValue } from "@/features/launch-profile/profile";
+import {
+  categories,
+  shortlist,
+  sourcingAllocation,
+  sourcingBrief,
+  suppliers,
+} from "../demoSuppliers";
+import type { SupplierCategory } from "../types";
+import { CategoryTabs } from "./CategoryTabs";
+import { CompareTable } from "./CompareTable";
+import { RfqDrawer, type RfqStatus } from "./RfqDrawer";
+import { ShortlistCard } from "./ShortlistCard";
+import { SupplierCard } from "./SupplierCard";
+
+const MAX_COMPARE = 4;
+
+const profileLine = ["business", "location", "budget"]
+  .map((id) => profileValue(demoProfile, id))
+  .join(" · ");
+
+export function SuppliersWorkspace() {
+  const [category, setCategory] = useState<SupplierCategory>("fabric");
+  const [compareIds, setCompareIds] = useState<string[]>(["lumiere-crepe", "silkroute-nida", "qamar-fabric"]);
+  const [rfqFor, setRfqFor] = useState<string | null>(null);
+  const [rfqStatus, setRfqStatus] = useState<Record<string, RfqStatus>>({});
+
+  const byId = useMemo(() => new Map(suppliers.map((s) => [s.id, s])), []);
+  const counts = useMemo(
+    () =>
+      Object.fromEntries(
+        categories.map((c) => [c.id, suppliers.filter((s) => s.category === c.id).length]),
+      ) as Record<SupplierCategory, number>,
+    [],
+  );
+  const visible = suppliers
+    .filter((s) => s.category === category)
+    .sort((a, b) => b.matchScore - a.matchScore);
+  const activeCategory = categories.find((c) => c.id === category)!;
+  const rfqSupplier = rfqFor ? byId.get(rfqFor) : undefined;
+
+  const toggleCompare = (id: string) =>
+    setCompareIds((ids) =>
+      ids.includes(id) ? ids.filter((x) => x !== id) : ids.length < MAX_COMPARE ? [...ids, id] : ids,
+    );
+
+  const closeRfq = useCallback(() => setRfqFor(null), []);
+  const markDrafted = useCallback(() => {
+    if (!rfqFor) return;
+    setRfqStatus((s) => (s[rfqFor] ? s : { ...s, [rfqFor]: "drafted" }));
+  }, [rfqFor]);
+
+  const rfqCounts = Object.values(rfqStatus);
+  const sentCount = rfqCounts.filter((s) => s === "sent").length;
+
+  return (
+    <>
+      <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-ink-950/80 backdrop-blur-xl">
+        <Container className="flex h-16 items-center justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-4">
+            <Logo />
+            <span aria-hidden className="hidden h-5 w-px bg-white/10 sm:block" />
+            <span className="hidden text-sm font-medium text-mist/80 sm:block">Suppliers</span>
+          </div>
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="hidden truncate text-sm text-mist/50 lg:block">{profileLine}</span>
+            {rfqCounts.length > 0 && (
+              <span className="hidden shrink-0 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs text-mist/70 sm:inline">
+                {rfqCounts.length} RFQ{rfqCounts.length > 1 ? "s" : ""} · {sentCount} sent
+              </span>
+            )}
+            <Link
+              href={routes.plan}
+              aria-label="Back to business plan"
+              className="inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-sm text-mist/60 transition-colors hover:bg-white/5 hover:text-white"
+            >
+              <ArrowLeft className="size-3.5" />
+              <span aria-hidden className="hidden md:inline">Business Plan</span>
+            </Link>
+          </div>
+        </Container>
+      </header>
+
+      <Container className="space-y-6 py-10 sm:py-14">
+        {/* Intro */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="max-w-2xl">
+            <p className="inline-flex items-center gap-2 text-xs font-medium text-brand-300">
+              <Sparkles className="size-3.5" />
+              Sourced by Ibda
+            </p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+              Suppliers for your launch
+            </h1>
+            <p className="mt-3 text-base leading-relaxed text-mist/60">
+              I compared {suppliers.length} supplier options across fabric, tailoring, embellishment
+              and packaging, then ranked them for a premium first run of{" "}
+              {sourcingBrief.designs * sourcingBrief.piecesPerDesign} pieces on your budget.
+            </p>
+          </div>
+          <p className="inline-flex items-center gap-1.5 self-start rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1 text-xs text-mist/50 sm:self-auto">
+            <Info className="size-3.5 shrink-0" />
+            Prototype supplier data — demo, not verified suppliers
+          </p>
+        </div>
+
+        <ShortlistCard
+          items={shortlist}
+          suppliersById={byId}
+          allocation={sourcingAllocation}
+          onRequestQuote={setRfqFor}
+          onSelectCategory={(s) => {
+            setCategory(s.category);
+            document.getElementById("all-suppliers")?.scrollIntoView({ behavior: "smooth" });
+          }}
+        />
+
+        {/* Browse by category */}
+        <section id="all-suppliers" aria-labelledby="browse-title" className="scroll-mt-24 pt-4">
+          <div className="flex flex-col gap-1">
+            <h2 id="browse-title" className="text-xl font-semibold tracking-tight text-white">
+              All options, ranked by fit
+            </h2>
+            <p className="text-sm text-mist/50">{activeCategory.summary}</p>
+          </div>
+          <div className="mt-5">
+            <CategoryTabs categories={categories} counts={counts} active={category} onChange={setCategory} />
+          </div>
+          <div
+            id="supplier-panel"
+            role="tabpanel"
+            aria-labelledby={`tab-${category}`}
+            className="mt-5 grid gap-4 md:grid-cols-2"
+          >
+            {visible.map((s) => (
+              <SupplierCard
+                key={s.id}
+                supplier={s}
+                categoryLabel={activeCategory.shortLabel}
+                inCompare={compareIds.includes(s.id)}
+                compareFull={compareIds.length >= MAX_COMPARE}
+                rfqStatus={rfqStatus[s.id]}
+                onToggleCompare={() => toggleCompare(s.id)}
+                onRequestQuote={() => setRfqFor(s.id)}
+              />
+            ))}
+          </div>
+        </section>
+
+        <CompareTable
+          items={compareIds.map((id) => byId.get(id)!).filter(Boolean)}
+          onRemove={toggleCompare}
+          onRequestQuote={setRfqFor}
+        />
+
+        {/* Continue */}
+        <section className="glass relative overflow-hidden rounded-3xl p-6 sm:p-8">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -bottom-32 -left-20 size-80 rounded-full bg-brand-500/15 blur-3xl"
+          />
+          <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-4">
+              <span className="grid size-11 shrink-0 place-items-center rounded-xl border border-brand-400/25 bg-gradient-to-br from-brand-500/25 to-electric-500/10 text-brand-300">
+                <Megaphone className="size-5" />
+              </span>
+              <div>
+                <p className="text-[11px] font-medium tracking-wider text-brand-300/80 uppercase">Next step</p>
+                <p className="mt-1 text-lg font-semibold text-white">Marketing Plan</p>
+                <p className="mt-1 text-sm text-mist/55">
+                  Positioning, Instagram launch and a 90-day calendar to win your first customers.
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-col items-start gap-2 sm:items-end">
+              <button
+                type="button"
+                disabled
+                className="inline-flex h-11 shrink-0 items-center gap-2 rounded-full bg-gradient-to-b from-brand-500 to-brand-600 px-5 text-sm font-medium text-white opacity-60"
+              >
+                Continue to Marketing Plan
+                <ArrowRight className="size-4" />
+              </button>
+              <span className="text-xs text-mist/40">Coming next in the prototype</span>
+            </div>
+          </div>
+        </section>
+
+        <Link
+          href={routes.plan}
+          className="inline-flex items-center gap-1.5 text-sm text-mist/55 transition-colors hover:text-white"
+        >
+          <ArrowLeft className="size-3.5" />
+          Back to Business Plan
+        </Link>
+      </Container>
+
+      {rfqSupplier && (
+        <RfqDrawer
+          key={rfqSupplier.id}
+          supplier={rfqSupplier}
+          brief={sourcingBrief}
+          status={rfqStatus[rfqSupplier.id]}
+          onDrafted={markDrafted}
+          onMarkSent={() => setRfqStatus((s) => ({ ...s, [rfqSupplier.id]: "sent" }))}
+          onClose={closeRfq}
+        />
+      )}
+    </>
+  );
+}

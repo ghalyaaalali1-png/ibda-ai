@@ -1,3 +1,4 @@
+import { routes } from "@/config/site";
 import { demoProfile } from "@/features/launch-profile/profile";
 import type { BusinessPlan } from "./types";
 
@@ -157,6 +158,7 @@ export const demoPlan: BusinessPlan = {
       title: "Suppliers",
       description: "Fabric suppliers, tailoring workshops and packaging options matched to your premium positioning.",
       includes: ["Fabric suppliers", "Tailoring workshops", "Packaging", "MOQs & lead times"],
+      href: routes.suppliers,
     },
     {
       id: "marketing",

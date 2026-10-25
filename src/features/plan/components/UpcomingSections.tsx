@@ -1,4 +1,5 @@
 import { ArrowRight, Megaphone, Truck, type LucideIcon } from "lucide-react";
+import Link from "next/link";
 import type { BusinessPlan } from "../types";
 
 const icons: Record<string, LucideIcon> = { suppliers: Truck, marketing: Megaphone };
@@ -23,7 +24,7 @@ export function UpcomingSections({ plan }: { plan: BusinessPlan }) {
           return (
             <article
               key={section.id}
-              className="group glass relative overflow-hidden rounded-3xl p-6 transition-colors hover:border-brand-400/30"
+              className="group glass relative overflow-hidden rounded-3xl p-6 transition-colors focus-within:border-brand-400/40 hover:border-brand-400/30"
             >
               <div
                 aria-hidden
@@ -33,11 +34,30 @@ export function UpcomingSections({ plan }: { plan: BusinessPlan }) {
                 <span className="grid size-11 place-items-center rounded-xl border border-brand-400/25 bg-gradient-to-br from-brand-500/25 to-electric-500/10 text-brand-300">
                   <Icon className="size-5" />
                 </span>
-                <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[11px] text-mist/60">
-                  Up next
-                </span>
+                {section.href ? (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-brand-400/30 bg-brand-500/15 px-2.5 py-1 text-[11px] text-brand-300">
+                    Ready
+                    <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
+                  </span>
+                ) : (
+                  <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[11px] text-mist/60">
+                    Up next
+                  </span>
+                )}
               </div>
-              <h3 className="relative mt-5 text-lg font-semibold text-white">{section.title}</h3>
+              <h3 className={`mt-5 text-lg font-semibold text-white ${section.href ? "" : "relative"}`}>
+                {section.href ? (
+                  // Stretched link: the whole card is clickable.
+                  <Link
+                    href={section.href}
+                    className="after:absolute after:inset-0 after:z-10 after:rounded-3xl focus-visible:outline-none"
+                  >
+                    {section.title}
+                  </Link>
+                ) : (
+                  section.title
+                )}
+              </h3>
               <p className="relative mt-2 text-sm leading-relaxed text-mist/55">{section.description}</p>
               <ul className="relative mt-5 flex flex-wrap gap-2">
                 {section.includes.map((item) => (

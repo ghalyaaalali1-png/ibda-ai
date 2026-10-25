@@ -24,12 +24,14 @@ src/
       start/page.tsx        "Start My Business" onboarding conversation
       analysis/page.tsx     Agent workspace (simulated analysis run)
       plan/page.tsx         Business plan dashboard
+      suppliers/page.tsx    Supplier shortlist, comparison and RFQ drafting
   features/
     onboarding/             Onboarding flow: agent contract, questions,
                             state hook (useOnboarding) and chat UI
     launch-profile/         Profile handed from onboarding to analysis
     analysis/               Stage config, run engine (useAgentRun), workspace UI
     plan/                   BusinessPlan type, demo plan data, dashboard cards
+    suppliers/              Demo supplier data, RFQ generator, sourcing UI
   components/
     ui/                     Reusable primitives (Button, Container, Logo, …)
     landing/                Landing page sections

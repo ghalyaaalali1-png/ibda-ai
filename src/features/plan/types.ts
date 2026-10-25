@@ -43,6 +43,8 @@ export type UpcomingSection = {
   title: string;
   description: string;
   includes: string[];
+  /** Set once the section's screen exists. */
+  href?: string;
 };
 
 /** Everything the dashboard renders. A real agent/API would return this shape. */
