@@ -26,6 +26,8 @@ export type IdeaAnalysis = {
 };
 
 export type SummaryItem = {
+  /** Matches the fact or question id. */
+  id: string;
   label: string;
   value: string;
   /** Set when the value came from a question, so it can be edited. */

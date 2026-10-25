@@ -1,4 +1,4 @@
-import { ArrowRight, Check, Pencil } from "lucide-react";
+import { ArrowRight, Check, Loader2, Pencil } from "lucide-react";
 import type { SummaryItem } from "../types";
 
 export function SummaryCard({
@@ -60,8 +60,8 @@ export function SummaryCard({
         >
           {starting ? (
             <>
-              <Check className="size-4" />
-              Launch profile ready
+              <Loader2 className="size-4 animate-spin" />
+              Starting analysis…
             </>
           ) : (
             <>

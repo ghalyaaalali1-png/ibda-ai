@@ -10,6 +10,8 @@ export const siteConfig = {
 export const routes = {
   home: "/",
   start: "/start",
+  analysis: "/analysis",
+  plan: "/plan",
   howItWorks: "#how-it-works",
   capabilities: "#capabilities",
   uae: "#uae",

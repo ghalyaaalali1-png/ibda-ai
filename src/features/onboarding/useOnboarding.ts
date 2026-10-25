@@ -95,8 +95,9 @@ export function useOnboarding(agent: OnboardingAgent = prototypeAgent) {
   const summary = useMemo<SummaryItem[]>(() => {
     if (!state.analysis) return [];
     return [
-      ...state.analysis.facts.map(({ label, value }) => ({ label, value })),
+      ...state.analysis.facts.map(({ id, label, value }) => ({ id, label, value })),
       ...state.analysis.questions.map((q, i) => ({
+        id: q.id,
         label: q.summaryLabel,
         value: state.answers[i] ?? "",
         questionIndex: i,

@@ -1,7 +1,10 @@
 "use client";
 
 import { Check } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
+import { routes } from "@/config/site";
+import { saveLaunchProfile } from "@/features/launch-profile/profile";
 import { useOnboarding } from "../useOnboarding";
 import { IdeaComposer } from "./IdeaComposer";
 import { AgentMessage, TypingIndicator, UserMessage } from "./Messages";
@@ -17,6 +20,13 @@ export function OnboardingChat() {
   const flow = useOnboarding();
   const { status, idea, analysis, questions, answers, currentIndex } = flow;
   const endRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+
+  function startAnalysis() {
+    saveLaunchProfile(flow.summary.map(({ id, label, value }) => ({ id, label, value })));
+    flow.startAnalysis();
+    router.push(routes.analysis);
+  }
 
   // Keep the newest message in view as the conversation grows.
   useEffect(() => {
@@ -115,20 +125,11 @@ export function OnboardingChat() {
                 items={flow.summary}
                 starting={status === "starting"}
                 onEdit={flow.editAnswer}
-                onStart={flow.startAnalysis}
+                onStart={startAnalysis}
               />
             </AgentMessage>
           )}
 
-          {status === "starting" && (
-            <AgentMessage>
-              <p className="text-[15px] leading-relaxed text-mist/85 sm:text-base">
-                Your launch profile is locked in. The analysis workspace
-                isn&apos;t connected in this prototype yet — it will pick up
-                from here.
-              </p>
-            </AgentMessage>
-          )}
         </div>
         <div ref={endRef} />
       </main>

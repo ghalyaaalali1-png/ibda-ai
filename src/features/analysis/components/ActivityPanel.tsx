@@ -1,0 +1,79 @@
+import { Info } from "lucide-react";
+import { cn } from "@/lib/cn";
+import type { ActivityLogEntry, AgentAction } from "../types";
+
+const actionColor: Record<AgentAction, string> = {
+  Reviewing: "bg-mist/60",
+  Researching: "bg-brand-400",
+  Calculating: "bg-electric-400",
+  Comparing: "bg-violet-300",
+  "Checking sources": "bg-emerald-400",
+  Planning: "bg-amber-300",
+};
+
+function formatTime(ms: number) {
+  const s = Math.floor(ms / 1000);
+  return `00:${String(s).padStart(2, "0")}`;
+}
+
+export function ActivityPanel({
+  log,
+  complete,
+}: {
+  log: ActivityLogEntry[];
+  complete: boolean;
+}) {
+  const entries = [...log].reverse();
+  const actions = new Set(log.map((e) => e.action)).size;
+
+  return (
+    <aside className="glass flex flex-col overflow-hidden rounded-3xl lg:max-h-[calc(100dvh-8rem)]">
+      <div className="flex items-center justify-between border-b border-white/[0.06] px-5 py-4">
+        <h2 className="text-sm font-semibold text-white">Agent activity</h2>
+        <span className="font-mono text-[11px] text-mist/45">
+          {log.length} steps · {actions} action types
+        </span>
+      </div>
+
+      <ol className="min-h-0 flex-1 space-y-1 overflow-y-auto p-3" aria-label="Agent activity log">
+        {entries.map((entry) => (
+          <li
+            key={entry.key}
+            className={cn(
+              "animate-message-in rounded-xl px-3 py-2.5 transition-colors",
+              entry.status === "active" && "bg-white/[0.04]",
+            )}
+          >
+            <div className="flex items-center justify-between gap-3">
+              <span className="inline-flex items-center gap-2 font-mono text-[11px] tracking-wide text-mist/70 uppercase">
+                <span
+                  aria-hidden
+                  className={cn(
+                    "size-1.5 rounded-full",
+                    actionColor[entry.action],
+                    entry.status === "active" && "animate-pulse",
+                  )}
+                />
+                {entry.action}
+              </span>
+              <span className="font-mono text-[11px] text-mist/35">
+                {formatTime(entry.atMs)}
+              </span>
+            </div>
+            <p className="mt-1 text-[13px] leading-snug text-mist/80">{entry.label}</p>
+          </li>
+        ))}
+        {complete && (
+          <li className="animate-message-in rounded-xl px-3 py-2.5 text-[13px] text-emerald-300">
+            All stages complete — launch plan assembled.
+          </li>
+        )}
+      </ol>
+
+      <p className="flex items-center gap-2 border-t border-white/[0.06] px-5 py-3 text-[11px] text-mist/40">
+        <Info className="size-3.5 shrink-0" />
+        Prototype analysis — demo data
+      </p>
+    </aside>
+  );
+}
