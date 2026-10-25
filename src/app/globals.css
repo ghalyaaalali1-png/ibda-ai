@@ -26,6 +26,17 @@
   --animate-float: float 7s ease-in-out infinite;
   --animate-beam: beam 2.4s linear infinite;
   --animate-pulse-ring: pulse-ring 2s ease-out infinite;
+  --animate-message-in: message-in 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-typing-dot: typing-dot 1.2s ease-in-out infinite;
+
+  @keyframes message-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes typing-dot {
+    0%, 60%, 100% { opacity: 0.25; transform: translateY(0); }
+    30% { opacity: 1; transform: translateY(-3px); }
+  }
 
   @keyframes float {
     0%, 100% { transform: translateY(0); }

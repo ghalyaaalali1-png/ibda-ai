@@ -6,14 +6,10 @@ export const siteConfig = {
     "Ibda turns your business idea into a launch-ready plan — feasibility, pricing, suppliers, UAE setup and marketing.",
 } as const;
 
-/**
- * Central route map. When the onboarding / app screens are built,
- * point `start` at the real route (e.g. "/start") and every
- * "Start My Business" button across the site updates with it.
- */
+/** Central route map. Every "Start My Business" button uses `start`. */
 export const routes = {
   home: "/",
-  start: "#get-started",
+  start: "/start",
   howItWorks: "#how-it-works",
   capabilities: "#capabilities",
   uae: "#uae",

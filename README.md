@@ -20,6 +20,11 @@ src/
     globals.css             Theme tokens (colors, animations, utilities)
     (marketing)/            Public pages: navbar + footer shell
       page.tsx              Landing page
+    (app)/                  App screens shell
+      start/page.tsx        "Start My Business" onboarding conversation
+  features/
+    onboarding/             Onboarding flow: agent contract, questions,
+                            state hook (useOnboarding) and chat UI
   components/
     ui/                     Reusable primitives (Button, Container, Logo, …)
     landing/                Landing page sections
@@ -28,8 +33,10 @@ src/
   lib/                      Small helpers
 ```
 
-## Adding app screens
+## Onboarding agent
 
-Create a new route group, e.g. `src/app/(app)/start/page.tsx` with its own
-`layout.tsx`, then set `routes.start` in `src/config/site.ts` to `"/start"` —
-every "Start My Business" button will point there.
+The onboarding UI talks to an `OnboardingAgent` (`src/features/onboarding/types.ts`).
+The prototype uses `prototypeAgent`, a local rule-based stand-in that recognises
+the abaya demo scenario and extracts emirate and AED budget from other ideas.
+To use a real AI model, implement `analyzeIdea()` against your API and pass the
+new agent to `useOnboarding(agent)`.
