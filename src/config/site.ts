@@ -13,6 +13,7 @@ export const routes = {
   analysis: "/analysis",
   plan: "/plan",
   suppliers: "/suppliers",
+  marketing: "/marketing",
   howItWorks: "#how-it-works",
   capabilities: "#capabilities",
   uae: "#uae",

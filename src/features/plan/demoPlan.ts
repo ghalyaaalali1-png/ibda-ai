@@ -165,6 +165,7 @@ export const demoPlan: BusinessPlan = {
       title: "Marketing Plan",
       description: "Positioning, Instagram launch strategy and a 90-day calendar to win your first customers.",
       includes: ["Positioning", "Instagram launch", "Creator seeding", "90-day calendar"],
+      href: routes.marketing,
     },
   ],
 };
