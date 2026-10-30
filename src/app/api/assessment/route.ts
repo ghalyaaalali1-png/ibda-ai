@@ -9,6 +9,7 @@ import {
   marketingStrategySchema,
   planFinancialsSchema,
   planNarrativeSchema,
+  setupSchema,
   suppliersSchema,
   type InitialAssessment,
 } from "@/features/assessment/schema";
@@ -16,9 +17,11 @@ import {
   assessmentSystemPrompt,
   marketingSystemPrompt,
   planInputsSystemPrompt,
+  setupSystemPrompt,
   suppliersSystemPrompt,
 } from "@/lib/server/ibda-agent-guide";
 import { IBDA_MODEL, getAnthropic, hasAnthropicKey } from "@/lib/server/anthropic";
+import { emirateFrom, licensingSourcesFor, sourcesFor } from "@/features/plan/officialSources";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
@@ -110,8 +113,8 @@ async function ask<T extends z.ZodType>(
 
 /**
  * Sends the founder's onboarding answers to Claude and returns a structured
- * initial assessment plus plan, supplier and marketing inputs (six smaller
- * requests run in parallel). Runs on the server only; the API key never reaches the browser.
+ * initial assessment plus plan, setup, supplier and marketing inputs
+ * (seven smaller requests run in parallel). Runs on the server only; the API key never reaches the browser.
  */
 export async function POST(request: Request) {
   if (!hasAnthropicKey()) return fail("The AI service isn't configured.", 503);
@@ -126,6 +129,16 @@ export async function POST(request: Request) {
   if (!input.success) return fail("Invalid onboarding answers.", 400);
 
   const { idea, profile } = input.data;
+  // Only sources for this emirate (plus federal ones) are offered, so guidance can't mix emirates.
+  const emirate = emirateFrom(profile.find((f) => f.id === "location")?.value);
+  const allowedSources = sourcesFor(emirate)
+    .map((src) => `- ${src.id}: ${src.name} — ${src.covers}`)
+    .join("\n");
+  // Tell Claude plainly when there's no verified licensing authority for this emirate.
+  const licensingNote =
+    licensingSourcesFor(emirate).length > 0
+      ? ""
+      : `\n\nNo verified licensing authority is available for ${emirate ?? "this emirate"}. Do not name one. Where the licensing authority matters, say to verify through the official UAE government portal (u.ae) and use the "uae-portal" source.`;
   const answers = profile.map((f) => `- ${f.label}: ${f.value} (USER_PROVIDED)`).join("\n");
   const founderInput = `<founder_input>
 Idea in their own words:
@@ -137,7 +150,7 @@ ${answers}
 
   try {
     // Smaller structured requests in parallel; one combined schema exceeds the grammar limit.
-    const [assessment, financials, narrative, suppliers, strategy, execution] = await Promise.all([
+    const [assessment, financials, narrative, setup, suppliers, strategy, execution] = await Promise.all([
       ask(assessmentSystemPrompt, assessmentSchema, founderInput, "Prepare the initial business assessment for this founder.", (o) =>
         emptyParts({ "ideaSummary.headline": o.ideaSummary.headline, "feasibility.reasoning": o.feasibility.reasoning, keyAssumptions: o.keyAssumptions, "recommendedNextStep.title": o.recommendedNextStep.title }),
       ),
@@ -145,7 +158,14 @@ ${answers}
         emptyParts({ "unit.singular": o.unit.singular, "budget.amountAed": o.budget.amountAed, startupCosts: o.startupCosts, "pricing.heroAed": o.pricing.heroAed, unitCosts: o.unitCosts, monthlySales: o.monthlySales, priceBands: o.priceBands }),
       ),
       ask(planInputsSystemPrompt, planNarrativeSchema, founderInput, "Prepare the NARRATIVE planning inputs (market, risks, UAE setup, next actions, suppliers, marketing) for this founder's business.", (o) =>
-        emptyParts({ "market.summary": o.market.summary, risks: o.risks, "setup.summary": o.setup.summary, "setup.options": o.setup.options, "setup.requirements": o.setup.requirements, nextActions: o.nextActions, launchPathLabel: o.launchPathLabel, "suppliers.categories": o.suppliers.categories, "marketing.focusAreas": o.marketing.focusAreas }),
+        emptyParts({ "market.summary": o.market.summary, risks: o.risks, nextActions: o.nextActions, launchPathLabel: o.launchPathLabel, "suppliers.categories": o.suppliers.categories, "marketing.focusAreas": o.marketing.focusAreas }),
+      ),
+      ask(
+        setupSystemPrompt,
+        setupSchema,
+        founderInput,
+        `Prepare the UAE setup guidance for this founder's business${emirate ? ` in ${emirate}` : ""}.\n\nAllowed official sources (use these ids only):\n${allowedSources}${licensingNote}`,
+        (o) => emptyParts({ summary: o.summary, activity: o.activity, routes: o.routes, path: o.path, requirements: o.requirements }),
       ),
       ask(suppliersSystemPrompt, suppliersSchema, founderInput, "Prepare the supplier categories, supplier types and enquiry details for this founder's first launch.", (o) =>
         emptyParts({ categories: o.categories, options: o.options }),
@@ -163,6 +183,7 @@ ${answers}
     const result: InitialAssessment = {
       ...assessment,
       plan: { ...financials, ...narrative },
+      setup,
       suppliers,
       marketing: { ...strategy, ...execution },
     };

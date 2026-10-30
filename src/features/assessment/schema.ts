@@ -139,21 +139,6 @@ export const planNarrativeSchema = z.object({
       }),
     )
     .describe("3-4 risks specific to this business, highest first"),
-  setup: z.object({
-    summary: z.string().describe("2 sentences on the likely setup approach; no fees or regulations stated as fact"),
-    options: z
-      .array(
-        z.object({
-          name: z.string().describe("A general setup route, e.g. free zone or mainland licence; do not invent official licence names"),
-          fit: z.string().describe("Who or what it suits, max ~10 words"),
-          recommended: z.boolean().describe("true for exactly one option"),
-        }),
-      )
-      .describe("2-3 options"),
-    requirements: z
-      .array(z.string())
-      .describe("4-6 items typically needed, including any activity-specific approvals that may apply (marked as to be confirmed)"),
-  }),
   nextActions: z
     .array(z.object({ title: z.string().describe("Imperative, max ~8 words"), detail: z.string(), timing: z.string().describe('e.g. "Week 1–2"') }))
     .describe("5-6 ordered actions to reach launch; the first is the most urgent"),
@@ -265,12 +250,58 @@ export const marketingExecutionSchema = z.object({
   }),
 });
 
+/*
+ * UAE setup guidance (Agent Guide, Step 3). Sources are referenced only by
+ * id from the app's verified list, so Claude never writes URLs.
+ */
+const sourceId = z.string().describe('One id from the allowed official sources list, or "" if none applies');
+
+export const setupSchema = z.object({
+  summary: z.string().describe("2 sentences on the likely setup approach for this business and emirate; nothing stated as guaranteed"),
+  activity: z.string().describe("The likely licence activity in plain words, to be confirmed in the licensing portal"),
+  routes: z
+    .array(
+      z.object({
+        name: z.string().describe("A general setup route; never invent official licence names"),
+        fit: z.string().describe("Who or what it suits, max ~10 words"),
+        recommended: z.boolean().describe("true for exactly one route"),
+        sourceId,
+      }),
+    )
+    .describe("2-3 routes that plausibly fit this business in this emirate"),
+  path: z
+    .array(
+      z.object({
+        stage: z.enum(["activity", "route", "authority", "approvals", "establishment", "next"]),
+        title: z.string().describe("Imperative, max ~7 words"),
+        detail: z.string().describe("One or two sentences specific to this business and emirate"),
+        sourceId,
+      }),
+    )
+    .describe("Exactly 6 steps in this order: activity, route, authority, approvals, establishment, next"),
+  requirements: z
+    .array(
+      z.object({
+        item: z.string(),
+        level: z
+          .enum(["likely", "depends", "confirm"])
+          .describe('"likely" = usually needed for this kind of business; "depends" = only if the activity or set-up involves it; "confirm" = uncertain, check with the authority'),
+        why: z.string().describe("One short sentence"),
+        sourceId,
+      }),
+    )
+    .describe("6-9 requirements covering all three levels where relevant"),
+  sourceIds: z.array(z.string()).describe("3-6 allowed source ids the founder should use to verify this guidance"),
+});
+
+export type SetupInputs = z.infer<typeof setupSchema>;
 export type SupplierInputs = z.infer<typeof suppliersSchema>;
 export type MarketingInputs = z.infer<typeof marketingStrategySchema> & z.infer<typeof marketingExecutionSchema>;
 
 /** Claude's assessment plus the plan, supplier and marketing inputs from the parallel requests. */
 export type InitialAssessment = z.infer<typeof assessmentSchema> & {
   plan: PlanInputs;
+  setup: SetupInputs;
   suppliers: SupplierInputs;
   marketing: MarketingInputs;
 };

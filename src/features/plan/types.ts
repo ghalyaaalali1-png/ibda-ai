@@ -1,4 +1,5 @@
 import type { ProfileField } from "@/features/launch-profile/profile";
+import type { OfficialSource } from "./officialSources";
 
 export type Decision = "GO" | "CAUTION" | "NO-GO";
 export type Severity = "High" | "Medium" | "Low";
@@ -43,6 +44,30 @@ export type SetupOption = {
   cost: string;
   fit: string;
   recommended?: boolean;
+  authority?: OfficialSource;
+};
+
+export type SetupStage = "activity" | "route" | "authority" | "approvals" | "establishment" | "next";
+
+export type SetupStep = {
+  stage: SetupStage;
+  title: string;
+  detail: string;
+  authority?: OfficialSource;
+  /** True when no verified emirate authority is known, so the founder should verify via the UAE portal. */
+  viaPortal?: boolean;
+};
+
+/** How sure Ibda is that a requirement applies. */
+export type RequirementLevel = "likely" | "depends" | "confirm";
+
+export type SetupRequirement = {
+  item: string;
+  level: RequirementLevel;
+  why: string;
+  authority?: OfficialSource;
+  /** True when no verified authority is known, so the founder should verify via the UAE portal. */
+  viaPortal?: boolean;
 };
 
 export type UpcomingSection = {
@@ -98,8 +123,14 @@ export type BusinessPlan = {
   nextActionsLabel: string;
   setup: {
     summary: string;
+    /** Likely licence activity, to confirm with the authority. */
+    activity: string;
+    emirate: string;
     options: SetupOption[];
-    requirements: string[];
+    path: SetupStep[];
+    requirements: SetupRequirement[];
+    /** Official portals to verify with. */
+    sources: OfficialSource[];
   };
   upcoming: UpcomingSection[];
 };

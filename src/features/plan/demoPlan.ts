@@ -1,6 +1,9 @@
 import { routes } from "@/config/site";
 import { demoProfile } from "@/features/launch-profile/profile";
+import { sourceById } from "./officialSources";
 import type { BusinessPlan } from "./types";
+
+const src = sourceById;
 
 /**
  * Prototype plan for the demo scenario: a premium online abaya brand in Dubai,
@@ -126,6 +129,8 @@ export const demoPlan: BusinessPlan = {
   ],
 
   setup: {
+    activity: "Online sale of ready-made clothing (e-commerce) — to confirm",
+    emirate: "Dubai",
     summary:
       "For an online-only abaya brand, an e-commerce license is the usual starting point. A free zone package tends to suit founders who want low setup costs and full ownership; a mainland license matters if you plan a Dubai store later.",
     options: [
@@ -134,11 +139,13 @@ export const demoPlan: BusinessPlan = {
         cost: "Est. AED 6,000–15,000 / yr",
         fit: "Online-first, low setup cost, full ownership",
         recommended: true,
+        authority: src("uae-portal"),
       },
       {
         name: "Dubai mainland e-commerce license",
         cost: "Typically higher",
         fit: "Needed for a physical Dubai store later",
+        authority: src("dubai-det"),
       },
       {
         name: "Home-based online trading permit",
@@ -146,13 +153,54 @@ export const demoPlan: BusinessPlan = {
         fit: "Eligibility restrictions apply",
       },
     ],
-    requirements: [
-      "Trade name reservation",
-      "E-commerce / ready-made garments trading activity",
-      "Passport and residency documents",
-      "Business bank account",
-      "VAT registration once taxable sales exceed AED 375,000 / yr",
+    path: [
+      {
+        stage: "activity",
+        title: "Confirm your business activity",
+        detail: "Online sale of ready-made clothing is the likely activity. Check the exact activity name in the licensing portal before applying.",
+        authority: src("invest-dubai"),
+      },
+      {
+        stage: "route",
+        title: "Choose mainland or free zone",
+        detail: "A free zone e-commerce package suits an online-only start; a Dubai mainland licence matters if you plan a physical store later.",
+        authority: src("dubai-det"),
+      },
+      {
+        stage: "authority",
+        title: "Apply with the licensing authority",
+        detail: "Mainland licences in Dubai are issued by the Department of Economy and Tourism; free zone licences by the chosen free zone's authority.",
+        authority: src("dubai-det"),
+      },
+      {
+        stage: "approvals",
+        title: "Check activity-specific approvals",
+        detail: "Selling clothing online rarely needs extra approvals, but paid influencer marketing may need a media permit.",
+        authority: src("nma"),
+      },
+      {
+        stage: "establishment",
+        title: "Set up the essentials",
+        detail: "Reserve your trade name, open a business bank account and connect an online payment gateway.",
+        authority: src("moet"),
+      },
+      {
+        stage: "next",
+        title: "Confirm details before paying fees",
+        detail: "Contact the authority or free zone to confirm eligibility, costs and documents for your residency status.",
+        authority: src("uae-portal"),
+      },
     ],
+    requirements: [
+      { item: "Trade name reservation", level: "likely", why: "Needed before a licence can be issued.", authority: src("moet") },
+      { item: "Licence covering e-commerce or ready-made garments trading", level: "likely", why: "Your activity must match what you sell.", authority: src("invest-dubai") },
+      { item: "Passport and residency documents", level: "likely", why: "Required for the licence holder." },
+      { item: "Business bank account", level: "likely", why: "To receive online payments in the business's name." },
+      { item: "Media permit for paid influencer marketing", level: "depends", why: "Only if you pay creators to promote the brand.", authority: src("nma") },
+      { item: "VAT registration", level: "depends", why: "Mandatory once taxable sales exceed AED 375,000 a year.", authority: src("fta") },
+      { item: "Free zone or home-based eligibility for your residency status", level: "confirm", why: "Eligibility rules differ by route and residency.", authority: src("dubai-det") },
+    ],
+    sources: ["dubai-det", "invest-dubai", "moet", "fta", "nma", "uae-portal"].map((id) => src(id)!),
   },
 
   upcoming: [

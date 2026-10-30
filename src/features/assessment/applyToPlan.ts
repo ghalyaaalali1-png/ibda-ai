@@ -1,4 +1,12 @@
 import type { ProfileField } from "@/features/launch-profile/profile";
+import {
+  emirateFrom,
+  licensingSourcesFor,
+  sourceById,
+  sourcesFor,
+  uaePortal,
+  type OfficialSource,
+} from "@/features/plan/officialSources";
 import type { BusinessPlan, CashflowPoint, Decision } from "@/features/plan/types";
 import type { InitialAssessment } from "./schema";
 
@@ -39,6 +47,62 @@ function cashflowFor(spend: number, sales: number[], contribution: number, runni
     points.push({ month: i + 1, sales: units, cumulative: Math.round(previous + units * contribution - running) });
   });
   return points;
+}
+
+/**
+ * Requirements & licences for this business and emirate. Claude's source ids
+ * are resolved against the verified list; anything unknown or from another
+ * emirate is dropped, and the emirate's licensing authority is always added.
+ */
+function buildSetup(a: InitialAssessment, profile: ProfileField[]): BusinessPlan["setup"] {
+  const location = profile.find((f) => f.id === "location")?.value;
+  const emirate = emirateFrom(location);
+  const allowed = new Set(sourcesFor(emirate).map((x) => x.id));
+  const resolve = (id: string) => (allowed.has(id.trim()) ? sourceById(id) : undefined);
+  // Never guess an authority: without a verified one, point to the federal UAE portal instead.
+  const authorityOrPortal = (id: string) => {
+    const authority = resolve(id);
+    return authority ? { authority, viaPortal: false } : { authority: uaePortal, viaPortal: true };
+  };
+
+  const path = a.setup.path.slice(0, 6).map((step) => ({
+    stage: step.stage,
+    title: step.title,
+    detail: step.detail,
+    ...authorityOrPortal(step.sourceId),
+  }));
+  const requirements = a.setup.requirements.slice(0, 9).map((r) => ({
+    item: r.item,
+    level: r.level,
+    why: r.why,
+    ...authorityOrPortal(r.sourceId),
+  }));
+  const options = a.setup.routes.slice(0, 3).map((o) => ({
+    name: o.name,
+    fit: o.fit,
+    cost: "Fee requires official confirmation",
+    recommended: o.recommended,
+    authority: resolve(o.sourceId),
+  }));
+
+  // Every source referenced anywhere, plus the emirate's licensing authority and the essentials.
+  const sources: OfficialSource[] = [];
+  const add = (x?: OfficialSource) => x && !sources.some((s) => s.id === x.id) && sources.push(x);
+  licensingSourcesFor(emirate).forEach(add);
+  a.setup.sourceIds.forEach((id) => add(resolve(id)));
+  [...path, ...requirements, ...options].forEach((x) => add(x.authority));
+  add(sourceById("fta"));
+  add(sourceById("uae-portal"));
+
+  return {
+    summary: a.setup.summary,
+    activity: a.setup.activity,
+    emirate: emirate ?? location ?? "the UAE",
+    options,
+    path,
+    requirements,
+    sources: sources.slice(0, 8),
+  };
 }
 
 /**
@@ -136,16 +200,7 @@ export function buildPlan(base: BusinessPlan, a: InitialAssessment, profile: Pro
     risks: p.risks.slice(0, 4),
     nextActions: p.nextActions.slice(0, 6),
     nextActionsLabel: p.launchPathLabel,
-    setup: {
-      summary: p.setup.summary,
-      options: p.setup.options.slice(0, 3).map((o) => ({
-        name: o.name,
-        fit: o.fit,
-        cost: "Fee requires official confirmation",
-        recommended: o.recommended,
-      })),
-      requirements: p.setup.requirements.slice(0, 6),
-    },
+    setup: buildSetup(a, profile),
     upcoming: base.upcoming.map((section) => {
       if (section.id === "suppliers") {
         return { ...section, description: p.suppliers.description, includes: p.suppliers.categories.slice(0, 5) };
