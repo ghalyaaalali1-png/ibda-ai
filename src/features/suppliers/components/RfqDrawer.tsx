@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { TypingIndicator } from "@/features/onboarding/components/Messages";
 import { cn } from "@/lib/cn";
 import { generateRfq, type RfqTone } from "../rfq";
-import type { SourcingBrief, Supplier } from "../types";
+import type { CategoryInfo, SourcingBrief, Supplier } from "../types";
 
 export type RfqStatus = "drafted" | "sent";
 
@@ -13,14 +13,18 @@ const DRAFT_MS = 1100;
 
 export function RfqDrawer({
   supplier,
+  category,
   brief,
+  contactNote,
   status,
   onDrafted,
   onMarkSent,
   onClose,
 }: {
   supplier: Supplier;
+  category: CategoryInfo;
   brief: SourcingBrief;
+  contactNote: string;
   status?: RfqStatus;
   onDrafted: () => void;
   onMarkSent: () => void;
@@ -37,7 +41,7 @@ export function RfqDrawer({
   useEffect(() => {
     setDrafting(true);
     const t = setTimeout(() => {
-      const draft = generateRfq(supplier, brief, tone);
+      const draft = generateRfq(supplier, category, brief, tone);
       setSubject(draft.subject);
       setBody(draft.body);
       setDrafting(false);
@@ -46,7 +50,7 @@ export function RfqDrawer({
     return () => clearTimeout(t);
     // onDrafted is stable for a given supplier; re-drafting on its identity would loop.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [supplier, brief, tone]);
+  }, [supplier, category, brief, tone]);
 
   // Focus, Escape to close, and lock page scroll while open.
   useEffect(() => {
@@ -72,8 +76,6 @@ export function RfqDrawer({
       // Clipboard blocked — the text is still selectable in the editor.
     }
   }
-
-  const total = brief.designs * brief.piecesPerDesign;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-end sm:items-stretch">
@@ -116,12 +118,7 @@ export function RfqDrawer({
             Using your business plan
           </p>
           <ul className="mt-2 flex flex-wrap gap-1.5">
-            {[
-              `${brief.designs} designs × ${brief.piecesPerDesign} pieces = ${total}`,
-              `Retail ${brief.targetRetail}`,
-              "Premium positioning",
-              `Launch ${brief.launchWindow.replace("within the next ", "in ")}`,
-            ].map((chip) => (
+            {brief.highlights.map((chip) => (
               <li key={chip} className="rounded-full border border-white/[0.08] bg-white/[0.03] px-2.5 py-1 text-xs text-mist/70">
                 {chip}
               </li>
@@ -179,8 +176,7 @@ export function RfqDrawer({
 
           <p className="mt-4 flex gap-2 text-[11px] leading-relaxed text-mist/40">
             <Info className="mt-0.5 size-3.5 shrink-0" />
-            Demo supplier — contact details aren&apos;t included in prototype data. Copy the message
-            to send it to a real supplier.
+            {contactNote}
           </p>
         </div>
 

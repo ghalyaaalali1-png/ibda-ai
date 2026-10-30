@@ -1,14 +1,16 @@
-import { Gem, Package, Scissors, Shirt, type LucideIcon } from "lucide-react";
+import { Boxes, Gem, Package, Scissors, Shirt, Store, Truck, type LucideIcon } from "lucide-react";
 import type { KeyboardEvent } from "react";
 import { cn } from "@/lib/cn";
 import type { CategoryInfo, SupplierCategory } from "../types";
 
-const icons: Record<SupplierCategory, LucideIcon> = {
+// Demo categories keep their own icons; other categories cycle through neutral ones.
+const demoIcons: Record<string, LucideIcon> = {
   fabric: Shirt,
   tailoring: Scissors,
   embellishment: Gem,
   packaging: Package,
 };
+const neutralIcons: LucideIcon[] = [Boxes, Package, Truck, Store];
 
 export function CategoryTabs({
   categories,
@@ -37,7 +39,7 @@ export function CategoryTabs({
       className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:px-0"
     >
       {categories.map((c, i) => {
-        const Icon = icons[c.id];
+        const Icon = demoIcons[c.id] ?? neutralIcons[i % neutralIcons.length];
         const selected = c.id === active;
         return (
           <button

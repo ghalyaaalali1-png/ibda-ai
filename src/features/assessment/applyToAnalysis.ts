@@ -13,6 +13,8 @@ export function withAssessmentResults(stages: AgentStage[], a: InitialAssessment
     understand: a.ideaSummary.headline,
     market: `Target customer: ${a.targetCustomer.headline}`,
     feasibility: `${feasibilityLabel[a.feasibility.status]} — ${a.feasibility.headline}`,
+    suppliers: `${a.suppliers.categories.length} supplier categories identified`,
+    setup: `Suggested route: ${(a.plan.setup.options.find((o) => o.recommended) ?? a.plan.setup.options[0])?.name ?? "to be confirmed"}`,
     plan: `Next step: ${a.recommendedNextStep.title}`,
   };
   return stages.map((s) => (results[s.id] ? { ...s, result: results[s.id] } : s));

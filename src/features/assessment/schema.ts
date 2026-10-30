@@ -90,6 +90,9 @@ export const planFinancialsSchema = z.object({
         amountAed: z.number(),
         note: z.string().describe("What it covers, max ~8 words"),
         type: evidence,
+        group: z
+          .enum(["sourcing", "marketing", "other"])
+          .describe('"sourcing" = stock, equipment, materials, packaging; "marketing" = launch marketing, ads, content; "other" = licence, website, deposits etc.'),
       }),
     )
     .describe("4-7 one-off startup cost lines. Together with reserveAed they must equal the budget"),
@@ -167,8 +170,110 @@ export const planNarrativeSchema = z.object({
 
 export type PlanInputs = z.infer<typeof planFinancialsSchema> & z.infer<typeof planNarrativeSchema>;
 
-/** Claude's assessment plus the planning inputs from the parallel request. */
-export type InitialAssessment = z.infer<typeof assessmentSchema> & { plan: PlanInputs };
+/*
+ * Suppliers screen inputs. Options are supplier TYPES (e.g. "Wholesale produce
+ * trader"), never named businesses — no research has been done yet (Agent
+ * Guide Step 2). Kept flat to stay within the structured-output grammar limit.
+ */
+export const suppliersSchema = z.object({
+  intro: z.string().describe("One sentence in Ibda's voice on how it organised sourcing for this business"),
+  categories: z
+    .array(
+      z.object({
+        label: z.string().describe('Category name, e.g. "Fresh produce"'),
+        summary: z.string().describe("One sentence on what this business needs from it"),
+        rfqNeed: z.string().describe('What the enquiry asks for, completing "We are looking for …", with realistic first-order quantities'),
+        rfqQuestions: z.array(z.string()).describe("4 questions to ask suppliers in this category"),
+      }),
+    )
+    .describe("3-4 supplier categories this business needs"),
+  options: z
+    .array(
+      z.object({
+        category: z.string().describe("Exactly one of the category labels above"),
+        name: z.string().describe('A supplier TYPE, e.g. "Wholesale produce trader" — never a business name'),
+        location: z.string().describe('Where to find this type in the UAE, as a general area or channel, e.g. "Al Aweer market area · Dubai" or "Online B2B marketplaces"'),
+        overseas: z.boolean(),
+        offering: z.string().describe("Max ~8 words"),
+        priceMinAed: z.number(),
+        priceMaxAed: z.number(),
+        priceUnit: z.string().describe('e.g. "per kg", "per unit", "per month"'),
+        moqValue: z.number().describe("Typical minimum order; 0 if none"),
+        moqUnit: z.string(),
+        leadMinDays: z.number(),
+        leadMaxDays: z.number(),
+        bestFor: z.string().describe("Max ~8 words"),
+        matchScore: z.number().describe("0-100 fit with this business's budget, quantities and positioning"),
+        matchReasons: z.array(z.string()).describe("1-2 short reasons"),
+        watchOut: z.string().describe('One short caution, or "" if none'),
+        recommended: z.boolean().describe("true for exactly one option per category"),
+        firstOrderEstimateAed: z.number().describe("Estimated cost of the first order from this option"),
+        firstOrderBasis: z.string().describe('What that estimate covers, max ~6 words, e.g. "2 weeks of ingredients"'),
+      }),
+    )
+    .describe("3 options per category"),
+});
+
+/* Marketing screen inputs (Agent Guide Step 4), split in two to stay within the grammar limit. */
+export const marketingStrategySchema = z.object({
+  objective: z.string().describe("One sentence launch objective with a measurable pre-launch goal"),
+  positioning: z.string(),
+  valueProposition: z.string(),
+  channels: z
+    .array(z.object({ name: z.string(), role: z.string().describe("Max ~10 words"), primary: z.boolean() }))
+    .describe("4-5 channels; 1-2 primary"),
+  phaseGoals: z
+    .array(z.object({ phase: z.enum(["prelaunch", "launch", "growth"]), goal: z.string() }))
+    .describe("Exactly 3, one per phase"),
+  weeks: z
+    .array(
+      z.object({
+        week: z.number().describe("1-13"),
+        phase: z.enum(["prelaunch", "launch", "growth"]),
+        focus: z.string().describe("Max ~3 words"),
+        actions: z
+          .array(z.object({ text: z.string(), tag: z.enum(["Content", "Creators", "Ads", "Community", "Setup", "Review"]) }))
+          .describe("2-3 specific actions"),
+      }),
+    )
+    .describe("13 weeks in order: pre-launch weeks 1-7, launch weeks 8-9, growth weeks 10-13"),
+});
+
+export const marketingExecutionSchema = z.object({
+  postingRhythm: z.string().describe("One sentence"),
+  contentPillars: z
+    .array(
+      z.object({
+        title: z.string(),
+        format: z.string(),
+        cadence: z.string(),
+        phase: z.string().describe('e.g. "Weeks 3–7"'),
+        idea: z.string().describe("One concrete post idea for this business"),
+      }),
+    )
+    .describe("6-8 content types fitting this business (teasers, behind the scenes, product reveals, customer content, etc.)"),
+  budgetSplit: z
+    .array(z.object({ label: z.string(), sharePercent: z.number(), note: z.string() }))
+    .describe("3-5 lines splitting the launch marketing budget; shares add up to 100"),
+  kpis: z
+    .array(z.object({ label: z.string(), target: z.string(), when: z.string(), signal: z.string() }))
+    .describe("5 launch KPIs with estimated targets (do not include first-month sales; the app adds it)"),
+  nextMove: z.object({
+    title: z.string().describe("Imperative, max ~8 words"),
+    why: z.string(),
+    steps: z.array(z.string()).describe("Exactly 3 steps; the last can mention Ibda drafting the first post"),
+  }),
+});
+
+export type SupplierInputs = z.infer<typeof suppliersSchema>;
+export type MarketingInputs = z.infer<typeof marketingStrategySchema> & z.infer<typeof marketingExecutionSchema>;
+
+/** Claude's assessment plus the plan, supplier and marketing inputs from the parallel requests. */
+export type InitialAssessment = z.infer<typeof assessmentSchema> & {
+  plan: PlanInputs;
+  suppliers: SupplierInputs;
+  marketing: MarketingInputs;
+};
 
 /** What the browser sends: the founder's own words plus their onboarding answers. */
 export const assessmentRequestSchema = z.object({

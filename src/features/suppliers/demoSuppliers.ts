@@ -1,8 +1,10 @@
+import { demoProfile, profileValue } from "@/features/launch-profile/profile";
 import type {
   CategoryInfo,
   ShortlistItem,
   SourcingBrief,
   Supplier,
+  SupplierScreenData,
 } from "./types";
 
 /**
@@ -13,11 +15,10 @@ import type {
 export const sourcingBrief: SourcingBrief = {
   brand: "a new premium online abaya brand",
   location: "Dubai",
-  positioning: "premium",
-  designs: 6,
-  piecesPerDesign: 6,
-  targetRetail: "AED 600–1,000",
+  positioningSentence:
+    "We are preparing our first collection, positioned at the premium end of the market with a target retail price of AED 600–1,000.",
   launchWindow: "within the next 8 weeks",
+  highlights: ["6 designs × 6 pieces = 36", "Retail AED 600–1,000", "Premium positioning", "Launch in 8 weeks"],
 };
 
 export const categories: CategoryInfo[] = [
@@ -291,3 +292,21 @@ export const shortlist: ShortlistItem[] = [
 
 /** First collection (AED 10,900) plus the packaging share of branding (AED 1,400). */
 export const sourcingAllocation = 12300;
+
+/** The demo Suppliers screen, shown when there is no live assessment. */
+export const demoSupplierData: SupplierScreenData = {
+  profileLine: ["business", "location", "budget"].map((id) => profileValue(demoProfile, id)).join(" · "),
+  intro: `I compared ${suppliers.length} supplier options across fabric, tailoring, embellishment and packaging, then ranked them for a premium first run of 36 pieces on your budget.`,
+  sourceNote: "Prototype supplier data — demo, not verified suppliers",
+  supplierBadge: "Demo supplier",
+  contactNote:
+    "Demo supplier — contact details aren't included in prototype data. Copy the message to send it to a real supplier.",
+  categories,
+  suppliers,
+  shortlist,
+  allocation: sourcingAllocation,
+  allocationLabel: "stock and packaging",
+  shortlistCriteria: "low minimums, premium finishing",
+  brief: sourcingBrief,
+  defaultCompare: ["lumiere-crepe", "silkroute-nida", "qamar-fabric"],
+};

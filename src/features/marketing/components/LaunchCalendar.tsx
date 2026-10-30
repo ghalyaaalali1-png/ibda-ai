@@ -25,13 +25,14 @@ export function LaunchCalendar({ phases }: { phases: Phase[] }) {
   const [active, setActive] = useState<PhaseId>("prelaunch");
   const phase = phases.find((p) => p.id === active)!;
   const totalWeeks = phases.reduce((n, p) => n + p.plan.length, 0);
+  const launchWeek = phases.find((p) => p.id === "launch")?.plan[0]?.week;
 
   return (
     <DashCard
       id="calendar"
       title="90-day marketing calendar"
       icon={CalendarDays}
-      action={<span className="text-xs text-mist/50">{totalWeeks} weeks · launch in week 8</span>}
+      action={<span className="text-xs text-mist/50">{totalWeeks} weeks{launchWeek ? ` · launch in week ${launchWeek}` : ""}</span>}
     >
       {/* Overview strip — one segment per week, grouped by phase */}
       <div className="flex gap-0.5" aria-hidden>

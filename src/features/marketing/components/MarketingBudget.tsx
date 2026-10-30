@@ -3,7 +3,14 @@ import { DashCard } from "@/features/plan/components/DashCard";
 import { aed, percent, seriesColors } from "@/features/plan/format";
 import type { BudgetSource } from "../types";
 
-export function MarketingBudget({ sources }: { sources: BudgetSource[] }) {
+export function MarketingBudget({
+  sources,
+  footnote,
+}: {
+  sources: BudgetSource[];
+  /** Line under the budget, e.g. how marketing is funded after launch. */
+  footnote: string;
+}) {
   const total = sources.reduce((s, src) => s + src.total, 0);
 
   return (
@@ -70,7 +77,7 @@ export function MarketingBudget({ sources }: { sources: BudgetSource[] }) {
       </div>
 
       <p className="mt-auto pt-5 text-xs leading-relaxed text-mist/40">
-        From month 2, ads are funded from sales within your AED 2,500 monthly running costs. Demo estimates.
+        {footnote}
       </p>
     </DashCard>
   );

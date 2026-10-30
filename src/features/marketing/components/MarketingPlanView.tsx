@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { Logo } from "@/components/ui/Logo";
 import { routes } from "@/config/site";
-import { demoProfile, profileValue } from "@/features/launch-profile/profile";
+import type { CaptionContext } from "../captions";
 import type { MarketingPlan } from "../types";
 import { ContentGenerator } from "./ContentGenerator";
 import { ContentPlan } from "./ContentPlan";
@@ -12,11 +12,24 @@ import { LaunchCalendar } from "./LaunchCalendar";
 import { MarketingBudget } from "./MarketingBudget";
 import { StrategySummary } from "./StrategySummary";
 
-const profileLine = ["business", "location", "budget"]
-  .map((id) => profileValue(demoProfile, id))
-  .join(" · ");
+export type MarketingViewText = {
+  profileLine: string;
+  intro: string;
+  sourceNote: string;
+  budgetFootnote: string;
+};
 
-export function MarketingPlanView({ plan }: { plan: MarketingPlan }) {
+export function MarketingPlanView({
+  plan,
+  text,
+  captionContext,
+}: {
+  plan: MarketingPlan;
+  text: MarketingViewText;
+  /** When set, captions are written live by Claude for this business; otherwise the demo captions are used. */
+  captionContext?: CaptionContext;
+}) {
+  const { profileLine } = text;
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-ink-950/80 backdrop-blur-xl">
@@ -58,13 +71,12 @@ export function MarketingPlanView({ plan }: { plan: MarketingPlan }) {
               Your launch marketing plan
             </h1>
             <p className="mt-3 text-base leading-relaxed text-mist/60">
-              Built from your business plan: premium positioning at AED 690–850, 6 designs, a Dubai
-              launch in week 8 and the marketing budget you already have.
+              {text.intro}
             </p>
           </div>
           <p className="inline-flex items-center gap-1.5 self-start rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1 text-xs text-mist/50 sm:self-auto">
             <Info className="size-3.5 shrink-0" />
-            Prototype plan — targets are demo estimates
+            {text.sourceNote}
           </p>
         </div>
 
@@ -75,13 +87,13 @@ export function MarketingPlanView({ plan }: { plan: MarketingPlan }) {
             <LaunchCalendar phases={plan.phases} />
           </div>
           <div className="lg:col-span-5">
-            <MarketingBudget sources={plan.budget} />
+            <MarketingBudget sources={plan.budget} footnote={text.budgetFootnote} />
           </div>
         </div>
 
         <ContentPlan plan={plan} />
 
-        <ContentGenerator />
+        <ContentGenerator context={captionContext} />
 
         <KpiGrid kpis={plan.kpis} />
 

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { siteConfig } from "@/config/site";
-import { MarketingPlanView } from "@/features/marketing/components/MarketingPlanView";
-import { demoMarketing } from "@/features/marketing/demoMarketing";
+import { LiveMarketing } from "@/features/marketing/components/LiveMarketing";
 
 export const metadata: Metadata = {
   title: `Marketing Plan — ${siteConfig.name}`,
@@ -9,6 +8,6 @@ export const metadata: Metadata = {
 };
 
 export default function MarketingPage() {
-  // Prototype: the demo plan. Later this comes from the agent's analysis result.
-  return <MarketingPlanView plan={demoMarketing} />;
+  // Live marketing plan when an assessment exists; the abaya demo otherwise.
+  return <LiveMarketing />;
 }

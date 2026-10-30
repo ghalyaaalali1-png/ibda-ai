@@ -1,17 +1,26 @@
 import { Send, Sparkles } from "lucide-react";
 import { aed, percent } from "@/features/plan/format";
-import { categories } from "../demoSuppliers";
-import type { ShortlistItem, Supplier } from "../types";
+import type { CategoryInfo, ShortlistItem, Supplier } from "../types";
 import { MatchScore } from "./MatchScore";
 
 export function ShortlistCard({
   items,
+  categories,
+  allocationLabel,
+  budgetLabel,
+  criteria,
   suppliersById,
   allocation,
   onRequestQuote,
   onSelectCategory,
 }: {
   items: ShortlistItem[];
+  categories: CategoryInfo[];
+  allocationLabel: string;
+  /** e.g. "AED 30,000" */
+  budgetLabel: string;
+  /** What the picks were chosen for, e.g. "low minimums, premium finishing". */
+  criteria: string;
   suppliersById: Map<string, Supplier>;
   allocation: number;
   onRequestQuote: (id: string) => void;
@@ -36,8 +45,7 @@ export function ShortlistCard({
             Your launch sourcing shortlist
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-mist/55">
-            One pick per category, chosen for low minimums, premium finishing and fit with your
-            AED 30,000 budget.
+            One pick per category, chosen for {criteria} and fit with your {budgetLabel} budget.
           </p>
         </div>
         <div className="w-full shrink-0 lg:w-80">
@@ -53,7 +61,7 @@ export function ShortlistCard({
           </div>
           <p className={`mt-2 text-xs ${fits ? "text-emerald-300" : "text-[#fcc95a]"}`}>
             {fits
-              ? `Within your plan's ${aed(allocation)} for stock and packaging`
+              ? `Within your plan's ${aed(allocation)} for ${allocationLabel}`
               : `${aed(total - allocation)} over your plan's sourcing allocation`}
           </p>
         </div>
@@ -62,7 +70,7 @@ export function ShortlistCard({
       <ul className="relative mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {items.map((item) => {
           const s = suppliersById.get(item.supplierId)!;
-          const category = categories.find((c) => c.id === s.category)!;
+          const category = categories.find((c) => c.id === s.category) ?? categories[0];
           return (
             <li key={s.id} className="flex flex-col rounded-2xl border border-white/[0.07] bg-ink-900/60 p-4">
               <button

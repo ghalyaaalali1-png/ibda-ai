@@ -4,9 +4,12 @@ import { Check, Clock, Copy, ImageIcon, Sparkles, Wand2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { TypingIndicator } from "@/features/onboarding/components/Messages";
 import { cn } from "@/lib/cn";
+import type { GeneratedCaptionCopy } from "../captionSchema";
 import {
   contentTypes,
+  formatPost,
   generatePost,
+  type CaptionContext,
   type ContentType,
   type GeneratedPost,
   type Language,
@@ -17,7 +20,25 @@ const THINK_MS = 900;
 const CHARS_PER_TICK = 5;
 const TICK_MS = 16;
 
-type Status = "idle" | "thinking" | "writing" | "done";
+type Status = "idle" | "thinking" | "writing" | "done" | "error";
+
+/** Asks the server to write a post with Claude for this business. */
+async function requestLivePost(
+  context: CaptionContext,
+  type: ContentType,
+  platform: Platform,
+  language: Language,
+): Promise<GeneratedPost> {
+  const res = await fetch("/api/captions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ type, platform, language, context }),
+  });
+  const data = (await res.json().catch(() => ({}))) as { copy?: GeneratedCaptionCopy; error?: string };
+  if (!res.ok || !data.copy) throw new Error(data.error ?? "The caption couldn't be written.");
+  const { visual, bestTime, ...parts } = data.copy;
+  return { text: formatPost(parts, platform, language), visual, bestTime };
+}
 
 function Segmented<T extends string>({
   label,
@@ -54,7 +75,7 @@ function Segmented<T extends string>({
   );
 }
 
-export function ContentGenerator() {
+export function ContentGenerator({ context }: { context?: CaptionContext }) {
   const [type, setType] = useState<ContentType>("teaser");
   const [platform, setPlatform] = useState<Platform>("instagram");
   const [language, setLanguage] = useState<Language>("en");
@@ -63,6 +84,7 @@ export function ContentGenerator() {
   const [shown, setShown] = useState(0);
   const [copied, setCopied] = useState(false);
   const [outputLang, setOutputLang] = useState<Language>("en");
+  const [error, setError] = useState("");
   const timers = useRef<number[]>([]);
 
   const clearTimers = () => {
@@ -71,14 +93,25 @@ export function ContentGenerator() {
   };
   useEffect(() => clearTimers, []);
 
-  function generate() {
+  async function generate() {
     clearTimers();
-    const result = generatePost(type, platform, language);
-    setPost(result);
     setOutputLang(language);
     setShown(0);
     setCopied(false);
     setStatus("thinking");
+
+    // Live businesses get a caption written by Claude; the demo uses its hand-written copy.
+    let result: GeneratedPost;
+    try {
+      result = context
+        ? await requestLivePost(context, type, platform, language)
+        : generatePost(type, platform, language);
+    } catch (e) {
+      setError((e as Error).message);
+      setStatus("error");
+      return;
+    }
+    setPost(result);
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     timers.current.push(
@@ -100,7 +133,7 @@ export function ContentGenerator() {
           }
         };
         step(0);
-      }, THINK_MS),
+      }, context ? 0 : THINK_MS),
     );
   }
 
@@ -158,7 +191,7 @@ export function ContentGenerator() {
                     : "border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.05]",
                 )}
               >
-                <p className={cn("text-[13px] font-medium", type === c.id ? "text-white" : "text-mist/75")}>{c.label}</p>
+                <p className={cn("text-[13px] font-medium", type === c.id ? "text-white" : "text-mist/75")}>{context && c.id === "styling" ? "Product in use" : c.label}</p>
                 <p className="text-[11px] text-mist/45">{c.objective}</p>
               </button>
             ))}
@@ -230,6 +263,7 @@ export function ContentGenerator() {
               </div>
             )}
             {status === "thinking" && <TypingIndicator label="Writing from your strategy…" />}
+            {status === "error" && <p className="text-sm text-mist/60">{error} Try again in a moment.</p>}
             {(status === "writing" || status === "done") && post && (
               <p
                 dir={outputLang === "ar" ? "rtl" : "ltr"}
@@ -261,7 +295,7 @@ export function ContentGenerator() {
                 <div>
                   <dt className="text-[10px] tracking-wider text-mist/40 uppercase">Best time to post</dt>
                   <dd className="text-xs leading-snug text-mist/70">
-                    {post.bestTime} <span className="text-mist/40">(demo estimate)</span>
+                    {post.bestTime} <span className="text-mist/40">({context ? "estimate" : "demo estimate"})</span>
                   </dd>
                 </div>
               </div>

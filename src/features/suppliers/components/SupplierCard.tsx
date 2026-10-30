@@ -8,6 +8,7 @@ import type { RfqStatus } from "./RfqDrawer";
 export function SupplierCard({
   supplier,
   categoryLabel,
+  badge,
   inCompare,
   compareFull,
   rfqStatus,
@@ -16,6 +17,8 @@ export function SupplierCard({
 }: {
   supplier: Supplier;
   categoryLabel: string;
+  /** e.g. "Demo supplier" or "Supplier type". */
+  badge: string;
   inCompare: boolean;
   compareFull: boolean;
   rfqStatus?: RfqStatus;
@@ -40,7 +43,7 @@ export function SupplierCard({
               </span>
             )}
             <span className="rounded-full border border-white/[0.08] px-2 py-0.5 text-[10px] tracking-wide text-mist/45 uppercase">
-              Demo supplier
+              {badge}
             </span>
           </div>
           <h3 className="mt-2.5 text-base font-semibold text-white">{s.name}</h3>

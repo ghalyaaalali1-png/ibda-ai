@@ -8,6 +8,8 @@ export type CostItem = {
   label: string;
   amount: number;
   note: string;
+  /** What the money is for; lets the Suppliers and Marketing screens use the right lines. */
+  group?: "sourcing" | "marketing" | "other";
 };
 
 export type UnitCostItem = {

@@ -56,6 +56,7 @@ export function buildPlan(base: BusinessPlan, a: InitialAssessment, profile: Pro
     label: c.label,
     amount: fitted.amounts[i],
     note: `${c.note} · ${evidenceTag[c.type]}`,
+    group: c.group,
   }));
   const spend = sum(costs.map((c) => c.amount));
   const budgetBasis = [

@@ -6,7 +6,9 @@ import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { routes } from "@/config/site";
 import {
+  businessPhrase,
   demoProfile,
+  isAbayaBusiness,
   parseLaunchProfile,
   profileValue,
   readStoredProfile,
@@ -14,7 +16,7 @@ import {
 import { assessmentLogEntries, withAssessmentResults } from "@/features/assessment/applyToAnalysis";
 import { feasibilityLabel } from "@/features/assessment/schema";
 import { useAssessmentRun, type AssessmentState } from "@/features/assessment/storage";
-import { analysisStages } from "../stages";
+import { analysisStages, genericAnalysisStages } from "../stages";
 import type { ActivityLogEntry } from "../types";
 import { useAgentRun } from "../useAgentRun";
 import { ActivityPanel } from "./ActivityPanel";
@@ -33,9 +35,15 @@ export function AnalysisWorkspace() {
 
   const format = useCallback(
     (label: string) =>
-      label.replace(/\{(\w+)\}/g, (_, id: string) => profileValue(profile, id) ?? "your"),
+      label.replace(/\{(\w+)\}/g, (_, id: string) => {
+        if (id === "businessPhrase") return businessPhrase(profile);
+        if (id === "location") return profileValue(profile, "location") ?? "the UAE";
+        return profileValue(profile, id) ?? "your";
+      }),
     [profile],
   );
+  // Abaya copy only for abaya ideas; neutral copy for every other business.
+  const baseStages = isAbayaBusiness(profile) ? analysisStages : genericAnalysisStages;
 
   // Claude's initial assessment runs on the server while the workspace plays.
   const [assessmentState, setAssessmentState] = useState<AssessmentState>({ status: "loading" });
@@ -43,8 +51,8 @@ export function AnalysisWorkspace() {
   const assessment = assessmentState.status === "ready" ? assessmentState.assessment : null;
 
   const stages = useMemo(
-    () => (assessment ? withAssessmentResults(analysisStages, assessment) : analysisStages),
-    [assessment],
+    () => (assessment ? withAssessmentResults(baseStages, assessment) : baseStages),
+    [assessment, baseStages],
   );
   // The last beat waits for Claude, so "complete" always means real results are in.
   const run = useAgentRun(stages, format, { holdFinal: assessmentState.status === "loading" });

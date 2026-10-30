@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { siteConfig } from "@/config/site";
-import { SuppliersWorkspace } from "@/features/suppliers/components/SuppliersWorkspace";
+import { LiveSuppliers } from "@/features/suppliers/components/LiveSuppliers";
 
 export const metadata: Metadata = {
   title: `Suppliers — ${siteConfig.name}`,
@@ -8,5 +8,6 @@ export const metadata: Metadata = {
 };
 
 export default function SuppliersPage() {
-  return <SuppliersWorkspace />;
+  // Live supplier planning when an assessment exists; the abaya demo otherwise.
+  return <LiveSuppliers />;
 }

@@ -6,15 +6,8 @@ import { useCallback, useMemo, useState } from "react";
 import { Container } from "@/components/ui/Container";
 import { Logo } from "@/components/ui/Logo";
 import { routes } from "@/config/site";
-import { demoProfile, profileValue } from "@/features/launch-profile/profile";
-import {
-  categories,
-  shortlist,
-  sourcingAllocation,
-  sourcingBrief,
-  suppliers,
-} from "../demoSuppliers";
-import type { SupplierCategory } from "../types";
+import { aed } from "@/features/plan/format";
+import type { SupplierCategory, SupplierScreenData } from "../types";
 import { CategoryTabs } from "./CategoryTabs";
 import { CompareTable } from "./CompareTable";
 import { RfqDrawer, type RfqStatus } from "./RfqDrawer";
@@ -23,28 +16,32 @@ import { SupplierCard } from "./SupplierCard";
 
 const MAX_COMPARE = 4;
 
-const profileLine = ["business", "location", "budget"]
-  .map((id) => profileValue(demoProfile, id))
-  .join(" · ");
-
-export function SuppliersWorkspace() {
-  const [category, setCategory] = useState<SupplierCategory>("fabric");
-  const [compareIds, setCompareIds] = useState<string[]>(["lumiere-crepe", "silkroute-nida", "qamar-fabric"]);
+export function SuppliersWorkspace({
+  data,
+  budget,
+}: {
+  data: SupplierScreenData;
+  /** Startup budget from the plan, for the shortlist summary. */
+  budget: number;
+}) {
+  const { categories, suppliers, shortlist, brief, profileLine } = data;
+  const [category, setCategory] = useState<SupplierCategory>(categories[0]?.id ?? "");
+  const [compareIds, setCompareIds] = useState<string[]>(data.defaultCompare);
   const [rfqFor, setRfqFor] = useState<string | null>(null);
   const [rfqStatus, setRfqStatus] = useState<Record<string, RfqStatus>>({});
 
-  const byId = useMemo(() => new Map(suppliers.map((s) => [s.id, s])), []);
+  const byId = useMemo(() => new Map(suppliers.map((s) => [s.id, s])), [suppliers]);
   const counts = useMemo(
     () =>
       Object.fromEntries(
         categories.map((c) => [c.id, suppliers.filter((s) => s.category === c.id).length]),
       ) as Record<SupplierCategory, number>,
-    [],
+    [categories, suppliers],
   );
   const visible = suppliers
     .filter((s) => s.category === category)
     .sort((a, b) => b.matchScore - a.matchScore);
-  const activeCategory = categories.find((c) => c.id === category)!;
+  const activeCategory = categories.find((c) => c.id === category) ?? categories[0];
   const rfqSupplier = rfqFor ? byId.get(rfqFor) : undefined;
 
   const toggleCompare = (id: string) =>
@@ -101,21 +98,23 @@ export function SuppliersWorkspace() {
               Suppliers for your launch
             </h1>
             <p className="mt-3 text-base leading-relaxed text-mist/60">
-              I compared {suppliers.length} supplier options across fabric, tailoring, embellishment
-              and packaging, then ranked them for a premium first run of{" "}
-              {sourcingBrief.designs * sourcingBrief.piecesPerDesign} pieces on your budget.
+              {data.intro}
             </p>
           </div>
           <p className="inline-flex items-center gap-1.5 self-start rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1 text-xs text-mist/50 sm:self-auto">
             <Info className="size-3.5 shrink-0" />
-            Prototype supplier data — demo, not verified suppliers
+            {data.sourceNote}
           </p>
         </div>
 
         <ShortlistCard
           items={shortlist}
+          categories={categories}
+          allocationLabel={data.allocationLabel}
+          budgetLabel={aed(budget)}
+          criteria={data.shortlistCriteria}
           suppliersById={byId}
-          allocation={sourcingAllocation}
+          allocation={data.allocation}
           onRequestQuote={setRfqFor}
           onSelectCategory={(s) => {
             setCategory(s.category);
@@ -145,6 +144,7 @@ export function SuppliersWorkspace() {
                 key={s.id}
                 supplier={s}
                 categoryLabel={activeCategory.shortLabel}
+                badge={data.supplierBadge}
                 inCompare={compareIds.includes(s.id)}
                 compareFull={compareIds.length >= MAX_COMPARE}
                 rfqStatus={rfqStatus[s.id]}
@@ -156,6 +156,7 @@ export function SuppliersWorkspace() {
         </section>
 
         <CompareTable
+          categories={categories}
           items={compareIds.map((id) => byId.get(id)!).filter(Boolean)}
           onRemove={toggleCompare}
           onRequestQuote={setRfqFor}
@@ -205,7 +206,9 @@ export function SuppliersWorkspace() {
         <RfqDrawer
           key={rfqSupplier.id}
           supplier={rfqSupplier}
-          brief={sourcingBrief}
+          category={categories.find((c) => c.id === rfqSupplier.category) ?? categories[0]}
+          brief={brief}
+          contactNote={data.contactNote}
           status={rfqStatus[rfqSupplier.id]}
           onDrafted={markDrafted}
           onMarkSent={() => setRfqStatus((s) => ({ ...s, [rfqSupplier.id]: "sent" }))}

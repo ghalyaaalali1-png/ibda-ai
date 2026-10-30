@@ -11,7 +11,19 @@ export const contentTypes: { id: ContentType; label: string; objective: string }
   { id: "ugc", label: "Customer love", objective: "Build social proof" },
 ];
 
-type Copy = { hook: string; body: string; cta: string; tags: string[] };
+/** The raw parts of a post, before formatting for a platform. */
+export type CaptionCopy = { hook: string; body: string; cta: string; tags: string[] };
+type Copy = CaptionCopy;
+
+/** Business facts sent to the caption route for live generation (no secrets). */
+export type CaptionContext = {
+  business: string;
+  location: string;
+  positioning: string;
+  targetCustomer: string;
+  priceRange: string;
+  channels: string[];
+};
 
 const copy: Record<ContentType, Record<Language, Copy>> = {
   teaser: {
@@ -120,26 +132,25 @@ export type GeneratedPost = {
   bestTime: string;
 };
 
-/**
- * Prototype content writer. A real agent would generate this with a model
- * from the same strategy inputs (type, platform, language).
- */
+/** Lays out a post for Instagram (full caption) or TikTok (on-screen hook + short caption). */
+export function formatPost(c: CaptionCopy, platform: Platform, language: Language, extraTags: string[] = []) {
+  const tags = [...c.tags, ...extraTags];
+  return platform === "instagram"
+    ? [c.hook, "", c.body, "", c.cta, "", tags.join(" ")].join("\n")
+    : [
+        language === "ar" ? `نص على الشاشة: ${c.hook}` : `On-screen text: ${c.hook}`,
+        "",
+        // Caption opens with the body's first sentence so it doesn't repeat the on-screen hook.
+        `${c.body.split(/(?<=[.!?؟])\s/)[0]} ${c.cta}`,
+        "",
+        tags.slice(0, 4).join(" "),
+      ].join("\n");
+}
+
+/** Hand-written demo captions for the abaya scenario. */
 export function generatePost(type: ContentType, platform: Platform, language: Language): GeneratedPost {
   const c = copy[type][language];
-  const tags = [...c.tags, ...baseTags[language]];
-
-  const text =
-    platform === "instagram"
-      ? [c.hook, "", c.body, "", c.cta, "", tags.join(" ")].join("\n")
-      : [
-          language === "ar" ? `نص على الشاشة: ${c.hook}` : `On-screen text: ${c.hook}`,
-          "",
-          // Caption opens with the body's first sentence so it doesn't repeat the on-screen hook.
-          `${c.body.split(/(?<=[.!?؟])\s/)[0]} ${c.cta}`,
-          "",
-          tags.slice(0, 4).join(" "),
-        ].join("\n");
-
+  const text = formatPost(c, platform, language, baseTags[language]);
   return {
     text,
     visual: visuals[type],

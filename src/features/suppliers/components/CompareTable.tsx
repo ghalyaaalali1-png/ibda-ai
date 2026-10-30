@@ -1,8 +1,7 @@
 import { Columns3, Send, X } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { categories } from "../demoSuppliers";
 import { leadTimeLabel, moqLabel, priceLabel } from "../format";
-import type { Supplier } from "../types";
+import type { CategoryInfo, Supplier } from "../types";
 import { MatchScore } from "./MatchScore";
 
 function Best() {
@@ -15,10 +14,12 @@ function Best() {
 
 export function CompareTable({
   items,
+  categories,
   onRemove,
   onRequestQuote,
 }: {
   items: Supplier[];
+  categories: CategoryInfo[];
   onRemove: (id: string) => void;
   onRequestQuote: (id: string) => void;
 }) {

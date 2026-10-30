@@ -1,4 +1,6 @@
+import { demoProfile, profileValue } from "@/features/launch-profile/profile";
 import { demoPlan } from "@/features/plan/demoPlan";
+import type { MarketingViewText } from "./components/MarketingPlanView";
 import type { MarketingPlan } from "./types";
 
 /**
@@ -215,4 +217,13 @@ export const demoMarketing: MarketingPlan = {
       "Post your first teaser — Ibda can draft it for you",
     ],
   },
+};
+
+/** Screen text for the abaya demo, shown when there's no live assessment. */
+export const demoMarketingText: MarketingViewText = {
+  profileLine: ["business", "location", "budget"].map((id) => profileValue(demoProfile, id)).join(" · "),
+  intro:
+    "Built from your business plan: premium positioning at AED 690–850, 6 designs, a Dubai launch in week 8 and the marketing budget you already have.",
+  sourceNote: "Prototype plan — targets are demo estimates",
+  budgetFootnote: "From month 2, ads are funded from sales within your AED 2,500 monthly running costs. Demo estimates.",
 };

@@ -5,11 +5,19 @@ import type { z } from "zod";
 import {
   assessmentRequestSchema,
   assessmentSchema,
+  marketingExecutionSchema,
+  marketingStrategySchema,
   planFinancialsSchema,
   planNarrativeSchema,
+  suppliersSchema,
   type InitialAssessment,
 } from "@/features/assessment/schema";
-import { assessmentSystemPrompt, planInputsSystemPrompt } from "@/lib/server/ibda-agent-guide";
+import {
+  assessmentSystemPrompt,
+  marketingSystemPrompt,
+  planInputsSystemPrompt,
+  suppliersSystemPrompt,
+} from "@/lib/server/ibda-agent-guide";
 import { IBDA_MODEL, getAnthropic, hasAnthropicKey } from "@/lib/server/anthropic";
 
 export const dynamic = "force-dynamic";
@@ -17,6 +25,32 @@ export const maxDuration = 120;
 
 function fail(message: string, status: number) {
   return NextResponse.json({ error: message }, { status });
+}
+
+const plainWords: Record<string, string> = {
+  NOT_YET_CONFIRMED: "to be confirmed",
+  USER_PROVIDED: "your figure",
+  ESTIMATE: "estimate",
+};
+
+/**
+ * Rewrites evidence codes that appear inside sentences ("… NOT_YET_CONFIRMED with
+ * the authority") as plain words. Values that are exactly a code (the type
+ * fields the app reads) are left untouched.
+ */
+function plainLabels<T>(value: T): T {
+  if (typeof value === "string") {
+    if (value in plainWords) return value;
+    return value
+      .replace(/\b(NOT_YET_CONFIRMED|USER_PROVIDED|ESTIMATE)\b(:)?/g, (_, code: string, colon?: string) =>
+        colon ? `${plainWords[code][0].toUpperCase()}${plainWords[code].slice(1)}:` : plainWords[code],
+      ) as T;
+  }
+  if (Array.isArray(value)) return value.map(plainLabels) as T;
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, plainLabels(v)])) as T;
+  }
+  return value;
 }
 
 class AssessmentError extends Error {
@@ -28,31 +62,56 @@ class AssessmentError extends Error {
   }
 }
 
-/** One structured request to Claude; returns the parsed, schema-valid output. */
-async function ask<T extends z.ZodType>(system: string, schema: T, founderInput: string, task: string) {
-  const response = await getAnthropic().beta.messages.parse({
-    model: IBDA_MODEL,
-    max_tokens: 16000,
-    // If the model declines, the API retries on a fallback model automatically.
-    betas: ["server-side-fallback-2026-07-01"],
-    fallbacks: "default",
-    system,
-    output_config: { effort: "medium", format: betaZodOutputFormat(schema) },
-    messages: [{ role: "user", content: `${task}\n\n${founderInput}` }],
-  });
-  if (response.stop_reason === "refusal") {
-    throw new AssessmentError("The assessment couldn't be completed for this idea.", 422);
+type Completeness<T> = (output: T) => string[];
+
+/** Lists required parts that came back empty, e.g. ["setup.options", "nextActions"]. */
+function emptyParts(checks: Record<string, unknown>) {
+  return Object.entries(checks)
+    .filter(([, v]) => (Array.isArray(v) ? v.length === 0 : typeof v === "string" ? !v.trim() : !v))
+    .map(([k]) => k);
+}
+
+/**
+ * One structured request to Claude; returns the parsed, schema-valid output.
+ * A schema-valid answer can still leave sections empty, so `missing` checks
+ * the parts the screens need and the request is retried once if any are empty.
+ */
+async function ask<T extends z.ZodType>(
+  system: string,
+  schema: T,
+  founderInput: string,
+  task: string,
+  missing: Completeness<z.infer<T>>,
+  effort: "low" | "medium" = "medium",
+) {
+  let reminder = "";
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const response = await getAnthropic().beta.messages.parse({
+      model: IBDA_MODEL,
+      max_tokens: 16000,
+      // If the model declines, the API retries on a fallback model automatically.
+      betas: ["server-side-fallback-2026-07-01"],
+      fallbacks: "default",
+      system,
+      output_config: { effort, format: betaZodOutputFormat(schema) },
+      messages: [{ role: "user", content: `${task}${reminder}\n\n${founderInput}` }],
+    });
+    if (response.stop_reason === "refusal") {
+      throw new AssessmentError("The assessment couldn't be completed for this idea.", 422);
+    }
+    const output = response.parsed_output as z.infer<T> | null;
+    const gaps = output ? missing(output) : ["the whole response"];
+    if (output && gaps.length === 0) return output;
+    console.warn("Incomplete structured output", { task: task.slice(0, 40), stop: response.stop_reason, gaps });
+    reminder = `\n\nIMPORTANT: fill in every field with real content. A previous answer left these empty: ${gaps.join(", ")}.`;
   }
-  if (!response.parsed_output) {
-    throw new AssessmentError("The assessment came back incomplete. Please try again.", 502);
-  }
-  return response.parsed_output as z.infer<T>;
+  throw new AssessmentError("The assessment came back incomplete. Please try again.", 502);
 }
 
 /**
  * Sends the founder's onboarding answers to Claude and returns a structured
- * initial assessment plus planning inputs (three smaller requests run in
- * parallel). Runs on the server only; the API key never reaches the browser.
+ * initial assessment plus plan, supplier and marketing inputs (six smaller
+ * requests run in parallel). Runs on the server only; the API key never reaches the browser.
  */
 export async function POST(request: Request) {
   if (!hasAnthropicKey()) return fail("The AI service isn't configured.", 503);
@@ -77,14 +136,37 @@ ${answers}
 </founder_input>`;
 
   try {
-    // Three smaller structured requests in parallel; one combined schema exceeds the grammar limit.
-    const [assessment, financials, narrative] = await Promise.all([
-      ask(assessmentSystemPrompt, assessmentSchema, founderInput, "Prepare the initial business assessment for this founder."),
-      ask(planInputsSystemPrompt, planFinancialsSchema, founderInput, "Prepare the FINANCIAL planning inputs (unit, budget, costs, pricing, sales, price bands) for this founder's business."),
-      ask(planInputsSystemPrompt, planNarrativeSchema, founderInput, "Prepare the NARRATIVE planning inputs (market, risks, UAE setup, next actions, suppliers, marketing) for this founder's business."),
+    // Smaller structured requests in parallel; one combined schema exceeds the grammar limit.
+    const [assessment, financials, narrative, suppliers, strategy, execution] = await Promise.all([
+      ask(assessmentSystemPrompt, assessmentSchema, founderInput, "Prepare the initial business assessment for this founder.", (o) =>
+        emptyParts({ "ideaSummary.headline": o.ideaSummary.headline, "feasibility.reasoning": o.feasibility.reasoning, keyAssumptions: o.keyAssumptions, "recommendedNextStep.title": o.recommendedNextStep.title }),
+      ),
+      ask(planInputsSystemPrompt, planFinancialsSchema, founderInput, "Prepare the FINANCIAL planning inputs (unit, budget, costs, pricing, sales, price bands) for this founder's business.", (o) =>
+        emptyParts({ "unit.singular": o.unit.singular, "budget.amountAed": o.budget.amountAed, startupCosts: o.startupCosts, "pricing.heroAed": o.pricing.heroAed, unitCosts: o.unitCosts, monthlySales: o.monthlySales, priceBands: o.priceBands }),
+      ),
+      ask(planInputsSystemPrompt, planNarrativeSchema, founderInput, "Prepare the NARRATIVE planning inputs (market, risks, UAE setup, next actions, suppliers, marketing) for this founder's business.", (o) =>
+        emptyParts({ "market.summary": o.market.summary, risks: o.risks, "setup.summary": o.setup.summary, "setup.options": o.setup.options, "setup.requirements": o.setup.requirements, nextActions: o.nextActions, launchPathLabel: o.launchPathLabel, "suppliers.categories": o.suppliers.categories, "marketing.focusAreas": o.marketing.focusAreas }),
+      ),
+      ask(suppliersSystemPrompt, suppliersSchema, founderInput, "Prepare the supplier categories, supplier types and enquiry details for this founder's first launch.", (o) =>
+        emptyParts({ categories: o.categories, options: o.options }),
+        "low",
+      ),
+      ask(marketingSystemPrompt, marketingStrategySchema, founderInput, "Prepare the launch marketing strategy and 13-week calendar for this founder's business.", (o) =>
+        emptyParts({ objective: o.objective, channels: o.channels, phaseGoals: o.phaseGoals, weeks: o.weeks }),
+        "low",
+      ),
+      ask(marketingSystemPrompt, marketingExecutionSchema, founderInput, "Prepare the content plan, marketing budget split, launch KPIs and recommended next move for this founder's business.", (o) =>
+        emptyParts({ contentPillars: o.contentPillars, budgetSplit: o.budgetSplit, kpis: o.kpis, "nextMove.title": o.nextMove.title, "nextMove.steps": o.nextMove.steps }),
+        "low",
+      ),
     ]);
-    const result: InitialAssessment = { ...assessment, plan: { ...financials, ...narrative } };
-    return NextResponse.json({ assessment: result });
+    const result: InitialAssessment = {
+      ...assessment,
+      plan: { ...financials, ...narrative },
+      suppliers,
+      marketing: { ...strategy, ...execution },
+    };
+    return NextResponse.json({ assessment: plainLabels(result) });
   } catch (error) {
     if (error instanceof AssessmentError) return fail(error.message, error.status);
     if (error instanceof Anthropic.AuthenticationError) {

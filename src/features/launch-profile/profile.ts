@@ -78,3 +78,19 @@ export function readLaunchIdea(): string | null {
 export function profileValue(profile: LaunchProfile, id: string) {
   return profile.find((f) => f.id === id)?.value;
 }
+
+const EMIRATE_SUFFIX =
+  /\s+(?:in|for)\s+(?:dubai|abu dhabi|sharjah|ajman|ras al khaimah|fujairah|umm al quwain|the uae|uae)\b.*$/i;
+
+/** The business as a phrase for running text, e.g. "healthy meal-prep delivery business". */
+export function businessPhrase(profile: LaunchProfile) {
+  const raw = profileValue(profile, "business")?.replace(EMIRATE_SUFFIX, "").trim();
+  if (!raw) return "your business";
+  // Lowercase the first letter unless the first word is an acronym.
+  return /^[A-Z][a-z]/.test(raw) ? raw.charAt(0).toLowerCase() + raw.slice(1) : raw;
+}
+
+/** The abaya demo scenario (or a live abaya idea) uses the demo's industry-specific copy. */
+export function isAbayaBusiness(profile: LaunchProfile) {
+  return profile.some((f) => f.id === "abayaType") || /\babayas?\b/i.test(profileValue(profile, "business") ?? "");
+}
