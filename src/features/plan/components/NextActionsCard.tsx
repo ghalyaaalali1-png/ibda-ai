@@ -9,7 +9,7 @@ export function NextActionsCard({ plan }: { plan: BusinessPlan }) {
       id="next-actions"
       title="Recommended next actions"
       icon={ListChecks}
-      action={<span className="text-xs text-mist/50">8-week launch path</span>}
+      action={<span className="text-xs text-mist/50">{plan.nextActionsLabel}</span>}
     >
       <ol className="relative">
         {plan.nextActions.map((action, i) => (

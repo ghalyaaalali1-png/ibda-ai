@@ -13,19 +13,21 @@ export function UnitEconomics({ plan }: { plan: BusinessPlan }) {
     <DashCard id="pricing" title="Pricing & unit economics" icon={Tags}>
       <Caption>Recommended selling price</Caption>
       <p className="mt-1.5 text-3xl font-semibold tracking-tight text-white">
-        AED {pricing.min}–{pricing.max}
+        AED {pricing.min.toLocaleString("en-US")}–{pricing.max.toLocaleString("en-US")}
       </p>
       <p className="mt-2 text-sm leading-relaxed text-mist/55">{pricing.rationale}</p>
 
       <div className="mt-6">
         <div className="flex items-baseline justify-between">
-          <Caption>Per abaya at {aed(price)}</Caption>
+          <Caption>Per {plan.unit.singular} at {aed(price)}</Caption>
           <span className="text-xs text-emerald-300">
-            {percent(contribution, price)}% kept after all costs
+            {contribution > 0
+              ? `${percent(contribution, price)}% kept after all costs`
+              : "Each sale loses money at this price"}
           </span>
         </div>
         <div className="mt-3 flex h-3 gap-0.5" role="img" aria-label={`Costs ${aed(totalCost)}, contribution ${aed(contribution)}`}>
-          <span className="rounded-l bg-white/25" style={{ width: `${percent(totalCost, price)}%` }} />
+          <span className="rounded-l bg-white/25" style={{ width: `${Math.min(100, percent(totalCost, price))}%` }} />
           <span className="flex-1 rounded-r bg-gradient-to-r from-brand-500 to-electric-400" />
         </div>
         <dl className="mt-4 space-y-2 text-sm">

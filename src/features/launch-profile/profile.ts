@@ -56,6 +56,25 @@ export function parseLaunchProfile(raw: string | null): LaunchProfile | null {
   }
 }
 
+const IDEA_KEY = "ibda:launch-idea";
+
+/** The founder's idea in their own words, kept alongside the profile. */
+export function saveLaunchIdea(idea: string) {
+  try {
+    sessionStorage.setItem(IDEA_KEY, idea);
+  } catch {
+    // Storage unavailable — the demo idea is used instead.
+  }
+}
+
+export function readLaunchIdea(): string | null {
+  try {
+    return sessionStorage.getItem(IDEA_KEY);
+  } catch {
+    return null;
+  }
+}
+
 export function profileValue(profile: LaunchProfile, id: string) {
   return profile.find((f) => f.id === id)?.value;
 }

@@ -9,9 +9,21 @@ import { DashCard } from "./DashCard";
 const DEFAULT_W = 560;
 const H = 240;
 const PAD = { top: 20, right: 16, bottom: 28, left: 44 };
-const Y_MIN = -30000;
-const Y_MAX = 15000;
-const Y_TICKS = [-30000, -15000, 0, 15000];
+const STEP_MULTIPLIERS = [1, 1.5, 2, 2.5, 5, 10];
+
+/** Round axis bounds and ticks that always include zero. */
+function yScale(values: number[]) {
+  const lo = Math.min(0, ...values);
+  const hi = Math.max(0, ...values);
+  const raw = Math.max(hi - lo, 1) / 3;
+  const magnitude = 10 ** Math.floor(Math.log10(raw));
+  const step = magnitude * STEP_MULTIPLIERS.find((m) => m * magnitude >= raw)!;
+  const min = Math.floor(lo / step) * step;
+  const max = Math.max(Math.ceil(hi / step) * step, min + step);
+  const ticks: number[] = [];
+  for (let t = min; t <= max; t += step) ticks.push(t);
+  return { min, max, ticks };
+}
 
 export function BreakEvenChart({ plan }: { plan: BusinessPlan }) {
   const { cashflow, month: beMonth, totalSales, monthlyRunningCosts, salesToCoverRunningCosts } =
@@ -32,12 +44,13 @@ export function BreakEvenChart({ plan }: { plan: BusinessPlan }) {
   const contributionPerSale = price - costs.reduce((sum, c) => sum + c.amount, 0);
 
   const lastMonth = cashflow.at(-1)!.month;
+  const { min: Y_MIN, max: Y_MAX, ticks: Y_TICKS } = yScale(cashflow.map((p) => p.cumulative));
   const x = (m: number) => PAD.left + (m / lastMonth) * (W - PAD.left - PAD.right);
   const y = (v: number) => PAD.top + ((Y_MAX - v) / (Y_MAX - Y_MIN)) * (H - PAD.top - PAD.bottom);
 
   const line = cashflow.map((p, i) => `${i ? "L" : "M"}${x(p.month)},${y(p.cumulative)}`).join(" ");
   const area = `${line} L${x(lastMonth)},${y(0)} L${x(0)},${y(0)} Z`;
-  const be = cashflow.find((p) => p.month === beMonth)!;
+  const be = beMonth === null ? undefined : cashflow.find((p) => p.month === beMonth);
   const hovered = hover !== null ? cashflow[hover] : null;
 
   return (
@@ -49,11 +62,17 @@ export function BreakEvenChart({ plan }: { plan: BusinessPlan }) {
     >
       <div className="flex flex-wrap gap-x-8 gap-y-2">
         <p className="text-sm text-mist/55">
-          <span className="text-2xl font-semibold text-white">Month {beMonth}</span>
-          <span className="ml-2">≈{totalSales} sales</span>
+          <span className="text-2xl font-semibold text-white">
+            {beMonth === null ? `Beyond month ${lastMonth}` : `Month ${beMonth}`}
+          </span>
+          <span className="ml-2">
+            ≈{totalSales.toLocaleString("en-US")} sales{beMonth === null ? ` in ${lastMonth} months` : ""}
+          </span>
         </p>
         <p className="self-end text-sm text-mist/55">
-          {salesToCoverRunningCosts} sales/month cover {aed(monthlyRunningCosts)} running costs
+          {salesToCoverRunningCosts === null
+            ? `Each sale loses money, so no volume covers ${aed(monthlyRunningCosts)} running costs`
+            : `${salesToCoverRunningCosts.toLocaleString("en-US")} sales/month cover ${aed(monthlyRunningCosts)} running costs`}
         </p>
       </div>
 
@@ -64,7 +83,7 @@ export function BreakEvenChart({ plan }: { plan: BusinessPlan }) {
           height={H}
           className="block w-full"
           role="img"
-          aria-label={`Cumulative cash from ${aed(cashflow[0].cumulative)} at launch to ${aed(cashflow.at(-1)!.cumulative)} by month ${lastMonth}, breaking even in month ${beMonth}.`}
+          aria-label={`Cumulative cash from ${aed(cashflow[0].cumulative)} at launch to ${aed(cashflow.at(-1)!.cumulative)} by month ${lastMonth}, ${beMonth === null ? "not breaking even in that period" : `breaking even in month ${beMonth}`}.`}
           onMouseLeave={() => setHover(null)}
         >
           <defs>
@@ -102,11 +121,15 @@ export function BreakEvenChart({ plan }: { plan: BusinessPlan }) {
           <path d={line} fill="none" stroke="#a48bff" strokeWidth="2" strokeLinejoin="round" />
 
           {/* Break-even marker */}
-          <line x1={x(beMonth)} x2={x(beMonth)} y1={PAD.top} y2={H - PAD.bottom} stroke="rgb(52 211 153 / 0.35)" />
-          <circle cx={x(be.month)} cy={y(be.cumulative)} r="6" fill="#34d399" stroke="#0d1130" strokeWidth="2" />
-          <text x={x(beMonth) - 10} y={PAD.top + 4} textAnchor="end" className="fill-emerald-300 text-[11px] font-medium">
-            Break-even
-          </text>
+          {be && (
+            <>
+              <line x1={x(be.month)} x2={x(be.month)} y1={PAD.top} y2={H - PAD.bottom} stroke="rgb(52 211 153 / 0.35)" />
+              <circle cx={x(be.month)} cy={y(be.cumulative)} r="6" fill="#34d399" stroke="#0d1130" strokeWidth="2" />
+              <text x={x(be.month) - 10} y={PAD.top + 4} textAnchor="end" className="fill-emerald-300 text-[11px] font-medium">
+                Break-even
+              </text>
+            </>
+          )}
 
           {/* Hover */}
           {hovered && (

@@ -40,16 +40,22 @@ function statusAt(eventIndex: number, step: number): StepStatus {
  * derived from a single cursor into an event timeline, so a real agent can
  * drive the same UI by advancing the cursor as its events arrive.
  */
-export function useAgentRun(stages: AgentStage[], format: (label: string) => string) {
+export function useAgentRun(
+  stages: AgentStage[],
+  format: (label: string) => string,
+  /** Hold on the final beat until real work (e.g. an API call) has finished. */
+  { holdFinal = false }: { holdFinal?: boolean } = {},
+) {
   const events = useMemo(() => buildTimeline(stages), [stages]);
   const [step, setStep] = useState(0);
   const complete = step >= events.length;
+  const waiting = holdFinal && step === events.length - 1;
 
   useEffect(() => {
-    if (complete) return;
+    if (complete || waiting) return;
     const t = setTimeout(() => setStep((s) => s + 1), events[step].durationMs);
     return () => clearTimeout(t);
-  }, [step, complete, events]);
+  }, [step, complete, waiting, events]);
 
   const indexOf = useCallback(
     (stageIndex: number, activityIndex: number | null) =>
@@ -101,6 +107,7 @@ export function useAgentRun(stages: AgentStage[], format: (label: string) => str
 
   return {
     complete,
+    waiting,
     progress: Math.min(step, events.length) / events.length,
     activeStageIndex,
     completedStages,

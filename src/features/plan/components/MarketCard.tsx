@@ -2,12 +2,25 @@ import { Globe2, Users } from "lucide-react";
 import type { BusinessPlan } from "../types";
 import { Caption, DashCard } from "./DashCard";
 
-const AXIS_MAX = 3000;
-const AXIS_TICKS = [0, 1000, 2000, 3000];
+const STEP_MULTIPLIERS = [1, 1.5, 2, 2.5, 5, 10];
+
+/** A round axis maximum split into three equal steps, e.g. 0–3,000 or 0–60. */
+function priceAxis(maxValue: number) {
+  const raw = Math.max(maxValue, 1) / 3;
+  const magnitude = 10 ** Math.floor(Math.log10(raw));
+  const step = magnitude * STEP_MULTIPLIERS.find((m) => m * magnitude >= raw)!;
+  return { max: step * 3, ticks: [0, step, step * 2, step * 3] };
+}
+
+const tickLabel = (t: number) => (t === 0 ? "0" : t >= 1000 ? `${t / 1000}k` : `${t}`);
 
 export function MarketCard({ plan }: { plan: BusinessPlan }) {
-  const { market, pricing } = plan;
+  const { market, pricing, unit } = plan;
+  const { max: AXIS_MAX, ticks: AXIS_TICKS } = priceAxis(
+    Math.max(pricing.max, ...market.priceBands.map((b) => b.max)),
+  );
   const pct = (v: number) => `${(v / AXIS_MAX) * 100}%`;
+  const unitTitle = unit.singular.charAt(0).toUpperCase() + unit.singular.slice(1);
 
   return (
     <DashCard id="market" title="Market opportunity" icon={Globe2}>
@@ -35,15 +48,15 @@ export function MarketCard({ plan }: { plan: BusinessPlan }) {
         {/* Competitor price bands with the recommended range overlaid */}
         <div>
           <div className="flex items-baseline justify-between">
-            <Caption>Abaya price bands, AED</Caption>
-            <span className="text-[11px] text-mist/35">Demo estimates</span>
+            <Caption>{unitTitle} price bands, AED</Caption>
+            <span className="text-[11px] text-mist/35">{market.priceBandsNote}</span>
           </div>
           <ul className="mt-4 space-y-4 py-2">
             <li>
               <p className="text-xs font-medium text-brand-300">
                 Your recommended range{" "}
                 <span className="font-normal text-mist/45">
-                  {pricing.min}–{pricing.max}
+                  {pricing.min.toLocaleString("en-US")}–{pricing.max.toLocaleString("en-US")}
                 </span>
               </p>
               <div className="relative mt-1.5 h-2">
@@ -84,7 +97,7 @@ export function MarketCard({ plan }: { plan: BusinessPlan }) {
                 className="absolute top-1 -translate-x-1/2 font-mono text-[10px] text-mist/35 first:translate-x-0 last:-translate-x-full"
                 style={{ left: pct(t) }}
               >
-                {t === 0 ? "0" : `${t / 1000}k`}
+                {tickLabel(t)}
               </span>
             ))}
           </div>

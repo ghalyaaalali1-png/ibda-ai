@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowRight, RotateCcw, Sparkles } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { routes } from "@/config/site";
@@ -11,7 +11,11 @@ import {
   profileValue,
   readStoredProfile,
 } from "@/features/launch-profile/profile";
+import { assessmentLogEntries, withAssessmentResults } from "@/features/assessment/applyToAnalysis";
+import { feasibilityLabel } from "@/features/assessment/schema";
+import { useAssessmentRun, type AssessmentState } from "@/features/assessment/storage";
 import { analysisStages } from "../stages";
+import type { ActivityLogEntry } from "../types";
 import { useAgentRun } from "../useAgentRun";
 import { ActivityPanel } from "./ActivityPanel";
 import { StageTimeline } from "./StageTimeline";
@@ -33,7 +37,50 @@ export function AnalysisWorkspace() {
     [profile],
   );
 
-  const run = useAgentRun(analysisStages, format);
+  // Claude's initial assessment runs on the server while the workspace plays.
+  const [assessmentState, setAssessmentState] = useState<AssessmentState>({ status: "loading" });
+  useAssessmentRun(setAssessmentState);
+  const assessment = assessmentState.status === "ready" ? assessmentState.assessment : null;
+
+  const stages = useMemo(
+    () => (assessment ? withAssessmentResults(analysisStages, assessment) : analysisStages),
+    [assessment],
+  );
+  // The last beat waits for Claude, so "complete" always means real results are in.
+  const run = useAgentRun(stages, format, { holdFinal: assessmentState.status === "loading" });
+
+  const log = useMemo<ActivityLogEntry[]>(() => {
+    const lastAt = run.log.at(-1)?.atMs ?? 0;
+    if (run.waiting) {
+      return [
+        ...run.log,
+        {
+          key: "assessment.pending",
+          action: "Reviewing",
+          label: "Finalising your assessment with Claude",
+          stageTitle: "Initial assessment",
+          atMs: lastAt + 800,
+          status: "active",
+        },
+      ];
+    }
+    if (!run.complete) return run.log;
+    if (assessment) return [...run.log, ...assessmentLogEntries(assessment, lastAt + 800)];
+    if (assessmentState.status === "error") {
+      return [
+        ...run.log,
+        {
+          key: "assessment.error",
+          action: "Reviewing",
+          label: `Live assessment unavailable — showing demo results. ${assessmentState.message}`,
+          stageTitle: "Initial assessment",
+          atMs: lastAt + 800,
+          status: "done",
+        },
+      ];
+    }
+    return run.log;
+  }, [run.log, run.waiting, run.complete, assessment, assessmentState]);
   const profileLine = ["business", "location", "budget"]
     .map((id) => profileValue(profile, id))
     .filter(Boolean)
@@ -101,7 +148,7 @@ export function AnalysisWorkspace() {
 
             <div className="mt-8">
               <StageTimeline
-                stages={analysisStages}
+                stages={stages}
                 stageStatus={run.stageStatus}
                 activityStatus={run.activityStatus}
                 format={format}
@@ -125,7 +172,9 @@ export function AnalysisWorkspace() {
                           Everything is ready to review
                         </p>
                         <p className="mt-1 text-sm text-mist/55">
-                          Costs, pricing, suppliers, UAE setup and a launch timeline.
+                          {assessment
+                            ? `${feasibilityLabel[assessment.feasibility.status]}: ${assessment.feasibility.headline}`
+                            : "Costs, pricing, suppliers, UAE setup and a launch timeline."}
                         </p>
                       </div>
                     </div>
@@ -151,7 +200,7 @@ export function AnalysisWorkspace() {
           </main>
 
           <div className="lg:sticky lg:top-24 lg:self-start">
-            <ActivityPanel log={run.log} complete={run.complete} />
+            <ActivityPanel log={log} complete={run.complete} />
           </div>
         </div>
       </Container>

@@ -15,10 +15,15 @@ function Tile({ label, value, children }: { label: string; value: string; childr
 export function MetricTiles({ plan }: { plan: BusinessPlan }) {
   const allocated = plan.budget.total - plan.budget.reserve;
   const productCost = plan.unitEconomics.costs
-    .filter((c) => c.label !== "Payment & delivery")
+    .filter((c) => c.kind === "product")
     .reduce((sum, c) => sum + c.amount, 0);
   const margin = percent(plan.unitEconomics.price - productCost, plan.unitEconomics.price);
-  const { breakEven, pricing } = plan;
+  const { breakEven, pricing, unit } = plan;
+  const horizon = breakEven.cashflow.at(-1)?.month ?? 0;
+  const coverText =
+    breakEven.salesToCoverRunningCosts === null
+      ? "each sale loses money at this price"
+      : `${breakEven.salesToCoverRunningCosts.toLocaleString("en-US")}/month covers running costs`;
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -30,26 +35,30 @@ export function MetricTiles({ plan }: { plan: BusinessPlan }) {
         <p className="mt-2 text-xs text-mist/50">
           {aed(allocated)} allocated · {aed(plan.budget.reserve)} reserve
         </p>
+        {plan.budget.basis && <p className="mt-1 text-xs text-mist/40">{plan.budget.basis}</p>}
       </Tile>
 
-      <Tile label="Recommended price" value={`AED ${pricing.min}–${pricing.max}`}>
+      <Tile label="Recommended price" value={`AED ${pricing.min.toLocaleString("en-US")}–${pricing.max.toLocaleString("en-US")}`}>
         <p className="text-xs text-mist/50">
-          Hero price <span className="font-medium text-mist">AED {pricing.hero}</span> per abaya
+          Hero price <span className="font-medium text-mist">AED {pricing.hero.toLocaleString("en-US")}</span> per {unit.singular}
         </p>
       </Tile>
 
       <Tile label="Est. gross margin" value={`${margin}%`}>
         <div className="h-1.5 overflow-hidden rounded-full bg-white/10" aria-hidden>
-          <div className="h-full rounded-full bg-emerald-400/80" style={{ width: `${margin}%` }} />
+          <div className="h-full rounded-full bg-emerald-400/80" style={{ width: `${Math.min(100, Math.max(0, margin))}%` }} />
         </div>
         <p className="mt-2 text-xs text-mist/50">
-          {aed(plan.unitEconomics.price - productCost)} gross profit per piece
+          {aed(plan.unitEconomics.price - productCost)} gross profit per {unit.singular}
         </p>
       </Tile>
 
-      <Tile label="Break-even" value={`Month ${breakEven.month}`}>
+      <Tile
+        label="Break-even"
+        value={breakEven.month === null ? `Beyond month ${horizon}` : `Month ${breakEven.month}`}
+      >
         <p className="text-xs text-mist/50">
-          ≈{breakEven.totalSales} sales · {breakEven.salesToCoverRunningCosts}/month covers running costs
+          ≈{breakEven.totalSales.toLocaleString("en-US")} sales{breakEven.month === null ? ` in ${horizon} months` : ""} · {coverText}
         </p>
       </Tile>
     </div>

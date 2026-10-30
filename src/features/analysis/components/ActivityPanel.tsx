@@ -9,11 +9,13 @@ const actionColor: Record<AgentAction, string> = {
   Comparing: "bg-violet-300",
   "Checking sources": "bg-emerald-400",
   Planning: "bg-amber-300",
+  Assuming: "bg-sky-300",
+  "Needs input": "bg-orange-300",
 };
 
 function formatTime(ms: number) {
   const s = Math.floor(ms / 1000);
-  return `00:${String(s).padStart(2, "0")}`;
+  return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 }
 
 export function ActivityPanel({

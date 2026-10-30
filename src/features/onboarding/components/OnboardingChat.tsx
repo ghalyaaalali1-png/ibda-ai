@@ -4,7 +4,7 @@ import { Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { routes } from "@/config/site";
-import { saveLaunchProfile } from "@/features/launch-profile/profile";
+import { saveLaunchIdea, saveLaunchProfile } from "@/features/launch-profile/profile";
 import { useOnboarding } from "../useOnboarding";
 import { IdeaComposer } from "./IdeaComposer";
 import { AgentMessage, TypingIndicator, UserMessage } from "./Messages";
@@ -24,6 +24,7 @@ export function OnboardingChat() {
 
   function startAnalysis() {
     saveLaunchProfile(flow.summary.map(({ id, label, value }) => ({ id, label, value })));
+    saveLaunchIdea(idea);
     flow.startAnalysis();
     router.push(routes.analysis);
   }

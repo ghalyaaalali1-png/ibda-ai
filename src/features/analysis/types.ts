@@ -7,7 +7,9 @@ export type AgentAction =
   | "Calculating"
   | "Comparing"
   | "Checking sources"
-  | "Planning";
+  | "Planning"
+  | "Assuming"
+  | "Needs input";
 
 export type AgentActivity = {
   id: string;

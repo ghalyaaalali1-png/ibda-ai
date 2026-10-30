@@ -15,7 +15,14 @@ import { SetupCard } from "./SetupCard";
 import { UnitEconomics } from "./UnitEconomics";
 import { UpcomingSections } from "./UpcomingSections";
 
-export function PlanDashboard({ plan }: { plan: BusinessPlan }) {
+export function PlanDashboard({
+  plan,
+  sourceNote = "Prototype analysis — demo data",
+}: {
+  plan: BusinessPlan;
+  /** Where the content came from, shown under the title. */
+  sourceNote?: string;
+}) {
   const profileLine = ["business", "location", "budget"]
     .map((id) => profileValue(plan.profile, id))
     .filter(Boolean)
@@ -40,7 +47,7 @@ export function PlanDashboard({ plan }: { plan: BusinessPlan }) {
           </div>
           <p className="inline-flex items-center gap-1.5 self-start rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1 text-xs text-mist/50 sm:self-auto">
             <Info className="size-3.5" />
-            Prototype analysis — demo data
+            {sourceNote}
           </p>
         </div>
 

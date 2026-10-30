@@ -9,6 +9,7 @@ import type { BusinessPlan } from "./types";
  */
 export const demoPlan: BusinessPlan = {
   profile: demoProfile,
+  unit: { singular: "abaya", plural: "abayas" },
 
   decision: {
     verdict: "GO",
@@ -45,10 +46,10 @@ export const demoPlan: BusinessPlan = {
   unitEconomics: {
     price: 750,
     costs: [
-      { label: "Fabric", amount: 110 },
-      { label: "Tailoring & finishing", amount: 150 },
-      { label: "Packaging", amount: 35 },
-      { label: "Payment & delivery", amount: 50 },
+      { label: "Fabric", amount: 110, kind: "product" },
+      { label: "Tailoring & finishing", amount: 150, kind: "product" },
+      { label: "Packaging", amount: 35, kind: "product" },
+      { label: "Payment & delivery", amount: 50, kind: "selling" },
     ],
   },
 
@@ -84,6 +85,7 @@ export const demoPlan: BusinessPlan = {
       { label: "Premium designer labels", min: 900, max: 2000 },
       { label: "Luxury designer houses", min: 2500, max: 3000 },
     ],
+    priceBandsNote: "Demo estimates",
   },
 
   risks: [
@@ -113,6 +115,7 @@ export const demoPlan: BusinessPlan = {
     },
   ],
 
+  nextActionsLabel: "8-week launch path",
   nextActions: [
     { title: "Choose your license option and apply", detail: "Compare free zone e-commerce packages and confirm the activity.", timing: "Week 1–2" },
     { title: "Finalize 6 designs and order samples", detail: "Brief two UAE tailors with the same tech pack.", timing: "Week 1–3" },
