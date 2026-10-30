@@ -208,6 +208,50 @@ export const demoMarketing: MarketingPlan = {
     { label: "First-month sales", target: `${firstMonthSales} pieces`, when: "End of month 1", signal: `Matches the business plan's month-1 forecast` },
   ],
 
+  launchMonth: {
+    weeks: [
+      { week: 1, theme: "teaser", title: "Teaser & pre-launch", goal: "Turn followers into waitlist sign-ups before launch day.", planWeek: 7 },
+      { week: 2, theme: "launch", title: "Launch week", goal: "Convert the waitlist and creator buzz into first orders.", planWeek: 8 },
+      { week: 3, theme: "education", title: "Education & value", goal: "Answer sizing and fabric questions so new buyers order with confidence.", planWeek: 9 },
+      { week: 4, theme: "proof", title: "Reviews & social proof", goal: "Collect real customer photos and reviews to win the next buyers.", planWeek: 10 },
+    ],
+    posts: [
+      { week: 1, day: "Mon", platform: "Instagram", contentType: "Reel", topic: "Fabric close-up teaser", caption: "Something we've been quietly making in Dubai… Six designs. Premium crepe. Made in small runs. Join the waitlist for early access — link in bio.", objective: "Grow waitlist" },
+      { week: 1, day: "Wed", platform: "Instagram", contentType: "Stories", topic: "7-day countdown with design hints", caption: "7 days to go. One detail from the collection every day — can you guess the design? Tap the reminder so you don't miss launch day.", objective: "Launch reminders" },
+      { week: 1, day: "Fri", platform: "WhatsApp", contentType: "Broadcast", topic: "Private preview for the waitlist", caption: "You're on the list ✨ Here's a first look at the collection before anyone else. Early access opens [launch day] at 8pm, with complimentary gift wrap for waitlist orders.", objective: "Convert waitlist" },
+      { week: 2, day: "Sun", platform: "Instagram", contentType: "Reel + carousel", topic: "Full collection reveal", caption: "It's here. Six premium abayas in fluid crepe, AED 690–850. Made in Dubai in limited runs — once a design sells out, it may not return in the same fabric. Shop now, link in bio.", objective: "First sales" },
+      { week: 2, day: "Tue", platform: "TikTok", contentType: "Short video", topic: "Unboxing the gift box", caption: "On-screen: “Unboxing our first order 🤍” — show the gift box, the tissue and the folded abaya, then a slow drape shot. Caption: Every order arrives ready to gift.", objective: "Drive discovery" },
+      { week: 2, day: "Thu", platform: "Instagram", contentType: "Stories", topic: "Creator first looks", caption: "Reshare each creator's post: “Seen on [creator handle] — the [design name] in black crepe.” Add a link sticker to the product page.", objective: "Build trust" },
+      { week: 3, day: "Mon", platform: "Instagram", contentType: "Carousel", topic: "How to choose your abaya size", caption: "Between sizes? Here's how to measure shoulders, length and sleeve in two minutes. Save this for your next order.", objective: "Reduce returns" },
+      { week: 3, day: "Wed", platform: "TikTok", contentType: "Short video", topic: "One abaya, three ways", caption: "Office, evening, weekend — same abaya, three looks. Which one is you?", objective: "Show versatility" },
+      { week: 3, day: "Sat", platform: "Instagram", contentType: "Reel", topic: "Why we chose premium crepe", caption: "Why crepe? It drapes beautifully, breathes in UAE heat and keeps its shape. Here's what to look for when you buy an abaya.", objective: "Build expertise" },
+      { week: 4, day: "Mon", platform: "Instagram", contentType: "Stories", topic: "Ask for first reviews", caption: "Got your abaya? We'd love to see it on you — share a photo and tag us for a chance to be featured.", objective: "Collect reviews" },
+      { week: 4, day: "Wed", platform: "Instagram", contentType: "Carousel", topic: "Worn by you", caption: "Worn by you 🤍 [customer photo and quote, shared with permission]. Thank you for being part of our first collection.", objective: "Social proof" },
+      { week: 4, day: "Fri", platform: "WhatsApp", contentType: "Broadcast", topic: "Thank-you and next-colour poll", caption: "Thank you for supporting our first collection. Which colour should we make next? Reply 1 for sand, 2 for olive or 3 for navy.", objective: "Repeat customers" },
+    ],
+  },
+
+  inspiration: [
+    {
+      competitorType: "Established Instagram-first abaya labels in the UAE",
+      whatWorks: "Consistent styling across the grid, with on-model and detail shots and story highlights for sizing, fabric and delivery.",
+      howToAdapt: "Set up highlights for sizing, fabric care and delivery from day one, in your own colour palette.",
+      avoid: "Copying their photography style, poses or designs.",
+    },
+    {
+      competitorType: "Modest-fashion creators who post styling content",
+      whatWorks: "Short “one piece, three ways” videos that people save and share.",
+      howToAdapt: "Film quick styling reels with your own pieces, or brief creators to style them their way.",
+      avoid: "Paying for reach without a brief, or skipping the media-permit check for paid promotions.",
+    },
+    {
+      competitorType: "Premium boutique brands with gift-led packaging",
+      whatWorks: "Unboxing moments that customers film and share without being asked.",
+      howToAdapt: "Make every order gift-ready and film your own unboxing for launch week.",
+      avoid: "Overspending on packaging before you have sales.",
+    },
+  ],
+
   nextMove: {
     title: "Claim your handles and open the waitlist this week",
     why: "Everything in the pre-launch phase builds on the waitlist. Starting it now gives you 7 weeks to reach 300 sign-ups while your samples are being made.",

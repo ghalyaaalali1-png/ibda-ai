@@ -1,12 +1,25 @@
 import { businessPhrase, profileValue, type ProfileField } from "@/features/launch-profile/profile";
 import type { CaptionContext } from "@/features/marketing/captions";
 import type { MarketingViewText } from "@/features/marketing/components/MarketingPlanView";
-import type { MarketingPlan, Phase, PhaseId } from "@/features/marketing/types";
+import type { InspirationItem, LaunchTheme, MarketingPlan, Phase, PhaseId } from "@/features/marketing/types";
 import { aed } from "@/features/plan/format";
 import type { BusinessPlan } from "@/features/plan/types";
 import type { InitialAssessment } from "./schema";
 
 const phaseLabels: Record<PhaseId, string> = { prelaunch: "Pre-launch", launch: "Launch", growth: "Growth" };
+
+const themeOrder: LaunchTheme[] = ["teaser", "launch", "education", "proof"];
+const themeTitles: Record<LaunchTheme, string> = {
+  teaser: "Teaser & pre-launch",
+  launch: "Launch week",
+  education: "Education & value",
+  proof: "Reviews & social proof",
+};
+
+// Inspiration must describe kinds of competitors, never real accounts or figures.
+const NAMES_OR_FIGURES = /@\w|https?:\/\/|www\.|\.(com|ae|net)\b|\d[\d,.]*\s*[km]?\s*(followers|likes|views|subscribers)/i;
+const isPatternOnly = (i: InspirationItem) =>
+  !NAMES_OR_FIGURES.test([i.competitorType, i.whatWorks, i.howToAdapt, i.avoid].join(" "));
 
 const slug = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
@@ -57,6 +70,24 @@ export function buildMarketing(a: InitialAssessment, plan: BusinessPlan, profile
   const phrase = businessPhrase(profile);
   const launchWeek = phases.find((p) => p.id === "launch")?.plan[0]?.week;
 
+  // Launch month: teaser the week before launch, then launch, education and proof.
+  const launchMonth = {
+    weeks: themeOrder.map((theme, i) => {
+      const goal = m.weekGoals.find((g) => g.theme === theme);
+      return {
+        week: i + 1,
+        theme,
+        title: goal?.title || themeTitles[theme],
+        goal: goal?.goal ?? "",
+        planWeek: launchWeek ? launchWeek - 1 + i : undefined,
+      };
+    }),
+    posts: m.posts
+      .map((p) => ({ ...p, week: Math.min(4, Math.max(1, Math.round(p.week))) }))
+      .sort((a, b) => a.week - b.week)
+      .slice(0, 16),
+  };
+
   const marketing: MarketingPlan = {
     strategy: {
       objective: m.objective,
@@ -88,6 +119,8 @@ export function buildMarketing(a: InitialAssessment, plan: BusinessPlan, profile
       },
     ],
     nextMove: { title: m.nextMove.title, why: m.nextMove.why, steps: m.nextMove.steps.slice(0, 3) },
+    launchMonth,
+    inspiration: m.inspiration.filter(isPatternOnly).slice(0, 4),
   };
 
   const text: MarketingViewText = {

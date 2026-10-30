@@ -5,6 +5,7 @@ import type { z } from "zod";
 import {
   assessmentRequestSchema,
   assessmentSchema,
+  marketingCalendarSchema,
   marketingExecutionSchema,
   marketingStrategySchema,
   planFinancialsSchema,
@@ -15,6 +16,7 @@ import {
 } from "@/features/assessment/schema";
 import {
   assessmentSystemPrompt,
+  marketingCalendarSystemPrompt,
   marketingSystemPrompt,
   planInputsSystemPrompt,
   setupSystemPrompt,
@@ -114,7 +116,7 @@ async function ask<T extends z.ZodType>(
 /**
  * Sends the founder's onboarding answers to Claude and returns a structured
  * initial assessment plus plan, setup, supplier and marketing inputs
- * (seven smaller requests run in parallel). Runs on the server only; the API key never reaches the browser.
+ * (eight smaller requests run in parallel). Runs on the server only; the API key never reaches the browser.
  */
 export async function POST(request: Request) {
   if (!hasAnthropicKey()) return fail("The AI service isn't configured.", 503);
@@ -150,7 +152,7 @@ ${answers}
 
   try {
     // Smaller structured requests in parallel; one combined schema exceeds the grammar limit.
-    const [assessment, financials, narrative, setup, suppliers, strategy, execution] = await Promise.all([
+    const [assessment, financials, narrative, setup, suppliers, strategy, execution, calendar] = await Promise.all([
       ask(assessmentSystemPrompt, assessmentSchema, founderInput, "Prepare the initial business assessment for this founder.", (o) =>
         emptyParts({ "ideaSummary.headline": o.ideaSummary.headline, "feasibility.reasoning": o.feasibility.reasoning, keyAssumptions: o.keyAssumptions, "recommendedNextStep.title": o.recommendedNextStep.title }),
       ),
@@ -179,13 +181,28 @@ ${answers}
         emptyParts({ contentPillars: o.contentPillars, budgetSplit: o.budgetSplit, kpis: o.kpis, "nextMove.title": o.nextMove.title, "nextMove.steps": o.nextMove.steps }),
         "low",
       ),
+      ask(
+        marketingCalendarSystemPrompt,
+        marketingCalendarSchema,
+        founderInput,
+        "Prepare the launch-month content calendar and competitor inspiration for this founder's business.",
+        (o) => {
+          const weeksCovered = new Set(o.posts.map((p) => Math.round(p.week)));
+          return emptyParts({
+            weekGoals: o.weekGoals.length >= 4 ? o.weekGoals : [],
+            posts: o.posts.length >= 8 && [1, 2, 3, 4].every((w) => weeksCovered.has(w)) ? o.posts : [],
+            inspiration: o.inspiration,
+          });
+        },
+        "low",
+      ),
     ]);
     const result: InitialAssessment = {
       ...assessment,
       plan: { ...financials, ...narrative },
       setup,
       suppliers,
-      marketing: { ...strategy, ...execution },
+      marketing: { ...strategy, ...execution, ...calendar },
     };
     return NextResponse.json({ assessment: plainLabels(result) });
   } catch (error) {

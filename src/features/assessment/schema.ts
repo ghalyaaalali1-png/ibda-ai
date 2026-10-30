@@ -295,8 +295,44 @@ export const setupSchema = z.object({
 });
 
 export type SetupInputs = z.infer<typeof setupSchema>;
+/*
+ * Launch-month content calendar and competitor inspiration (Agent Guide,
+ * Step 4). Inspiration describes kinds of competitors and common patterns
+ * only — never named accounts, handles or statistics.
+ */
+export const marketingCalendarSchema = z.object({
+  weekGoals: z
+    .array(z.object({ theme: z.enum(["teaser", "launch", "education", "proof"]), title: z.string().describe("Max ~5 words"), goal: z.string() }))
+    .describe("Exactly 4, in order: teaser (pre-launch), launch, education (value content), proof (reviews and social proof)"),
+  posts: z
+    .array(
+      z.object({
+        week: z.number().describe("1-4"),
+        day: z.string().describe('Short day, e.g. "Mon"'),
+        platform: z.string().describe("A channel this business actually uses, e.g. Instagram, TikTok, WhatsApp, Google Business Profile"),
+        contentType: z.string().describe('e.g. "Reel", "Carousel", "Story", "Broadcast", "Short video"'),
+        topic: z.string().describe("The idea for this post, max ~10 words"),
+        caption: z.string().describe("Ready-to-review caption or short script for this business; no invented reviews, prices or claims"),
+        objective: z.string().describe("Max ~5 words, e.g. Grow waitlist"),
+      }),
+    )
+    .describe("12 posts: 3 per week across the 4 weeks, in week order"),
+  inspiration: z
+    .array(
+      z.object({
+        competitorType: z.string().describe('A KIND of competitor, e.g. "Established local home bakeries on Instagram" — never a name or handle'),
+        whatWorks: z.string().describe("A common pattern this kind of competitor uses"),
+        howToAdapt: z.string().describe("How this founder could adapt it in their own way"),
+        avoid: z.string().describe("What not to copy or do"),
+      }),
+    )
+    .describe("3 items"),
+});
+
 export type SupplierInputs = z.infer<typeof suppliersSchema>;
-export type MarketingInputs = z.infer<typeof marketingStrategySchema> & z.infer<typeof marketingExecutionSchema>;
+export type MarketingInputs = z.infer<typeof marketingStrategySchema> &
+  z.infer<typeof marketingExecutionSchema> &
+  z.infer<typeof marketingCalendarSchema>;
 
 /** Claude's assessment plus the plan, supplier and marketing inputs from the parallel requests. */
 export type InitialAssessment = z.infer<typeof assessmentSchema> & {

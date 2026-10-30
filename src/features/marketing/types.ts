@@ -47,6 +47,37 @@ export type Kpi = {
   signal: string;
 };
 
+export type LaunchTheme = "teaser" | "launch" | "education" | "proof";
+
+/** One week of the launch-month content calendar. */
+export type LaunchWeek = {
+  week: number;
+  theme: LaunchTheme;
+  title: string;
+  goal: string;
+  /** Matching week in the 13-week plan, when known. */
+  planWeek?: number;
+};
+
+export type CalendarPost = {
+  week: number;
+  day: string;
+  platform: string;
+  contentType: string;
+  topic: string;
+  /** Ready-to-review caption or short script. */
+  caption: string;
+  objective: string;
+};
+
+/** A pattern from a KIND of competitor — never a named account. */
+export type InspirationItem = {
+  competitorType: string;
+  whatWorks: string;
+  howToAdapt: string;
+  avoid: string;
+};
+
 export type MarketingPlan = {
   strategy: {
     objective: string;
@@ -65,4 +96,6 @@ export type MarketingPlan = {
     why: string;
     steps: string[];
   };
+  launchMonth: { weeks: LaunchWeek[]; posts: CalendarPost[] };
+  inspiration: InspirationItem[];
 };

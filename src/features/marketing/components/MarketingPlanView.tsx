@@ -6,9 +6,11 @@ import { routes } from "@/config/site";
 import type { CaptionContext } from "../captions";
 import type { MarketingPlan } from "../types";
 import { ContentGenerator } from "./ContentGenerator";
+import { CompetitorInspiration } from "./CompetitorInspiration";
 import { ContentPlan } from "./ContentPlan";
 import { KpiGrid } from "./KpiGrid";
 import { LaunchCalendar } from "./LaunchCalendar";
+import { LaunchMonthCalendar } from "./LaunchMonthCalendar";
 import { MarketingBudget } from "./MarketingBudget";
 import { StrategySummary } from "./StrategySummary";
 
@@ -92,6 +94,10 @@ export function MarketingPlanView({
         </div>
 
         <ContentPlan plan={plan} />
+
+        <LaunchMonthCalendar launchMonth={plan.launchMonth} />
+
+        <CompetitorInspiration items={plan.inspiration} />
 
         <ContentGenerator context={captionContext} />
 

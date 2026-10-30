@@ -18,7 +18,7 @@ export type AssessmentState =
 type Stored = { key: string; assessment: InitialAssessment };
 
 // Versioned so results saved by an older version of the request are never reused.
-const STORAGE_KEY = "ibda:assessment:v4";
+const STORAGE_KEY = "ibda:assessment:v5";
 const CHANGE_EVENT = "ibda:assessment-change";
 const TIMEOUT_MS = 110_000;
 
