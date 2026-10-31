@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, CheckCircle2, Info, Sparkles, Wand2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Info, PackageCheck, Sparkles, Wand2 } from "lucide-react";
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { Logo } from "@/components/ui/Logo";
@@ -144,6 +144,35 @@ export function MarketingPlanView({
                 <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
               </a>
             </div>
+          </div>
+        </section>
+
+        {/* Continue */}
+        <section className="glass relative overflow-hidden rounded-3xl p-6 sm:p-8">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -bottom-32 -left-20 size-80 rounded-full bg-brand-500/15 blur-3xl"
+          />
+          <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-4">
+              <span className="grid size-11 shrink-0 place-items-center rounded-xl border border-brand-400/25 bg-gradient-to-br from-brand-500/25 to-electric-500/10 text-brand-300">
+                <PackageCheck className="size-5" />
+              </span>
+              <div>
+                <p className="text-[11px] font-medium tracking-wider text-brand-300/80 uppercase">Final step</p>
+                <p className="mt-1 text-lg font-semibold text-white">Launch Pack</p>
+                <p className="mt-1 text-sm text-mist/55">
+                  Your plan, suppliers, requirements and marketing in one launch checklist, with what&apos;s still to verify.
+                </p>
+              </div>
+            </div>
+            <Link
+              href={routes.launchPack}
+              className="group inline-flex h-11 shrink-0 items-center gap-2 self-start rounded-full bg-gradient-to-b from-brand-500 to-brand-600 px-5 text-sm font-medium text-white shadow-[0_0_0_1px_rgb(255_255_255/0.12)_inset,0_10px_40px_-6px_rgb(139_108_255/0.8)] transition-all hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400 sm:self-auto"
+            >
+              Continue to Launch Pack
+              <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+            </Link>
           </div>
         </section>
 

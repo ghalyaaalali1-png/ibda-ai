@@ -218,5 +218,12 @@ export const demoPlan: BusinessPlan = {
       includes: ["Positioning", "Instagram launch", "Creator seeding", "90-day calendar"],
       href: routes.marketing,
     },
+    {
+      id: "launch",
+      title: "Launch Pack",
+      description: "Everything in one place: readiness, key figures, supplier shortlist, requirements and a launch checklist.",
+      includes: ["Launch readiness", "Final checklist", "Still to verify"],
+      href: routes.launchPack,
+    },
   ],
 };

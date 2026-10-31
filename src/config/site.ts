@@ -14,6 +14,7 @@ export const routes = {
   plan: "/plan",
   suppliers: "/suppliers",
   marketing: "/marketing",
+  launchPack: "/launch-pack",
   howItWorks: "#how-it-works",
   capabilities: "#capabilities",
   uae: "#uae",

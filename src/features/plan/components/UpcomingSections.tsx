@@ -1,8 +1,8 @@
-import { ArrowRight, Megaphone, Truck, type LucideIcon } from "lucide-react";
+import { ArrowRight, Megaphone, PackageCheck, Truck, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import type { BusinessPlan } from "../types";
 
-const icons: Record<string, LucideIcon> = { suppliers: Truck, marketing: Megaphone };
+const icons: Record<string, LucideIcon> = { suppliers: Truck, marketing: Megaphone, launch: PackageCheck };
 
 export function UpcomingSections({ plan }: { plan: BusinessPlan }) {
   return (
@@ -18,7 +18,7 @@ export function UpcomingSections({ plan }: { plan: BusinessPlan }) {
         </div>
       </div>
 
-      <div className="mt-5 grid gap-4 md:grid-cols-2">
+      <div className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {plan.upcoming.map((section) => {
           const Icon = icons[section.id] ?? ArrowRight;
           return (

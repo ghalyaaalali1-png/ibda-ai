@@ -1,8 +1,8 @@
-import { Building2, CheckCircle2, CircleAlert, ExternalLink, HelpCircle, Info, type LucideIcon } from "lucide-react";
+import { Building2, CheckCircle2, CircleAlert, HelpCircle, Info, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { uaePortal, type OfficialSource } from "../officialSources";
 import type { BusinessPlan, RequirementLevel, SetupStage } from "../types";
 import { Caption, DashCard } from "./DashCard";
+import { SourceLink } from "./SourceLink";
 
 const levels: { id: RequirementLevel; label: string; className: string; icon: LucideIcon }[] = [
   { id: "likely", label: "Likely required", className: "border-emerald-400/30 bg-emerald-400/10 text-emerald-300", icon: CheckCircle2 },
@@ -18,37 +18,6 @@ const stageLabel: Record<SetupStage, string> = {
   establishment: "Establishment",
   next: "Next action",
 };
-
-/**
- * A labelled link to a verified official source, opening the authority's own
- * site. Without a verified authority it points to the federal UAE portal and
- * says so, rather than naming a body Ibda isn't sure of.
- */
-function SourceLink({
-  source,
-  viaPortal,
-  asAuthority = true,
-}: {
-  source?: OfficialSource;
-  viaPortal?: boolean;
-  /** In steps and requirements, u.ae is where to verify — not the authority itself. */
-  asAuthority?: boolean;
-}) {
-  const portal = viaPortal || !source || (asAuthority && source.id === uaePortal.id);
-  const target = portal ? uaePortal : source;
-  return (
-    <a
-      href={target.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="inline-flex items-center gap-1 text-xs text-brand-300 underline-offset-2 hover:text-white hover:underline"
-    >
-      {portal ? "Verify through the official UAE government portal (u.ae)" : `Official source: ${target.name}`}
-      <ExternalLink aria-hidden className="size-3" />
-      <span className="sr-only">(opens in a new tab)</span>
-    </a>
-  );
-}
 
 export function SetupCard({ plan }: { plan: BusinessPlan }) {
   const { setup } = plan;
