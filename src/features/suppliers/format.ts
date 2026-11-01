@@ -1,7 +1,8 @@
 import type { Supplier } from "./types";
 
 export function priceLabel(s: Supplier) {
-  return `AED ${s.price.min}–${s.price.max}`;
+  const n = (v: number) => v.toLocaleString("en-US");
+  return `AED ${n(s.price.min)}–${n(s.price.max)}`;
 }
 
 export function moqLabel(s: Supplier) {

@@ -16,10 +16,10 @@ const PROPER = /^(Arabic|English|French|Hindi|Urdu|Emirati|Islamic|Halal|UAE|GCC
 const inSentence = (label: string) =>
   PROPER.test(label) || /^[A-Z]{2}/.test(label) ? label : label.charAt(0).toLowerCase() + label.slice(1);
 
-/** "a, b and c" — or "a, b, and c" when an item already contains "and", so the list stays readable. */
+/** "a, b and c" — or "a and b, and c" style when an item already contains "and", so the list stays readable. */
 function naturalList(items: string[]) {
   if (items.length <= 1) return items.join("");
-  const last = items.length > 2 && items.some((x) => / and /.test(x)) ? ", and " : " and ";
+  const last = items.some((x) => / and /.test(x)) ? ", and " : " and ";
   return `${items.slice(0, -1).join(", ")}${last}${items.at(-1)}`;
 }
 

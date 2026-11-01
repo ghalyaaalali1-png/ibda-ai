@@ -177,7 +177,7 @@ export function SuppliersWorkspace({
                 <p className="text-[11px] font-medium tracking-wider text-brand-300/80 uppercase">Next step</p>
                 <p className="mt-1 text-lg font-semibold text-white">Marketing Plan</p>
                 <p className="mt-1 text-sm text-mist/55">
-                  Positioning, Instagram launch and a 90-day calendar to win your first customers.
+                  Positioning, launch channels and a 90-day calendar to win your first customers.
                 </p>
               </div>
             </div>

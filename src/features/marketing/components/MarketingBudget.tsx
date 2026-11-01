@@ -21,7 +21,9 @@ export function MarketingBudget({
       action={<span className="font-mono text-xs text-mist/50">{aed(total)} total</span>}
     >
       <p className="text-sm leading-relaxed text-mist/60">
-        No new spend — this splits the two marketing lines already in your business plan.
+        No new spend — this splits the{" "}
+        {sources.length === 1 ? "marketing line" : `${sources.length === 2 ? "two" : sources.length} marketing lines`}{" "}
+        already in your business plan.
       </p>
 
       <div className="mt-5 space-y-7">

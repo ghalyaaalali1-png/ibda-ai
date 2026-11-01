@@ -2,9 +2,39 @@ import { Clapperboard } from "lucide-react";
 import { DashCard } from "@/features/plan/components/DashCard";
 import type { MarketingPlan } from "../types";
 
+// Platforms a content plan can name; Reels count as Instagram.
+const PLATFORMS: [name: string, pattern: RegExp][] = [
+  ["Instagram", /instagram|\breels?\b/i],
+  ["TikTok", /tik\s?tok/i],
+  ["Snapchat", /snapchat/i],
+  ["YouTube", /youtube/i],
+  ["Facebook", /facebook/i],
+  ["LinkedIn", /linkedin/i],
+  ["X", /twitter/i],
+  ["Pinterest", /pinterest/i],
+  ["WhatsApp", /whatsapp/i],
+  ["Google Business Profile", /google business|google maps/i],
+];
+
+/** The platforms this content plan uses, in the order they first appear. */
+function platformsIn(plan: MarketingPlan) {
+  const text = [...plan.contentPillars.map((p) => `${p.format} ${p.cadence}`), plan.postingRhythm].join("\n");
+  return PLATFORMS.map(([name, pattern]) => ({ name, at: text.search(pattern) }))
+    .filter((p) => p.at >= 0)
+    .sort((a, b) => a.at - b.at)
+    .map((p) => p.name);
+}
+
+function contentPlanTitle(plan: MarketingPlan) {
+  const names = platformsIn(plan);
+  if (names.length === 0) return "Content plan";
+  const list = names.length === 1 ? names[0] : `${names.slice(0, -1).join(", ")} & ${names.at(-1)}`;
+  return `Content plan · ${list}`;
+}
+
 export function ContentPlan({ plan }: { plan: MarketingPlan }) {
   return (
-    <DashCard id="content-plan" title="Content plan · Instagram & TikTok" icon={Clapperboard}>
+    <DashCard id="content-plan" title={contentPlanTitle(plan)} icon={Clapperboard}>
       <p className="text-sm text-mist/60">
         <span className="font-medium text-white">Rhythm: </span>
         {plan.postingRhythm}
