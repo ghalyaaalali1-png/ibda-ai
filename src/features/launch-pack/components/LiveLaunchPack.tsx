@@ -4,7 +4,8 @@ import { useMemo } from "react";
 import { buildMarketing } from "@/features/assessment/applyToMarketing";
 import { buildPlan } from "@/features/assessment/applyToPlan";
 import { buildSupplierData } from "@/features/assessment/applyToSuppliers";
-import { currentAssessmentInput, useStoredAssessment } from "@/features/assessment/storage";
+import { AnalysisStatus } from "@/features/assessment/components/AnalysisStatus";
+import { currentAssessmentInput, useAssessmentView } from "@/features/assessment/storage";
 import { demoMarketing } from "@/features/marketing/demoMarketing";
 import { demoPlan } from "@/features/plan/demoPlan";
 import { demoSupplierData } from "@/features/suppliers/demoSuppliers";
@@ -12,9 +13,10 @@ import { buildLaunchPack } from "../buildLaunchPack";
 import { demoExtras, extrasFromAssessment } from "../extras";
 import { LaunchPackView } from "./LaunchPackView";
 
-/** The launch pack for the analysed business, or the abaya demo when there's no live assessment. */
+/** The launch pack for the analysed business, or the abaya demo when there's no onboarding. */
 export function LiveLaunchPack() {
-  const assessment = useStoredAssessment();
+  const view = useAssessmentView();
+  const assessment = view.kind === "live" ? view.assessment : null;
   const pack = useMemo(() => {
     if (!assessment) {
       return buildLaunchPack({ plan: demoPlan, suppliers: demoSupplierData, marketing: demoMarketing, extras: demoExtras });
@@ -29,6 +31,9 @@ export function LiveLaunchPack() {
     });
   }, [assessment]);
 
+  if (view.kind === "checking" || view.kind === "unavailable") {
+    return <AnalysisStatus state={view.kind} screen="Launch Pack" />;
+  }
   return (
     <LaunchPackView
       key={assessment ? "live" : "demo"}

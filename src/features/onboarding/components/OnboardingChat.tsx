@@ -18,7 +18,7 @@ const GREETING =
 
 export function OnboardingChat() {
   const flow = useOnboarding();
-  const { status, idea, analysis, questions, answers, currentIndex } = flow;
+  const { status, idea, analysis, questions, answers, currentIndex, editing } = flow;
   const endRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -31,9 +31,15 @@ export function OnboardingChat() {
 
   // Keep the newest message in view as the conversation grows.
   useEffect(() => {
-    if (status === "idle") return;
+    if (status === "idle" || editing !== null) return;
     endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [status, currentIndex]);
+  }, [status, currentIndex, editing]);
+
+  // Bring the question being changed into view.
+  const editRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (editing !== null) editRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [editing]);
 
   const total = questions.length;
   const inQuestions = status === "asking" || status === "typing";
@@ -80,25 +86,34 @@ export function OnboardingChat() {
           )}
 
           {/* Answered questions */}
-          {answers.map((answer, i) => (
-            <div key={questions[i].id} className="flex flex-col gap-8">
-              <QuestionMessage
-                question={questions[i]}
-                step={i + 1}
-                total={total}
-                reaction={reactionFor(i)}
-              />
-              <UserMessage
-                onEdit={status === "starting" ? undefined : () => flow.editAnswer(i)}
-                editLabel={`Change answer: ${questions[i].summaryLabel}`}
-              >
-                {answer}
-              </UserMessage>
-            </div>
-          ))}
+          {answers.map((answer, i) =>
+            editing === i ? (
+              // Changing this answer: ask again in place, keeping the other answers.
+              <div key={questions[i].id} ref={editRef} className="scroll-my-24">
+                <QuestionMessage question={questions[i]} step={i + 1} total={total} reaction={reactionFor(i)}>
+                  <OptionChips options={questions[i].options} onSelect={flow.answer} />
+                </QuestionMessage>
+              </div>
+            ) : (
+              <div key={questions[i].id} className="flex flex-col gap-8">
+                <QuestionMessage
+                  question={questions[i]}
+                  step={i + 1}
+                  total={total}
+                  reaction={reactionFor(i)}
+                />
+                <UserMessage
+                  onEdit={status === "starting" || editing !== null ? undefined : () => flow.editAnswer(i)}
+                  editLabel={`Change answer: ${questions[i].summaryLabel}`}
+                >
+                  {answer}
+                </UserMessage>
+              </div>
+            ),
+          )}
 
           {/* Current question */}
-          {status === "asking" && questions[currentIndex] && (
+          {status === "asking" && editing === null && questions[currentIndex] && (
             <QuestionMessage
               key={questions[currentIndex].id}
               question={questions[currentIndex]}

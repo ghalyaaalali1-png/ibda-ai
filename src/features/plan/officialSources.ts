@@ -1,7 +1,8 @@
 /**
  * Official UAE government sources Ibda may point founders to. Claude can only
  * reference these by id — it never writes URLs — so every link shown is one
- * of these. Each address was opened and checked on 2026-10-30; a source is
+ * of these. Each address was opened and checked on 2026-10-30 (KHDA's English
+ * page on 2026-10-31); a source is
  * only used while `verified` is true. When no verified emirate-specific
  * authority applies, Ibda points to the federal UAE government portal.
  */
@@ -41,7 +42,7 @@ export const officialSources: OfficialSource[] = [
   { id: "dubai-det", name: "Dubai Department of Economy and Tourism", url: "https://www.dubaidet.gov.ae", scope: "Dubai", covers: "Mainland business licensing in Dubai", verified: VERIFIED },
   { id: "invest-dubai", name: "Invest in Dubai", url: "https://www.investindubai.gov.ae", scope: "Dubai", covers: "Dubai's online business licensing portal", verified: VERIFIED },
   { id: "dubai-municipality", name: "Dubai Municipality", url: "https://www.dm.gov.ae", scope: "Dubai", covers: "Food safety, premises and public health approvals", verified: VERIFIED },
-  { id: "khda", name: "Knowledge and Human Development Authority (KHDA)", url: "https://web.khda.gov.ae", scope: "Dubai", covers: "Private education and training activities in Dubai", verified: VERIFIED },
+  { id: "khda", name: "Knowledge and Human Development Authority (KHDA)", url: "https://web.khda.gov.ae/en/", scope: "Dubai", covers: "Private education and training activities in Dubai", verified: VERIFIED },
   { id: "dha", name: "Dubai Health Authority", url: "https://www.dha.gov.ae", scope: "Dubai", covers: "Health and wellness licensing in Dubai", verified: VERIFIED },
   { id: "rta", name: "Roads and Transport Authority (RTA)", url: "https://www.rta.ae", scope: "Dubai", covers: "Transport, delivery and commercial vehicle permits in Dubai", verified: VERIFIED },
   { id: "gdrfa", name: "General Directorate of Residency and Foreigners Affairs – Dubai", url: "https://gdrfad.gov.ae", scope: "Dubai", covers: "Residency and visas in Dubai", verified: VERIFIED },

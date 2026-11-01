@@ -16,6 +16,13 @@ const PROPER = /^(Arabic|English|French|Hindi|Urdu|Emirati|Islamic|Halal|UAE|GCC
 const inSentence = (label: string) =>
   PROPER.test(label) || /^[A-Z]{2}/.test(label) ? label : label.charAt(0).toLowerCase() + label.slice(1);
 
+/** "a, b and c" — or "a, b, and c" when an item already contains "and", so the list stays readable. */
+function naturalList(items: string[]) {
+  if (items.length <= 1) return items.join("");
+  const last = items.length > 2 && items.some((x) => / and /.test(x)) ? ", and " : " and ";
+  return `${items.slice(0, -1).join(", ")}${last}${items.at(-1)}`;
+}
+
 /** "10-week launch path" → "within the next 10 weeks". */
 function launchWindowFrom(label: string) {
   const weeks = label.match(/(\d+)\s*-?\s*week/i)?.[1];
@@ -87,10 +94,9 @@ export function buildSupplierData(
       .map((id) => profileValue(profile, id))
       .filter(Boolean)
       .join(" · "),
-    intro: `I compared ${suppliers.length} supplier types across ${categories
-      .map((c) => inSentence(c.label))
-      .join(", ")
-      .replace(/, ([^,]*)$/, " and $1")}, then ranked them for the first launch of your ${phrase} on your budget.`,
+    intro: `I compared ${suppliers.length} supplier types across ${naturalList(
+      categories.map((c) => inSentence(c.label)),
+    )}, then ranked them for the first launch of your ${phrase} on your budget.`,
     sourceNote: "Supplier types, not specific businesses — prices are estimates",
     supplierBadge: "Supplier type",
     contactNote:
@@ -100,7 +106,7 @@ export function buildSupplierData(
     shortlist,
     allocation: sourcingTotal > 0 ? sourcingTotal : spend,
     shortlistCriteria: "low minimums, lead time",
-    allocationLabel: sourcingTotal > 0 ? sourcingLines.map((c) => inSentence(c.label)).join(" and ") : "startup spend",
+    allocationLabel: sourcingTotal > 0 ? naturalList(sourcingLines.map((c) => inSentence(c.label))) : "startup spend",
     brief: {
       brand: `a new ${phrase}`,
       location,

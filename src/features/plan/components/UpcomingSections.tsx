@@ -18,7 +18,7 @@ export function UpcomingSections({ plan }: { plan: BusinessPlan }) {
         </div>
       </div>
 
-      <div className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-5 grid gap-4 lg:grid-cols-3">
         {plan.upcoming.map((section) => {
           const Icon = icons[section.id] ?? ArrowRight;
           return (

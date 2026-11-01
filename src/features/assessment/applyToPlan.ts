@@ -39,6 +39,19 @@ function fitCostsToBudget(budget: number, costs: InitialAssessment["plan"]["star
   return { amounts: scaledAmounts, reserve: budget - sum(scaledAmounts), scaled: true };
 }
 
+/**
+ * The startup cost lines that buy stock, equipment, materials and packaging,
+ * at the amounts the plan shows. The Suppliers screen measures its shortlist
+ * against this total, and the supplier request is sized to it.
+ */
+export function sourcingBudget(p: Pick<InitialAssessment["plan"], "budget" | "startupCosts">) {
+  const fitted = fitCostsToBudget(Math.max(0, Math.round(p.budget.amountAed)), p.startupCosts);
+  const lines = p.startupCosts.flatMap((c, i) =>
+    c.group === "sourcing" ? [{ label: c.label, note: c.note, amount: fitted.amounts[i] }] : [],
+  );
+  return { lines, total: sum(lines.map((l) => l.amount)) };
+}
+
 /** Cumulative cash from launch, starting at minus the startup spend. */
 function cashflowFor(spend: number, sales: number[], contribution: number, running: number) {
   const points: CashflowPoint[] = [{ month: 0, sales: 0, cumulative: -spend }];

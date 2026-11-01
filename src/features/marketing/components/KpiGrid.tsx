@@ -2,13 +2,13 @@ import { Activity, Gauge } from "lucide-react";
 import { DashCard } from "@/features/plan/components/DashCard";
 import type { Kpi } from "../types";
 
-export function KpiGrid({ kpis }: { kpis: Kpi[] }) {
+export function KpiGrid({ kpis, live = false }: { kpis: Kpi[]; live?: boolean }) {
   return (
     <DashCard
       id="kpis"
       title="Launch KPIs"
       icon={Gauge}
-      action={<span className="text-xs text-mist/50">Demo targets</span>}
+      action={<span className="text-xs text-mist/50">{live ? "Estimated targets" : "Demo targets"}</span>}
     >
       <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {kpis.map((k) => (

@@ -43,8 +43,11 @@ function statusAt(eventIndex: number, step: number): StepStatus {
 export function useAgentRun(
   stages: AgentStage[],
   format: (label: string) => string,
-  /** Hold on the final beat until real work (e.g. an API call) has finished. */
-  { holdFinal = false }: { holdFinal?: boolean } = {},
+  /**
+   * `holdFinal`: hold on the final beat until real work (e.g. an API call) has finished.
+   * `paused`: stop where it is (e.g. the real work failed).
+   */
+  { holdFinal = false, paused = false }: { holdFinal?: boolean; paused?: boolean } = {},
 ) {
   const events = useMemo(() => buildTimeline(stages), [stages]);
   const [step, setStep] = useState(0);
@@ -52,10 +55,10 @@ export function useAgentRun(
   const waiting = holdFinal && step === events.length - 1;
 
   useEffect(() => {
-    if (complete || waiting) return;
+    if (complete || waiting || paused) return;
     const t = setTimeout(() => setStep((s) => s + 1), events[step].durationMs);
     return () => clearTimeout(t);
-  }, [step, complete, waiting, events]);
+  }, [step, complete, waiting, paused, events]);
 
   const indexOf = useCallback(
     (stageIndex: number, activityIndex: number | null) =>

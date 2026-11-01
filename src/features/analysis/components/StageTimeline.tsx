@@ -7,6 +7,8 @@ type StageTimelineProps = {
   stageStatus: (stageIndex: number) => StepStatus;
   activityStatus: (stageIndex: number, activityIndex: number) => StepStatus;
   format: (label: string) => string;
+  /** The analysis failed: the stage in progress is shown as not completed. */
+  stopped?: boolean;
 };
 
 export function StageTimeline({
@@ -14,11 +16,13 @@ export function StageTimeline({
   stageStatus,
   activityStatus,
   format,
+  stopped = false,
 }: StageTimelineProps) {
   return (
     <ol className="relative space-y-3" aria-label="Analysis stages">
       {stages.map((stage, i) => {
-        const status = stageStatus(i);
+        const halted = stopped && stageStatus(i) === "active";
+        const status = halted ? "pending" : stageStatus(i);
         const Icon = stage.icon;
         return (
           <li
@@ -64,10 +68,10 @@ export function StageTimeline({
                   "shrink-0 text-xs font-medium",
                   status === "done" && "text-emerald-300",
                   status === "active" && "text-brand-300",
-                  status === "pending" && "text-mist/40",
+                  status === "pending" && (halted ? "text-[#fcc95a]" : "text-mist/40"),
                 )}
               >
-                {status === "done" ? "Done" : status === "active" ? "Working" : "Queued"}
+                {status === "done" ? "Done" : status === "active" ? "Working" : halted ? "Not completed" : "Queued"}
               </span>
             </div>
 

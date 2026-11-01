@@ -20,6 +20,8 @@ type State = {
   idea: string;
   analysis: IdeaAnalysis | null;
   answers: string[];
+  /** The answer being changed, if any; the other answers are kept. */
+  editing: number | null;
 };
 
 type Action =
@@ -36,6 +38,7 @@ const initialState: State = {
   idea: "",
   analysis: null,
   answers: [],
+  editing: null,
 };
 
 function reducer(state: State, action: Action): State {
@@ -50,13 +53,18 @@ function reducer(state: State, action: Action): State {
       };
     case "answer":
       if (state.status !== "asking") return state;
+      if (state.editing !== null) {
+        const answers = state.answers.map((a, i) => (i === state.editing ? action.value : a));
+        return { ...state, answers, editing: null, status: "typing" };
+      }
       return { ...state, answers: [...state.answers, action.value], status: "typing" };
     case "reveal": {
       const total = state.analysis?.questions.length ?? 0;
       return { ...state, status: state.answers.length >= total ? "complete" : "asking" };
     }
     case "edit":
-      return { ...state, answers: state.answers.slice(0, action.index), status: "asking" };
+      if (action.index >= state.answers.length) return state;
+      return { ...state, editing: action.index, status: "asking" };
     case "start":
       return { ...state, status: "starting" };
     case "reset":

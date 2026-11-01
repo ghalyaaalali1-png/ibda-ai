@@ -21,9 +21,12 @@ function formatTime(ms: number) {
 export function ActivityPanel({
   log,
   complete,
+  live = false,
 }: {
   log: ActivityLogEntry[];
   complete: boolean;
+  /** The founder's own answers are being analysed by Claude (not the demo scenario). */
+  live?: boolean;
 }) {
   const entries = [...log].reverse();
   const actions = new Set(log.map((e) => e.action)).size;
@@ -74,7 +77,7 @@ export function ActivityPanel({
 
       <p className="flex items-center gap-2 border-t border-white/[0.06] px-5 py-3 text-[11px] text-mist/40">
         <Info className="size-3.5 shrink-0" />
-        Prototype analysis — demo data
+        {live ? "Analysis by Claude — figures are estimates" : "Prototype analysis — demo data"}
       </p>
     </aside>
   );

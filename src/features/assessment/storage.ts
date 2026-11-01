@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { demoIdea } from "@/content/landing";
 import {
   demoProfile,
@@ -50,13 +50,15 @@ function readStored(): Stored | null {
   }
 }
 
+const notify = () => window.dispatchEvent(new Event(CHANGE_EVENT));
+
 function save(stored: Stored) {
   try {
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
   } catch {
     // Storage unavailable — the result still shows on the current screen.
   }
-  window.dispatchEvent(new Event(CHANGE_EVENT));
+  notify();
 }
 
 function subscribe(onChange: () => void) {
@@ -74,6 +76,34 @@ export function useStoredAssessment(): InitialAssessment | null {
 
 // One request per set of inputs, even if a component mounts twice.
 const inflight = new Map<string, Promise<InitialAssessment>>();
+const isPending = () => inflight.size > 0;
+
+const noopSubscribe = () => () => {};
+
+export type AssessmentView =
+  /** Saved results not read yet (first render), or Claude is still working. */
+  | { kind: "checking" }
+  | { kind: "live"; assessment: InitialAssessment }
+  /** The founder went through onboarding, but there's no result for their answers. */
+  | { kind: "unavailable" }
+  /** No onboarding in this session: the abaya demo. */
+  | { kind: "demo" };
+
+/**
+ * What a results screen should show. Never falls back to the abaya demo for
+ * someone who entered their own business, and never renders the demo before
+ * this browser's saved results have been read.
+ */
+export function useAssessmentView(): AssessmentView {
+  const hydrated = useSyncExternalStore(noopSubscribe, () => true, () => false);
+  const assessment = useStoredAssessment();
+  const pending = useSyncExternalStore(subscribe, isPending, () => false);
+  const idea = useSyncExternalStore(subscribe, readLaunchIdea, () => null);
+  if (!hydrated) return { kind: "checking" };
+  if (assessment) return { kind: "live", assessment };
+  if (pending) return { kind: "checking" };
+  return idea === null ? { kind: "demo" } : { kind: "unavailable" };
+}
 
 async function request(input: AssessmentRequest): Promise<InitialAssessment> {
   const controller = new AbortController();
@@ -88,7 +118,10 @@ async function request(input: AssessmentRequest): Promise<InitialAssessment> {
     const data = (await res.json().catch(() => ({}))) as {
       assessment?: InitialAssessment;
       error?: string;
+      detail?: string;
     };
+    // Technical detail (development only) goes to the console, not the screen.
+    if (data.detail) console.error("Assessment failed:", data.detail);
     if (!res.ok || !data.assessment) throw new Error(data.error ?? "The assessment couldn't be completed.");
     return data.assessment;
   } catch (error) {
@@ -102,9 +135,11 @@ async function request(input: AssessmentRequest): Promise<InitialAssessment> {
 /**
  * Starts Claude's assessment for the current onboarding inputs (unless one is
  * already saved) and reports its progress. Prototype logic for the analysis
- * workspace; the request itself runs on the server.
+ * workspace; the request itself runs on the server. Returns `retry`, which
+ * sends the request again after a failure.
  */
 export function useAssessmentRun(onState: (state: AssessmentState) => void) {
+  const [attempt, setAttempt] = useState(0);
   useEffect(() => {
     // Read inputs straight from storage so the first render's placeholders are never sent.
     const input = currentAssessmentInput();
@@ -121,10 +156,14 @@ export function useAssessmentRun(onState: (state: AssessmentState) => void) {
     if (!promise) {
       promise = request(input);
       inflight.set(key, promise);
+      notify();
       promise
         .then((assessment) => save({ key, assessment }))
         .catch(() => {})
-        .finally(() => inflight.delete(key));
+        .finally(() => {
+          inflight.delete(key);
+          notify();
+        });
     }
     promise
       .then((assessment) => active && onState({ status: "ready", assessment }))
@@ -132,7 +171,9 @@ export function useAssessmentRun(onState: (state: AssessmentState) => void) {
     return () => {
       active = false;
     };
-    // Runs once per mount; onState is expected to be a stable setter.
+    // Runs once per mount and once per retry; onState is expected to be a stable setter.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [attempt]);
+
+  return useCallback(() => setAttempt((n) => n + 1), []);
 }

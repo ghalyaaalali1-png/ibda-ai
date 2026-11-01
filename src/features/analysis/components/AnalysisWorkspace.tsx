@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, RotateCcw, Sparkles } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ArrowRight, RotateCcw, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
@@ -14,6 +14,7 @@ import {
   readStoredProfile,
 } from "@/features/launch-profile/profile";
 import { assessmentLogEntries, withAssessmentResults } from "@/features/assessment/applyToAnalysis";
+import { AnalysisStatus } from "@/features/assessment/components/AnalysisStatus";
 import { feasibilityLabel } from "@/features/assessment/schema";
 import { useAssessmentRun, type AssessmentState } from "@/features/assessment/storage";
 import { analysisStages, genericAnalysisStages } from "../stages";
@@ -29,6 +30,12 @@ const scrollBehavior = (): ScrollBehavior =>
   window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
 
 export function AnalysisWorkspace() {
+  // Read the onboarding profile before rendering, so the demo profile never flashes first.
+  const hydrated = useSyncExternalStore(noopSubscribe, () => true, () => false);
+  return hydrated ? <Workspace /> : <AnalysisStatus state="checking" screen="Agent Workspace" />;
+}
+
+function Workspace() {
   // Profile handed over from onboarding; the demo profile when visited directly.
   const stored = useSyncExternalStore(noopSubscribe, readStoredProfile, () => null);
   const profile = useMemo(() => parseLaunchProfile(stored) ?? demoProfile, [stored]);
@@ -47,18 +54,37 @@ export function AnalysisWorkspace() {
 
   // Claude's initial assessment runs on the server while the workspace plays.
   const [assessmentState, setAssessmentState] = useState<AssessmentState>({ status: "loading" });
-  useAssessmentRun(setAssessmentState);
+  const retryAssessment = useAssessmentRun(setAssessmentState);
   const assessment = assessmentState.status === "ready" ? assessmentState.assessment : null;
+  const failed = assessmentState.status === "error";
 
   const stages = useMemo(
     () => (assessment ? withAssessmentResults(baseStages, assessment) : baseStages),
     [assessment, baseStages],
   );
   // The last beat waits for Claude, so "complete" always means real results are in.
-  const run = useAgentRun(stages, format, { holdFinal: assessmentState.status === "loading" });
+  const run = useAgentRun(stages, format, { holdFinal: !assessment, paused: failed });
+
+  function retry() {
+    retryAssessment();
+    run.restart();
+  }
 
   const log = useMemo<ActivityLogEntry[]>(() => {
     const lastAt = run.log.at(-1)?.atMs ?? 0;
+    if (failed) {
+      return [
+        ...run.log,
+        {
+          key: "assessment.error",
+          action: "Reviewing",
+          label: "The analysis couldn't be completed",
+          stageTitle: "Initial assessment",
+          atMs: lastAt + 800,
+          status: "done",
+        },
+      ];
+    }
     if (run.waiting) {
       return [
         ...run.log,
@@ -72,23 +98,9 @@ export function AnalysisWorkspace() {
         },
       ];
     }
-    if (!run.complete) return run.log;
-    if (assessment) return [...run.log, ...assessmentLogEntries(assessment, lastAt + 800)];
-    if (assessmentState.status === "error") {
-      return [
-        ...run.log,
-        {
-          key: "assessment.error",
-          action: "Reviewing",
-          label: `Live assessment unavailable — showing demo results. ${assessmentState.message}`,
-          stageTitle: "Initial assessment",
-          atMs: lastAt + 800,
-          status: "done",
-        },
-      ];
-    }
+    if (run.complete && assessment) return [...run.log, ...assessmentLogEntries(assessment, lastAt + 800)];
     return run.log;
-  }, [run.log, run.waiting, run.complete, assessment, assessmentState]);
+  }, [run.log, run.waiting, run.complete, assessment, failed]);
   const profileLine = ["business", "location", "budget"]
     .map((id) => profileValue(profile, id))
     .filter(Boolean)
@@ -109,7 +121,7 @@ export function AnalysisWorkspace() {
 
   return (
     <>
-      <WorkspaceHeader profileLine={profileLine} complete={run.complete} />
+      <WorkspaceHeader profileLine={profileLine} complete={run.complete} failed={failed} />
 
       <Container className="py-10 sm:py-14">
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-10">
@@ -119,6 +131,8 @@ export function AnalysisWorkspace() {
             <h1 className="mt-6 text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:mt-0">
               {run.complete ? (
                 <span className="text-gradient">Your launch plan is ready.</span>
+              ) : failed ? (
+                "I couldn't finish your analysis"
               ) : (
                 "Ibda is building your launch plan"
               )}
@@ -126,8 +140,50 @@ export function AnalysisWorkspace() {
             <p className="mt-3 max-w-xl text-base leading-relaxed text-mist/60 sm:text-lg">
               {run.complete
                 ? "I've worked through your market, numbers, suppliers and UAE setup. Here's what I found."
-                : "I'm researching your market, testing the numbers, finding options and checking what you'll need to launch."}
+                : failed
+                  ? "Something went wrong while preparing your plan. Your answers are saved, so you can try again."
+                  : "I'm researching your market, testing the numbers, finding options and checking what you'll need to launch."}
             </p>
+
+            {failed && !run.complete && (
+              <div
+                role="alert"
+                className="glass relative mt-6 animate-message-in overflow-hidden rounded-3xl p-6 sm:p-8"
+              >
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute -top-24 -right-20 size-72 rounded-full bg-[#fab219]/10 blur-3xl"
+                />
+                <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-start gap-4">
+                    <span className="grid size-11 shrink-0 place-items-center rounded-xl border border-[#fab219]/30 bg-[#fab219]/10 text-[#fcc95a]">
+                      <AlertTriangle className="size-5" />
+                    </span>
+                    <div>
+                      <p className="text-lg font-semibold text-white">Analysis not completed</p>
+                      <p className="mt-1 text-sm text-mist/55">
+                        {failed ? assessmentState.message : null} No plan has been created for your business yet.
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={retry}
+                    className="group inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-gradient-to-b from-brand-500 to-brand-600 px-6 text-base font-medium text-white shadow-[0_0_0_1px_rgb(255_255_255/0.12)_inset,0_10px_40px_-6px_rgb(139_108_255/0.8)] transition-all hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
+                  >
+                    <RotateCcw className="size-4" />
+                    Try again
+                  </button>
+                </div>
+                <Link
+                  href={routes.start}
+                  className="relative mt-5 inline-flex items-center gap-1.5 text-xs text-mist/40 transition-colors hover:text-mist"
+                >
+                  <ArrowLeft className="size-3" />
+                  Start over with a different idea
+                </Link>
+              </div>
+            )}
 
             {/* Overall progress */}
             <div className="mt-8">
@@ -160,6 +216,7 @@ export function AnalysisWorkspace() {
                 stageStatus={run.stageStatus}
                 activityStatus={run.activityStatus}
                 format={format}
+                stopped={failed}
               />
             </div>
 
@@ -208,7 +265,7 @@ export function AnalysisWorkspace() {
           </main>
 
           <div className="lg:sticky lg:top-24 lg:self-start">
-            <ActivityPanel log={log} complete={run.complete} />
+            <ActivityPanel log={log} complete={run.complete} live={stored !== null} />
           </div>
         </div>
       </Container>

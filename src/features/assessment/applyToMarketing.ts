@@ -92,7 +92,8 @@ export function buildMarketing(a: InitialAssessment, plan: BusinessPlan, profile
     strategy: {
       objective: m.objective,
       targetCustomer: a.targetCustomer.description,
-      positioning: m.positioning,
+      // The assessment's statement, so every screen shows the same positioning.
+      positioning: a.positioning.statement,
       valueProposition: m.valueProposition,
       channels: m.channels.slice(0, 5).map((c) => ({ name: c.name, role: c.role, priority: c.primary ? "Primary" : "Support" })),
     },
@@ -140,7 +141,7 @@ export function buildMarketing(a: InitialAssessment, plan: BusinessPlan, profile
   const captionContext: CaptionContext = {
     business: profileValue(profile, "business") ?? phrase,
     location,
-    positioning: m.positioning,
+    positioning: a.positioning.statement,
     targetCustomer: a.targetCustomer.description,
     priceRange: `${priceRange} per ${unit.singular}`,
     channels: marketing.strategy.channels.map((c) => c.name),

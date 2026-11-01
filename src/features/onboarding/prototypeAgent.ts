@@ -33,6 +33,21 @@ function findBudget(idea: string) {
   return `AED ${amount.toLocaleString("en-US")}`;
 }
 
+const ONLINE = /\b(online|instagram|tiktok|whats\s?app|website|web\s?shop|e-?commerce|social media|delivery apps?)\b/i;
+// "online store" and similar are online channels, not premises.
+const ONLINE_STORE = /\b(online|web|e-?)\s*(store|shop)\b/gi;
+const PHYSICAL = /\b(shop|store|storefront|outlet|caf[eé]|restaurant|salon|showroom|kiosk|branch|premises|walk-in|physical location)\b/i;
+
+/** The sales channel, when the idea already says it — so onboarding doesn't ask again. */
+function findChannel(idea: string) {
+  const online = ONLINE.test(idea);
+  const physical = PHYSICAL.test(idea.replace(ONLINE_STORE, ""));
+  if (online && physical) return "Both";
+  if (online) return "Online only";
+  if (physical) return "Physical location";
+  return undefined;
+}
+
 function findBusiness(idea: string) {
   if (/\babayas?\b/i.test(idea)) {
     return /\bonline\b/i.test(idea) ? "Online abaya brand" : "Abaya brand";
@@ -60,30 +75,34 @@ export const prototypeAgent: OnboardingAgent = {
     const isAbaya = /\babayas?\b/i.test(idea);
     const location = findEmirate(idea);
     const budget = findBudget(idea);
+    // The abaya scenario asks its own questions; for other ideas, a stated channel isn't asked again.
+    const channel = isAbaya ? undefined : findChannel(idea);
 
     const facts: KnownFact[] = [
       { id: "business", label: "Business", value: findBusiness(idea) },
     ];
     if (location) facts.push({ id: "location", label: "Location", value: location });
     if (budget) facts.push({ id: "budget", label: "Budget", value: budget });
+    if (channel) facts.push({ id: "channel", label: "Sales channel", value: channel });
 
     const known = [
       "business type",
       ...(location ? ["location"] : []),
       ...(budget ? ["budget"] : []),
+      ...(channel ? ["sales channel"] : []),
     ];
-    const missingBasics = !location || !budget;
 
+    const questions = [
+      ...(location ? [] : [locationQuestion]),
+      ...(budget ? [] : [budgetQuestion]),
+      ...(isAbaya ? abayaQuestions : generalQuestions.filter((q) => !(channel && q.id === "channel"))),
+    ];
     const analysis: IdeaAnalysis = {
       facts,
       acknowledgement: `Great — I already have your ${joinNatural(known)}. I just need ${
-        missingBasics ? "a few more details" : "a few details"
+        questions.length === 1 ? "one more detail" : "a few more details"
       } before I start.`,
-      questions: [
-        ...(location ? [] : [locationQuestion]),
-        ...(budget ? [] : [budgetQuestion]),
-        ...(isAbaya ? abayaQuestions : generalQuestions),
-      ],
+      questions,
     };
     return analysis;
   },

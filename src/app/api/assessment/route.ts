@@ -23,13 +23,15 @@ import {
   suppliersSystemPrompt,
 } from "@/lib/server/ibda-agent-guide";
 import { IBDA_MODEL, getAnthropic, hasAnthropicKey } from "@/lib/server/anthropic";
+import { sourcingBudget } from "@/features/assessment/applyToPlan";
 import { emirateFrom, licensingSourcesFor, sourcesFor } from "@/features/plan/officialSources";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
 
-function fail(message: string, status: number) {
-  return NextResponse.json({ error: message }, { status });
+/** `detail` is technical context for development only; the screen shows `message`. */
+function fail(message: string, status: number, detail?: string) {
+  return NextResponse.json({ error: message, ...(detail ? { detail } : {}) }, { status });
 }
 
 const plainWords: Record<string, string> = {
@@ -76,6 +78,25 @@ function emptyParts(checks: Record<string, unknown>) {
     .map(([k]) => k);
 }
 
+const aedText = (n: number) => `AED ${Math.round(n).toLocaleString("en-US")}`;
+
+/**
+ * The plan's sourcing budget, for the supplier request — so the shortlist's
+ * first orders match the quantities and amounts the plan already set.
+ */
+function supplierBudgetBrief(f: z.infer<typeof planFinancialsSchema>) {
+  const { lines, total } = sourcingBudget(f);
+  const firstMonth = Math.round(f.monthlySales[0] ?? 0);
+  const volume = firstMonth > 0 ? ` The plan expects about ${firstMonth} ${f.unit.plural} sold in the first month.` : "";
+  if (lines.length === 0) {
+    return `\n\nThe founder's total startup budget is ${aedText(f.budget.amountAed)}. Keep every first order small and realistic for it.${volume}`;
+  }
+  return `\n\nThe founder's business plan already budgets these one-off sourcing costs:
+${lines.map((l) => `- ${l.label}: ${aedText(l.amount)} (${l.note})`).join("\n")}
+Sourcing total: ${aedText(total)}.${volume}
+Size every first order to this plan: the firstOrderEstimateAed values of the recommended options must add up to no more than ${aedText(total)}, and their quantities must match what these lines buy. Do not plan bigger first orders than the plan pays for.`;
+}
+
 /**
  * One structured request to Claude; returns the parsed, schema-valid output.
  * A schema-valid answer can still leave sections empty, so `missing` checks
@@ -116,7 +137,7 @@ async function ask<T extends z.ZodType>(
 /**
  * Sends the founder's onboarding answers to Claude and returns a structured
  * initial assessment plus plan, setup, supplier and marketing inputs
- * (eight smaller requests run in parallel). Runs on the server only; the API key never reaches the browser.
+ * (eight smaller requests; seven run in parallel, suppliers after the financial plan). Runs on the server only; the API key never reaches the browser.
  */
 export async function POST(request: Request) {
   if (!hasAnthropicKey()) return fail("The AI service isn't configured.", 503);
@@ -151,14 +172,22 @@ ${answers}
 </founder_input>`;
 
   try {
+    // The supplier request waits for the financial plan so its first orders fit the plan's sourcing budget.
+    const financialsRun = ask(planInputsSystemPrompt, planFinancialsSchema, founderInput, "Prepare the FINANCIAL planning inputs (unit, budget, costs, pricing, sales, price bands) for this founder's business.", (o) =>
+      emptyParts({ "unit.singular": o.unit.singular, "budget.amountAed": o.budget.amountAed, startupCosts: o.startupCosts, "pricing.heroAed": o.pricing.heroAed, unitCosts: o.unitCosts, monthlySales: o.monthlySales, priceBands: o.priceBands }),
+    );
+    const suppliersRun = financialsRun.then((f) =>
+      ask(suppliersSystemPrompt, suppliersSchema, founderInput, `Prepare the supplier categories, supplier types and enquiry details for this founder's first launch.${supplierBudgetBrief(f)}`, (o) =>
+        emptyParts({ categories: o.categories, options: o.options }),
+        "low",
+      ),
+    );
     // Smaller structured requests in parallel; one combined schema exceeds the grammar limit.
     const [assessment, financials, narrative, setup, suppliers, strategy, execution, calendar] = await Promise.all([
       ask(assessmentSystemPrompt, assessmentSchema, founderInput, "Prepare the initial business assessment for this founder.", (o) =>
         emptyParts({ "ideaSummary.headline": o.ideaSummary.headline, "feasibility.reasoning": o.feasibility.reasoning, keyAssumptions: o.keyAssumptions, "recommendedNextStep.title": o.recommendedNextStep.title }),
       ),
-      ask(planInputsSystemPrompt, planFinancialsSchema, founderInput, "Prepare the FINANCIAL planning inputs (unit, budget, costs, pricing, sales, price bands) for this founder's business.", (o) =>
-        emptyParts({ "unit.singular": o.unit.singular, "budget.amountAed": o.budget.amountAed, startupCosts: o.startupCosts, "pricing.heroAed": o.pricing.heroAed, unitCosts: o.unitCosts, monthlySales: o.monthlySales, priceBands: o.priceBands }),
-      ),
+      financialsRun,
       ask(planInputsSystemPrompt, planNarrativeSchema, founderInput, "Prepare the NARRATIVE planning inputs (market, risks, UAE setup, next actions, suppliers, marketing) for this founder's business.", (o) =>
         emptyParts({ "market.summary": o.market.summary, risks: o.risks, nextActions: o.nextActions, launchPathLabel: o.launchPathLabel, "suppliers.categories": o.suppliers.categories, "marketing.focusAreas": o.marketing.focusAreas }),
       ),
@@ -169,10 +198,7 @@ ${answers}
         `Prepare the UAE setup guidance for this founder's business${emirate ? ` in ${emirate}` : ""}.\n\nAllowed official sources (use these ids only):\n${allowedSources}${licensingNote}`,
         (o) => emptyParts({ summary: o.summary, activity: o.activity, routes: o.routes, path: o.path, requirements: o.requirements }),
       ),
-      ask(suppliersSystemPrompt, suppliersSchema, founderInput, "Prepare the supplier categories, supplier types and enquiry details for this founder's first launch.", (o) =>
-        emptyParts({ categories: o.categories, options: o.options }),
-        "low",
-      ),
+      suppliersRun,
       ask(marketingSystemPrompt, marketingStrategySchema, founderInput, "Prepare the launch marketing strategy and 13-week calendar for this founder's business.", (o) =>
         emptyParts({ objective: o.objective, channels: o.channels, phaseGoals: o.phaseGoals, weeks: o.weeks }),
         "low",
@@ -218,9 +244,9 @@ ${answers}
     }
     if (error instanceof Anthropic.APIError) {
       console.error("Assessment API error", error.status, error.message);
-      // In development, include Anthropic's message (it never contains the key) to aid debugging.
-      const detail = process.env.NODE_ENV === "production" ? "" : ` (${error.status}: ${error.message})`;
-      return fail(`The AI service returned an error.${detail}`, 502);
+      // In development, pass Anthropic's message (it never contains the key) along for the console.
+      const detail = process.env.NODE_ENV === "production" ? undefined : `${error.status}: ${error.message}`;
+      return fail("The AI service returned an error.", 502, detail);
     }
     console.error("Assessment failed", error);
     return fail("Something went wrong preparing the assessment.", 500);

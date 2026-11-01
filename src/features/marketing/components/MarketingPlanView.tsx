@@ -101,7 +101,7 @@ export function MarketingPlanView({
 
         <ContentGenerator context={captionContext} />
 
-        <KpiGrid kpis={plan.kpis} />
+        <KpiGrid kpis={plan.kpis} live={Boolean(captionContext)} />
 
         {/* Recommended next move */}
         <section

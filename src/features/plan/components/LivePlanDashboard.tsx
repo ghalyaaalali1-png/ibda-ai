@@ -1,35 +1,28 @@
 "use client";
 
-import { useMemo, useSyncExternalStore } from "react";
-import { demoIdea } from "@/content/landing";
+import { useMemo } from "react";
 import { buildPlan } from "@/features/assessment/applyToPlan";
-import { currentAssessmentInput, useStoredAssessment } from "@/features/assessment/storage";
-import { readLaunchIdea } from "@/features/launch-profile/profile";
+import { AnalysisStatus } from "@/features/assessment/components/AnalysisStatus";
+import { currentAssessmentInput, useAssessmentView } from "@/features/assessment/storage";
 import type { BusinessPlan } from "../types";
 import { PlanDashboard } from "./PlanDashboard";
 
-/** The dashboard with Claude's initial assessment applied once it's available. */
-const noopSubscribe = () => () => {};
-
+/** The dashboard with Claude's initial assessment applied, or the abaya demo when there's no onboarding. */
 export function LivePlanDashboard({ plan }: { plan: BusinessPlan }) {
-  const assessment = useStoredAssessment();
-  const idea = useSyncExternalStore(noopSubscribe, readLaunchIdea, () => null);
-  // Without Claude's result, only the abaya demo has a plan to show — say so for other ideas.
-  const otherBusiness = idea !== null && idea !== demoIdea;
+  const view = useAssessmentView();
+  const assessment = view.kind === "live" ? view.assessment : null;
   const merged = useMemo(
     () => (assessment ? buildPlan(plan, assessment, currentAssessmentInput().profile) : plan),
     [plan, assessment],
   );
+
+  if (view.kind === "checking" || view.kind === "unavailable") {
+    return <AnalysisStatus state={view.kind} screen="Business Plan" />;
+  }
   return (
     <PlanDashboard
       plan={merged}
-      sourceNote={
-        assessment
-          ? "Prepared by Claude from your answers — figures are estimates, not yet verified"
-          : otherBusiness
-            ? "Live analysis unavailable — showing the abaya demo plan"
-            : undefined
-      }
+      sourceNote={assessment ? "Prepared by Claude from your answers — figures are estimates, not yet verified" : undefined}
     />
   );
 }
