@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { assessmentRequestSchema } from "@/features/assessment/schema";
 import { assembleAssessment } from "@/features/plan-modules/assemble";
+import type { Locale } from "@/i18n/config";
 import { hasAnthropicKey } from "@/lib/server/anthropic";
 import { AssessmentError } from "@/lib/server/modules/ask";
 import { runAllModules } from "@/lib/server/modules/run";
@@ -14,10 +15,9 @@ function fail(message: string, status: number, detail?: string) {
   return NextResponse.json({ error: message, ...(detail ? { detail } : {}) }, { status });
 }
 
-const plainWords: Record<string, string> = {
-  NOT_YET_CONFIRMED: "to be confirmed",
-  USER_PROVIDED: "your figure",
-  ESTIMATE: "estimate",
+const plainWords: Record<Locale, Record<string, string>> = {
+  en: { NOT_YET_CONFIRMED: "to be confirmed", USER_PROVIDED: "your figure", ESTIMATE: "estimate" },
+  ar: { NOT_YET_CONFIRMED: "بحاجة إلى تأكيد", USER_PROVIDED: "رقمك", ESTIMATE: "تقدير" },
 };
 
 /**
@@ -25,24 +25,26 @@ const plainWords: Record<string, string> = {
  * the authority") as plain words. Values that are exactly a code (the type
  * fields the app reads) are left untouched.
  */
-function plainLabels<T>(value: T): T {
+function plainLabels<T>(value: T, locale: Locale): T {
+  const words = plainWords[locale];
   if (typeof value === "string") {
-    if (value in plainWords) return value;
+    if (value in words) return value;
     return value
       .replace(/\b(NOT_YET_CONFIRMED|USER_PROVIDED|ESTIMATE)\b(:)?/g, (_, code: string, colon?: string) =>
-        colon ? `${plainWords[code][0].toUpperCase()}${plainWords[code].slice(1)}:` : plainWords[code],
+        colon ? `${words[code][0].toUpperCase()}${words[code].slice(1)}:` : words[code],
       ) as T;
   }
-  if (Array.isArray(value)) return value.map(plainLabels) as T;
+  if (Array.isArray(value)) return value.map((v) => plainLabels(v, locale)) as T;
   if (value && typeof value === "object") {
-    return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, plainLabels(v)])) as T;
+    return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, plainLabels(v, locale)])) as T;
   }
   return value;
 }
 
 /**
  * Sends the founder's onboarding answers to Claude and returns a structured
- * initial assessment plus plan, setup, supplier and marketing inputs. Each
+ * initial assessment plus plan, setup, supplier and marketing inputs, written
+ * in the founder's interface language. Each
  * plan module is one request (seven run in parallel, suppliers after the
  * financial plan); their outputs are combined into one assessment. Runs on
  * the server only; the API key never reaches the browser.
@@ -61,7 +63,7 @@ export async function POST(request: Request) {
 
   try {
     const result = assembleAssessment(await runAllModules(input.data));
-    return NextResponse.json({ assessment: plainLabels(result) });
+    return NextResponse.json({ assessment: plainLabels(result, input.data.locale ?? "en") });
   } catch (error) {
     if (error instanceof AssessmentError) return fail(error.message, error.status);
     if (error instanceof Anthropic.AuthenticationError) {

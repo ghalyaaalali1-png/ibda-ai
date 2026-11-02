@@ -1,5 +1,8 @@
+"use client";
+
 import { Send, Sparkles } from "lucide-react";
-import { aed, percent } from "@/features/plan/format";
+import { percent } from "@/features/plan/format";
+import { useI18n } from "@/i18n/I18nProvider";
 import type { CategoryInfo, ShortlistItem, Supplier } from "../types";
 import { MatchScore } from "./MatchScore";
 
@@ -26,6 +29,9 @@ export function ShortlistCard({
   onRequestQuote: (id: string) => void;
   onSelectCategory: (supplier: Supplier) => void;
 }) {
+  const { t } = useI18n();
+  const { aed } = t.fmt;
+  const copy = t.suppliers.shortlist;
   const total = items.reduce((s, i) => s + i.estimate, 0);
   const fits = total <= allocation;
 
@@ -33,36 +39,34 @@ export function ShortlistCard({
     <section aria-labelledby="shortlist-title" className="glass relative overflow-hidden rounded-3xl p-5 sm:p-7">
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-32 -right-24 size-96 rounded-full bg-brand-500/15 blur-[100px]"
+        className="pointer-events-none absolute -top-32 -end-24 size-96 rounded-full bg-brand-500/15 blur-[100px]"
       />
       <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div className="max-w-xl">
           <p className="inline-flex items-center gap-1.5 text-xs font-medium text-brand-300">
             <Sparkles className="size-3.5" />
-            Recommended by Ibda
+            {copy.recommendedBy}
           </p>
           <h2 id="shortlist-title" className="mt-2 text-xl font-semibold tracking-tight text-white sm:text-2xl">
-            Your launch sourcing shortlist
+            {copy.title}
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-mist/55">
-            One pick per category, chosen for {criteria} and fit with your {budgetLabel} budget.
+            {copy.criteria(criteria, budgetLabel)}
           </p>
         </div>
         <div className="w-full shrink-0 lg:w-80">
           <div className="flex items-baseline justify-between text-sm">
-            <span className="text-mist/55">First-run sourcing estimate</span>
+            <span className="text-mist/55">{copy.estimate}</span>
             <span className="font-semibold text-white">{aed(total)}</span>
           </div>
           <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10" aria-hidden>
             <div
-              className="h-full rounded-full bg-gradient-to-r from-brand-500 to-electric-400"
+              className="h-full rounded-full bg-gradient-to-r from-brand-500 to-electric-400 rtl:bg-gradient-to-l"
               style={{ width: `${Math.min(percent(total, allocation), 100)}%` }}
             />
           </div>
           <p className={`mt-2 text-xs ${fits ? "text-emerald-300" : "text-[#fcc95a]"}`}>
-            {fits
-              ? `Within your plan's ${aed(allocation)} for ${allocationLabel}`
-              : `${aed(total - allocation)} over your plan's sourcing allocation`}
+            {fits ? copy.within(aed(allocation), allocationLabel) : copy.over(aed(total - allocation))}
           </p>
         </div>
       </div>
@@ -94,8 +98,8 @@ export function ShortlistCard({
                 onClick={() => onRequestQuote(s.id)}
                 className="mt-3 inline-flex items-center gap-1.5 self-start text-xs font-medium text-brand-300 transition-colors hover:text-white"
               >
-                <Send className="size-3" />
-                Request quote
+                <Send className="size-3 rtl:-scale-x-100" />
+                {t.common.requestQuote}
               </button>
             </li>
           );

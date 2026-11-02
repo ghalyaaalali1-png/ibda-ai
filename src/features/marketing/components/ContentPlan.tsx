@@ -1,5 +1,9 @@
+"use client";
+
 import { Clapperboard } from "lucide-react";
 import { DashCard } from "@/features/plan/components/DashCard";
+import type { Dictionary } from "@/i18n";
+import { useI18n } from "@/i18n/I18nProvider";
 import type { MarketingPlan } from "../types";
 
 // Platforms a content plan can name; Reels count as Instagram.
@@ -25,18 +29,18 @@ function platformsIn(plan: MarketingPlan) {
     .map((p) => p.name);
 }
 
-function contentPlanTitle(plan: MarketingPlan) {
+function contentPlanTitle(plan: MarketingPlan, t: Dictionary) {
   const names = platformsIn(plan);
-  if (names.length === 0) return "Content plan";
-  const list = names.length === 1 ? names[0] : `${names.slice(0, -1).join(", ")} & ${names.at(-1)}`;
-  return `Content plan · ${list}`;
+  const { title, platforms } = t.marketing.content;
+  return names.length === 0 ? title : `${title} · ${platforms(names)}`;
 }
 
 export function ContentPlan({ plan }: { plan: MarketingPlan }) {
+  const { t } = useI18n();
   return (
-    <DashCard id="content-plan" title={contentPlanTitle(plan)} icon={Clapperboard}>
+    <DashCard id="content-plan" title={contentPlanTitle(plan, t)} icon={Clapperboard}>
       <p className="text-sm text-mist/60">
-        <span className="font-medium text-white">Rhythm: </span>
+        <span className="font-medium text-white">{t.marketing.content.rhythm}</span>
         {plan.postingRhythm}
       </p>
       <ul className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">

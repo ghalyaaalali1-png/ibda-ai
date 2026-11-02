@@ -1,11 +1,11 @@
 import { businessPhrase, profileValue, type ProfileField } from "@/features/launch-profile/profile";
-import { aed } from "@/features/plan/format";
 import type { BusinessPlan } from "@/features/plan/types";
 import type { CategoryInfo, ShortlistItem, Supplier, SupplierScreenData } from "@/features/suppliers/types";
+import { displayProfileLine, displayValue, english, type Dictionary } from "@/i18n";
 import type { InitialAssessment } from "./schema";
 
-const slug = (text: string) =>
-  text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "category";
+// Empty for text without Latin letters (Arabic labels), so callers add a fallback.
+const slug = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
 const clampScore = (n: number) => Math.min(100, Math.max(0, Math.round(n)));
 
@@ -23,24 +23,26 @@ function naturalList(items: string[]) {
   return `${items.slice(0, -1).join(", ")}${last}${items.at(-1)}`;
 }
 
-/** "10-week launch path" → "within the next 10 weeks". */
-function launchWindowFrom(label: string) {
-  const weeks = label.match(/(\d+)\s*-?\s*week/i)?.[1];
-  return weeks ? `within the next ${weeks} weeks` : "in the coming weeks";
-}
+/** "10-week launch path" or «مسار إطلاق من 10 أسابيع» → 10 (the label's first number). */
+const launchWeeksFrom = (label: string) =>
+  Number(label.replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x0660)).match(/\d+/)?.[0]) || null;
 
 /**
  * Builds the Suppliers screen for any business from Claude's supplier
  * planning, the plan built from the assessment and the founder's answers.
- * Options are supplier types, not named businesses.
+ * Options are supplier types, not named businesses. `t` words the screen
+ * text and the supplier enquiry (English by default).
  */
 export function buildSupplierData(
   a: InitialAssessment,
   plan: BusinessPlan,
   profile: ProfileField[],
+  t: Dictionary = english,
 ): SupplierScreenData {
-  const categories: CategoryInfo[] = a.suppliers.categories.map((c) => ({
-    id: slug(c.label),
+  const built = t.suppliers.built;
+  const list = t.locale === "en" ? naturalList : t.fmt.list;
+  const categories: CategoryInfo[] = a.suppliers.categories.map((c, i) => ({
+    id: slug(c.label) || `category-${i + 1}`,
     label: c.label,
     shortLabel: c.label,
     summary: c.summary,
@@ -49,7 +51,7 @@ export function buildSupplierData(
   const categoryIdFor = (label: string) =>
     categories.find((c) => c.label.toLowerCase() === label.trim().toLowerCase())?.id ?? categories[0]?.id ?? "category";
 
-  const options = a.suppliers.options.map((o, i) => ({ o, categoryId: categoryIdFor(o.category), id: `${slug(o.name)}-${i}` }));
+  const options = a.suppliers.options.map((o, i) => ({ o, categoryId: categoryIdFor(o.category), id: `${slug(o.name) || "option"}-${i}` }));
   const suppliers: Supplier[] = options.map(({ o, categoryId, id }) => ({
     id,
     name: o.name,
@@ -84,39 +86,33 @@ export function buildSupplierData(
 
   const location = profileValue(profile, "location") ?? "the UAE";
   const phrase = businessPhrase(profile);
+  const business = t.locale === "en" ? phrase : displayValue(t, profileValue(profile, "business") ?? phrase);
   const firstCategory = categories[0]?.id;
   const { pricing, unit } = plan;
-  const priceRange = `AED ${pricing.min.toLocaleString("en-US")}–${pricing.max.toLocaleString("en-US")}`;
-  const launchWindow = launchWindowFrom(plan.nextActionsLabel);
+  const launchWeeks = launchWeeksFrom(plan.nextActionsLabel);
 
   return {
-    profileLine: ["business", "location", "budget"]
-      .map((id) => profileValue(profile, id))
-      .filter(Boolean)
-      .join(" · "),
-    intro: `I compared ${suppliers.length} supplier types across ${naturalList(
-      categories.map((c) => inSentence(c.label)),
-    )}, then ranked them for the first launch of your ${phrase} on your budget.`,
-    sourceNote: "Supplier types, not specific businesses — prices are estimates",
-    supplierBadge: "Supplier type",
-    contactNote:
-      "This is a supplier type, not a specific business — find suppliers of this type, then copy the message to send it to them.",
+    profileLine: displayProfileLine(t, profile),
+    intro: built.intro(suppliers.length, list(categories.map((c) => inSentence(c.label))), business),
+    sourceNote: built.sourceNote,
+    supplierBadge: built.badge,
+    contactNote: built.contactNote,
     categories,
     suppliers,
     shortlist,
     allocation: sourcingTotal > 0 ? sourcingTotal : spend,
-    shortlistCriteria: "low minimums, lead time",
-    allocationLabel: sourcingTotal > 0 ? naturalList(sourcingLines.map((c) => inSentence(c.label))) : "startup spend",
+    shortlistCriteria: built.criteria,
+    allocationLabel: sourcingTotal > 0 ? list(sourcingLines.map((c) => inSentence(c.label))) : built.startupSpend,
     brief: {
-      brand: `a new ${phrase}`,
-      location,
-      positioningSentence: `We are preparing to launch, with a planned price of ${priceRange} per ${unit.singular}.`,
-      launchWindow,
+      brand: built.brief.brand(business),
+      location: displayValue(t, location),
+      positioningSentence: built.brief.positioning(t.fmt.aedRange(pricing.min, pricing.max), unit.singular),
+      launchWindow: built.brief.launchWindow(launchWeeks),
       highlights: [
-        `Budget ${aed(plan.budget.total)}`,
-        `Price ${priceRange} per ${unit.singular}`,
-        `Based in ${location}`,
-        `Launch ${launchWindow.replace("within the next ", "in ")}`,
+        built.highlights.budget(t.fmt.aed(plan.budget.total)),
+        built.highlights.price(t.fmt.aedRange(pricing.min, pricing.max), unit.singular),
+        built.highlights.location(displayValue(t, location)),
+        built.highlights.launch(launchWeeks),
       ],
     },
     defaultCompare: firstCategory

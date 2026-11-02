@@ -2,6 +2,7 @@
 
 import { CalendarDays } from "lucide-react";
 import { useState } from "react";
+import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
 import { DashCard } from "@/features/plan/components/DashCard";
 import type { ActionTag, Phase, PhaseId } from "../types";
@@ -17,11 +18,14 @@ const tagStyle: Record<ActionTag, string> = {
 
 const phaseBar: Record<PhaseId, string> = {
   prelaunch: "bg-brand-500/50",
-  launch: "bg-gradient-to-r from-brand-500 to-electric-400",
+  launch: "bg-gradient-to-r from-brand-500 to-electric-400 rtl:bg-gradient-to-l",
   growth: "bg-emerald-400/50",
 };
 
 export function LaunchCalendar({ phases }: { phases: Phase[] }) {
+  const { t } = useI18n();
+  const copy = t.marketing.calendar;
+  const weeksOf = (p: Phase) => (p.plan.length ? copy.weeks(p.plan[0].week, p.plan.at(-1)!.week) : "");
   const [active, setActive] = useState<PhaseId>("prelaunch");
   const phase = phases.find((p) => p.id === active)!;
   const totalWeeks = phases.reduce((n, p) => n + p.plan.length, 0);
@@ -30,9 +34,9 @@ export function LaunchCalendar({ phases }: { phases: Phase[] }) {
   return (
     <DashCard
       id="calendar"
-      title="90-day marketing calendar"
+      title={copy.title}
       icon={CalendarDays}
-      action={<span className="text-xs text-mist/50">{totalWeeks} weeks{launchWeek ? ` · launch in week ${launchWeek}` : ""}</span>}
+      action={<span className="text-xs text-mist/50">{copy.summary(totalWeeks, launchWeek)}</span>}
     >
       {/* Overview strip — one segment per week, grouped by phase */}
       <div className="flex gap-0.5" aria-hidden>
@@ -44,7 +48,7 @@ export function LaunchCalendar({ phases }: { phases: Phase[] }) {
               tabIndex={-1}
               onClick={() => setActive(p.id)}
               className={cn(
-                "h-2 flex-1 transition-opacity first:rounded-l last:rounded-r",
+                "h-2 flex-1 transition-opacity first:rounded-s last:rounded-e",
                 phaseBar[p.id],
                 active !== p.id && "opacity-30 hover:opacity-60",
               )}
@@ -53,7 +57,7 @@ export function LaunchCalendar({ phases }: { phases: Phase[] }) {
         )}
       </div>
 
-      <div role="tablist" aria-label="Campaign phases" className="mt-4 grid grid-cols-3 gap-2">
+      <div role="tablist" aria-label={copy.phasesLabel} className="mt-4 grid grid-cols-3 gap-2">
         {phases.map((p) => (
           <button
             key={p.id}
@@ -63,21 +67,21 @@ export function LaunchCalendar({ phases }: { phases: Phase[] }) {
             aria-controls="phase-panel"
             onClick={() => setActive(p.id)}
             className={cn(
-              "rounded-2xl border px-3 py-2.5 text-left transition-all",
+              "rounded-2xl border px-3 py-2.5 text-start transition-all",
               active === p.id
                 ? "border-brand-400/45 bg-brand-500/15 shadow-[0_0_30px_-12px_rgb(139_108_255/0.8)]"
                 : "border-white/[0.07] bg-white/[0.02] hover:bg-white/[0.05]",
             )}
           >
-            <p className={cn("text-sm font-medium", active === p.id ? "text-white" : "text-mist/70")}>{p.label}</p>
-            <p className="font-mono text-[11px] text-mist/45">{p.weeks}</p>
+            <p className={cn("text-sm font-medium", active === p.id ? "text-white" : "text-mist/70")}>{copy.phases[p.id]}</p>
+            <p className="font-mono text-[11px] text-mist/45">{weeksOf(p)}</p>
           </button>
         ))}
       </div>
 
       <div id="phase-panel" role="tabpanel" className="mt-5">
         <p className="text-sm text-mist/60">
-          <span className="font-medium text-white">Goal: </span>
+          <span className="font-medium text-white">{t.common.goal}</span>
           {phase.goal}
         </p>
         <ol key={phase.id} className="mt-4 space-y-3">
@@ -87,7 +91,7 @@ export function LaunchCalendar({ phases }: { phases: Phase[] }) {
               className="flex animate-message-in gap-4 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4"
             >
               <div className="w-14 shrink-0">
-                <p className="font-mono text-[11px] text-mist/40 uppercase">Week</p>
+                <p className="font-mono text-[11px] text-mist/40 uppercase">{copy.week}</p>
                 <p className="text-xl font-semibold text-white">{w.week}</p>
               </div>
               <div className="min-w-0 flex-1">
@@ -96,7 +100,7 @@ export function LaunchCalendar({ phases }: { phases: Phase[] }) {
                   {w.actions.map((a) => (
                     <li key={a.text} className="flex flex-col gap-1 text-[13px] leading-snug text-mist/70 sm:flex-row sm:items-start sm:gap-2.5">
                       <span className={cn("w-fit shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-medium", tagStyle[a.tag])}>
-                        {a.tag}
+                        {copy.tags[a.tag]}
                       </span>
                       {a.text}
                     </li>

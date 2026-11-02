@@ -4,9 +4,10 @@ import { ArrowLeft, ArrowRight, Info, Megaphone, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import { Container } from "@/components/ui/Container";
+import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 import { Logo } from "@/components/ui/Logo";
 import { routes } from "@/config/site";
-import { aed } from "@/features/plan/format";
+import { useI18n } from "@/i18n/I18nProvider";
 import type { SupplierCategory, SupplierScreenData } from "../types";
 import { CategoryTabs } from "./CategoryTabs";
 import { CompareTable } from "./CompareTable";
@@ -24,6 +25,7 @@ export function SuppliersWorkspace({
   /** Startup budget from the plan, for the shortlist summary. */
   budget: number;
 }) {
+  const { t } = useI18n();
   const { categories, suppliers, shortlist, brief, profileLine } = data;
   const [category, setCategory] = useState<SupplierCategory>(categories[0]?.id ?? "");
   const [compareIds, setCompareIds] = useState<string[]>(data.defaultCompare);
@@ -65,23 +67,24 @@ export function SuppliersWorkspace({
           <div className="flex min-w-0 items-center gap-4">
             <Logo />
             <span aria-hidden className="hidden h-5 w-px bg-white/10 sm:block" />
-            <span className="hidden text-sm font-medium text-mist/80 sm:block">Suppliers</span>
+            <span className="hidden text-sm font-medium text-mist/80 sm:block">{t.common.suppliers}</span>
           </div>
           <div className="flex min-w-0 items-center gap-3">
             <span className="hidden truncate text-sm text-mist/50 lg:block">{profileLine}</span>
             {rfqCounts.length > 0 && (
               <span className="hidden shrink-0 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs text-mist/70 sm:inline">
-                {rfqCounts.length} RFQ{rfqCounts.length > 1 ? "s" : ""} · {sentCount} sent
+                {t.suppliers.rfqCount(rfqCounts.length, sentCount)}
               </span>
             )}
             <Link
               href={routes.plan}
-              aria-label="Back to business plan"
+              aria-label={t.common.backToBusinessPlanLabel}
               className="inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-sm text-mist/60 transition-colors hover:bg-white/5 hover:text-white"
             >
-              <ArrowLeft className="size-3.5" />
-              <span aria-hidden className="hidden md:inline">Business Plan</span>
+              <ArrowLeft className="size-3.5 rtl:-scale-x-100" />
+              <span aria-hidden className="hidden md:inline">{t.common.businessPlan}</span>
             </Link>
+            <LanguageSwitcher />
           </div>
         </Container>
       </header>
@@ -92,11 +95,9 @@ export function SuppliersWorkspace({
           <div className="max-w-2xl">
             <p className="inline-flex items-center gap-2 text-xs font-medium text-brand-300">
               <Sparkles className="size-3.5" />
-              Sourced by Ibda
+              {t.suppliers.sourcedBy}
             </p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-              Suppliers for your launch
-            </h1>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">{t.suppliers.title}</h1>
             <p className="mt-3 text-base leading-relaxed text-mist/60">
               {data.intro}
             </p>
@@ -111,7 +112,7 @@ export function SuppliersWorkspace({
           items={shortlist}
           categories={categories}
           allocationLabel={data.allocationLabel}
-          budgetLabel={aed(budget)}
+          budgetLabel={t.fmt.aed(budget)}
           criteria={data.shortlistCriteria}
           suppliersById={byId}
           allocation={data.allocation}
@@ -126,7 +127,7 @@ export function SuppliersWorkspace({
         <section id="all-suppliers" aria-labelledby="browse-title" className="scroll-mt-24 pt-4">
           <div className="flex flex-col gap-1">
             <h2 id="browse-title" className="text-xl font-semibold tracking-tight text-white">
-              All options, ranked by fit
+              {t.suppliers.browseTitle}
             </h2>
             <p className="text-sm text-mist/50">{activeCategory.summary}</p>
           </div>
@@ -166,7 +167,7 @@ export function SuppliersWorkspace({
         <section className="glass relative overflow-hidden rounded-3xl p-6 sm:p-8">
           <div
             aria-hidden
-            className="pointer-events-none absolute -bottom-32 -left-20 size-80 rounded-full bg-brand-500/15 blur-3xl"
+            className="pointer-events-none absolute -bottom-32 -start-20 size-80 rounded-full bg-brand-500/15 blur-3xl"
           />
           <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-4">
@@ -174,11 +175,9 @@ export function SuppliersWorkspace({
                 <Megaphone className="size-5" />
               </span>
               <div>
-                <p className="text-[11px] font-medium tracking-wider text-brand-300/80 uppercase">Next step</p>
-                <p className="mt-1 text-lg font-semibold text-white">Marketing Plan</p>
-                <p className="mt-1 text-sm text-mist/55">
-                  Positioning, launch channels and a 90-day calendar to win your first customers.
-                </p>
+                <p className="text-[11px] font-medium tracking-wider text-brand-300/80 uppercase">{t.common.nextStep}</p>
+                <p className="mt-1 text-lg font-semibold text-white">{t.common.marketingPlan}</p>
+                <p className="mt-1 text-sm text-mist/55">{t.suppliers.continueDescription}</p>
               </div>
             </div>
             <div className="flex flex-col items-start gap-2 sm:items-end">
@@ -186,8 +185,8 @@ export function SuppliersWorkspace({
                 href={routes.marketing}
                 className="group inline-flex h-11 shrink-0 items-center gap-2 rounded-full bg-gradient-to-b from-brand-500 to-brand-600 px-5 text-sm font-medium text-white shadow-[0_0_0_1px_rgb(255_255_255/0.12)_inset,0_10px_40px_-6px_rgb(139_108_255/0.8)] transition-all hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
               >
-                Continue to Marketing Plan
-                <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+                {t.suppliers.continueTo}
+                <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5 rtl:-scale-x-100 rtl:group-hover:-translate-x-0.5" />
               </Link>
             </div>
           </div>
@@ -197,8 +196,8 @@ export function SuppliersWorkspace({
           href={routes.plan}
           className="inline-flex items-center gap-1.5 text-sm text-mist/55 transition-colors hover:text-white"
         >
-          <ArrowLeft className="size-3.5" />
-          Back to Business Plan
+          <ArrowLeft className="size-3.5 rtl:-scale-x-100" />
+          {t.common.backToBusinessPlan}
         </Link>
       </Container>
 

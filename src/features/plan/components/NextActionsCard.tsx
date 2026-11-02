@@ -1,13 +1,17 @@
+"use client";
+
 import { ListChecks } from "lucide-react";
+import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
 import type { BusinessPlan } from "../types";
 import { DashCard } from "./DashCard";
 
 export function NextActionsCard({ plan }: { plan: BusinessPlan }) {
+  const { t } = useI18n();
   return (
     <DashCard
       id="next-actions"
-      title="Recommended next actions"
+      title={t.plan.nextActions.title}
       icon={ListChecks}
       action={<span className="text-xs text-mist/50">{plan.nextActionsLabel}</span>}
     >
@@ -15,7 +19,7 @@ export function NextActionsCard({ plan }: { plan: BusinessPlan }) {
         {plan.nextActions.map((action, i) => (
           <li key={action.title} className="relative flex gap-4 pb-5 last:pb-0">
             {i < plan.nextActions.length - 1 && (
-              <span aria-hidden className="absolute top-8 bottom-0 left-[13px] w-px bg-white/10" />
+              <span aria-hidden className="absolute top-8 bottom-0 start-[13px] w-px bg-white/10" />
             )}
             <span
               className={cn(
@@ -32,7 +36,7 @@ export function NextActionsCard({ plan }: { plan: BusinessPlan }) {
                 <p className="text-sm font-medium text-white">{action.title}</p>
                 {i === 0 && (
                   <span className="rounded-full bg-brand-500/20 px-2 py-0.5 text-[10px] font-medium tracking-wide text-brand-300 uppercase">
-                    Start here
+                    {t.plan.nextActions.startHere}
                   </span>
                 )}
               </div>

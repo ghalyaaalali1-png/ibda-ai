@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
-import { siteConfig } from "@/config/site";
 import { LiveMarketing } from "@/features/marketing/components/LiveMarketing";
+import { getServerDictionary } from "@/i18n/server";
 
-export const metadata: Metadata = {
-  title: `Marketing Plan — ${siteConfig.name}`,
-  description: "Your launch marketing plan, prepared by Ibda from your business plan.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getServerDictionary();
+  const page = t.meta.pages.marketing;
+  return { title: `${page.title} — ${t.locale === "ar" ? t.common.brandArabic : t.common.brand}`, description: page.description };
+}
 
 export default function MarketingPage() {
   // Live marketing plan when an assessment exists; the abaya demo otherwise.

@@ -1,47 +1,46 @@
+"use client";
+
 import { Building2, CheckCircle2, CircleAlert, HelpCircle, Info, type LucideIcon } from "lucide-react";
+import { displayValue } from "@/i18n";
+import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
+import { sourceText } from "../officialSources";
 import type { BusinessPlan, RequirementLevel, SetupStage } from "../types";
 import { Caption, DashCard } from "./DashCard";
 import { SourceLink } from "./SourceLink";
 
-const levels: { id: RequirementLevel; label: string; className: string; icon: LucideIcon }[] = [
-  { id: "likely", label: "Likely required", className: "border-emerald-400/30 bg-emerald-400/10 text-emerald-300", icon: CheckCircle2 },
-  { id: "depends", label: "May be required", className: "border-[#fab219]/35 bg-[#fab219]/10 text-[#fcc95a]", icon: CircleAlert },
-  { id: "confirm", label: "Needs official confirmation", className: "border-[#ec835a]/40 bg-[#ec835a]/10 text-[#f4a582]", icon: HelpCircle },
+const levels: { id: RequirementLevel; className: string; icon: LucideIcon }[] = [
+  { id: "likely", className: "border-emerald-400/30 bg-emerald-400/10 text-emerald-300", icon: CheckCircle2 },
+  { id: "depends", className: "border-[#fab219]/35 bg-[#fab219]/10 text-[#fcc95a]", icon: CircleAlert },
+  { id: "confirm", className: "border-[#ec835a]/40 bg-[#ec835a]/10 text-[#f4a582]", icon: HelpCircle },
 ];
 
-const stageLabel: Record<SetupStage, string> = {
-  activity: "Business activity",
-  route: "Setup route",
-  authority: "Authority",
-  approvals: "Approvals",
-  establishment: "Establishment",
-  next: "Next action",
-};
-
 export function SetupCard({ plan }: { plan: BusinessPlan }) {
+  const { t, locale } = useI18n();
+  const copy = t.plan.setup;
+  const stageLabel: Record<SetupStage, string> = copy.stages;
   const { setup } = plan;
   return (
     <DashCard
       id="setup"
-      title="UAE setup & licensing"
+      title={copy.title}
       icon={Building2}
-      action={<span className="text-xs text-mist/50">{setup.emirate}</span>}
+      action={<span className="text-xs text-mist/50">{displayValue(t, setup.emirate)}</span>}
     >
       <p className="text-[15px] leading-relaxed text-mist/65">{setup.summary}</p>
       <p className="mt-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3.5 py-2.5 text-[13px] text-mist/75">
-        <span className="text-mist/45">Likely licence activity: </span>
+        <span className="text-mist/45">{copy.activity}</span>
         {setup.activity}
       </p>
 
       {/* Step-by-step path */}
       <div className="mt-6">
-        <Caption>Your likely setup path</Caption>
+        <Caption>{copy.path}</Caption>
         <ol className="relative mt-3">
           {setup.path.map((step, i) => (
             <li key={`${step.stage}-${i}`} className="relative flex gap-4 pb-4 last:pb-0">
               {i < setup.path.length - 1 && (
-                <span aria-hidden className="absolute top-8 bottom-0 left-[13px] w-px bg-white/10" />
+                <span aria-hidden className="absolute top-8 bottom-0 start-[13px] w-px bg-white/10" />
               )}
               <span className="relative grid size-7 shrink-0 place-items-center rounded-full border border-white/10 bg-ink-900 font-mono text-xs text-mist/55">
                 {i + 1}
@@ -61,7 +60,7 @@ export function SetupCard({ plan }: { plan: BusinessPlan }) {
 
       {/* Routes */}
       <div className="mt-6">
-        <Caption>Setup routes to compare</Caption>
+        <Caption>{copy.routes}</Caption>
         <ul className="mt-3 space-y-2.5">
           {setup.options.map((option) => (
             <li
@@ -78,7 +77,7 @@ export function SetupCard({ plan }: { plan: BusinessPlan }) {
                   <p className="text-sm font-medium text-white">{option.name}</p>
                   {option.recommended && (
                     <span className="rounded-full bg-brand-500/25 px-2 py-0.5 text-[10px] font-medium tracking-wide text-brand-300 uppercase">
-                      Suggested
+                      {copy.suggested}
                     </span>
                   )}
                 </div>
@@ -100,7 +99,7 @@ export function SetupCard({ plan }: { plan: BusinessPlan }) {
             <div key={level.id}>
               <span className={cn("inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium", level.className)}>
                 <Icon className="size-3" />
-                {level.label}
+                {copy.levels[level.id]}
               </span>
               <ul className="mt-2.5 space-y-2.5">
                 {items.map((r) => (
@@ -120,13 +119,14 @@ export function SetupCard({ plan }: { plan: BusinessPlan }) {
 
       {/* Where to verify */}
       <div className="mt-6">
-        <Caption>Official sources to verify with</Caption>
+        <Caption>{copy.sources}</Caption>
         <ul className="mt-3 grid gap-2 sm:grid-cols-2">
           {setup.sources.map((source) => (
             <li key={source.id} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
               <SourceLink source={source} asAuthority={false} />
               <p className="mt-1 text-[11px] leading-snug text-mist/45">
-                {source.scope === "Federal" ? "Federal" : source.scope} government · {source.covers}
+                {t.sources.government(source.scope === "Federal" ? t.sources.federal : displayValue(t, source.scope))} ·{" "}
+                {sourceText(source, locale).covers}
               </p>
             </li>
           ))}
@@ -135,9 +135,7 @@ export function SetupCard({ plan }: { plan: BusinessPlan }) {
 
       <p className="mt-6 flex gap-2 border-t border-white/[0.06] pt-4 text-xs leading-relaxed text-mist/40">
         <Info className="mt-0.5 size-3.5 shrink-0" />
-        Planning guidance only — not legal, tax or regulatory advice. Ibda can&apos;t issue licences,
-        submit applications or contact authorities for you. Requirements, eligibility and fees change
-        and depend on your situation, so confirm them with the relevant authority before you act.
+        {copy.disclaimer}
       </p>
     </DashCard>
   );

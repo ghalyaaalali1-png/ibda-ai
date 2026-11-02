@@ -20,14 +20,15 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { Container } from "@/components/ui/Container";
+import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 import { Logo } from "@/components/ui/Logo";
 import { routes } from "@/config/site";
-import { profileValue } from "@/features/launch-profile/profile";
 import { Caption, DashCard } from "@/features/plan/components/DashCard";
 import { MetricTiles } from "@/features/plan/components/MetricTiles";
 import { SourceLink } from "@/features/plan/components/SourceLink";
-import { aed } from "@/features/plan/format";
 import type { RequirementLevel } from "@/features/plan/types";
+import { displayProfileLine, displayValue } from "@/i18n";
+import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
 import type { ChecklistItem, LaunchPack, OutstandingItem, ReadinessStatus } from "../types";
 
@@ -37,10 +38,10 @@ const readinessStyle: Record<ReadinessStatus, { className: string; glow: string;
   "needs-work": { className: "border-[#ec835a]/45 bg-[#ec835a]/10 text-[#f4a582]", glow: "bg-[#ec835a]/10", icon: AlertTriangle },
 };
 
-const levelStyle: Record<RequirementLevel, { label: string; className: string; icon: LucideIcon }> = {
-  likely: { label: "Likely required", className: "border-emerald-400/30 bg-emerald-400/10 text-emerald-300", icon: CheckCircle2 },
-  depends: { label: "May be required", className: "border-[#fab219]/35 bg-[#fab219]/10 text-[#fcc95a]", icon: CircleAlert },
-  confirm: { label: "Needs official confirmation", className: "border-[#ec835a]/40 bg-[#ec835a]/10 text-[#f4a582]", icon: HelpCircle },
+const levelStyle: Record<RequirementLevel, { className: string; icon: LucideIcon }> = {
+  likely: { className: "border-emerald-400/30 bg-emerald-400/10 text-emerald-300", icon: CheckCircle2 },
+  depends: { className: "border-[#fab219]/35 bg-[#fab219]/10 text-[#fcc95a]", icon: CircleAlert },
+  confirm: { className: "border-[#ec835a]/40 bg-[#ec835a]/10 text-[#f4a582]", icon: HelpCircle },
 };
 
 const kindStyle: Record<OutstandingItem["kind"], string> = {
@@ -50,7 +51,12 @@ const kindStyle: Record<OutstandingItem["kind"], string> = {
 };
 
 function FromTag({ from }: { from: string }) {
-  return <span className="rounded bg-white/[0.06] px-1.5 py-0.5 font-mono text-[10px] text-mist/50">{from}</span>;
+  const { t } = useI18n();
+  return (
+    <span className="rounded bg-white/[0.06] px-1.5 py-0.5 font-mono text-[10px] text-mist/50">
+      {t.launchPack.from[from] ?? from}
+    </span>
+  );
 }
 
 function ChecklistColumn({ title, items, prefix }: { title: string; items: ChecklistItem[]; prefix: string }) {
@@ -102,9 +108,21 @@ function ChecklistColumn({ title, items, prefix }: { title: string; items: Check
   );
 }
 
-export function LaunchPackView({ pack, sourceNote }: { pack: LaunchPack; sourceNote: string }) {
+export function LaunchPackView({
+  pack,
+  sourceNote,
+  supplierLabel,
+}: {
+  pack: LaunchPack;
+  sourceNote: string;
+  /** What the shortlisted suppliers are, e.g. "Supplier types". */
+  supplierLabel: string;
+}) {
+  const { t } = useI18n();
+  const { aed, aedRange } = t.fmt;
+  const copy = t.launchPack;
   const { plan, suppliers, marketing, extras } = pack.inputs;
-  const profileLine = ["business", "location", "budget"].map((id) => profileValue(plan.profile, id)).filter(Boolean).join(" · ");
+  const profileLine = displayProfileLine(t, plan.profile);
   const readiness = readinessStyle[pack.readiness.status];
   const ReadinessIcon = readiness.icon;
   const contribution = plan.unitEconomics.price - plan.unitEconomics.costs.reduce((s, c) => s + c.amount, 0);
@@ -119,21 +137,22 @@ export function LaunchPackView({ pack, sourceNote }: { pack: LaunchPack; sourceN
           <div className="flex min-w-0 items-center gap-4">
             <Logo />
             <span aria-hidden className="hidden h-5 w-px bg-white/10 sm:block" />
-            <span className="hidden text-sm font-medium text-mist/80 sm:block">Launch Pack</span>
+            <span className="hidden text-sm font-medium text-mist/80 sm:block">{t.common.launchPack}</span>
           </div>
           <div className="flex min-w-0 items-center gap-1">
-            <span className="mr-2 hidden truncate text-sm text-mist/50 lg:block">{profileLine}</span>
+            <span className="me-2 hidden truncate text-sm text-mist/50 lg:block">{profileLine}</span>
             <Link href={routes.marketing} className="hidden items-center rounded-full px-3 py-2 text-sm text-mist/60 transition-colors hover:bg-white/5 hover:text-white md:inline-flex">
-              Marketing
+              {t.common.marketing}
             </Link>
             <Link
               href={routes.plan}
-              aria-label="Back to business plan"
+              aria-label={t.common.backToBusinessPlanLabel}
               className="inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-sm text-mist/60 transition-colors hover:bg-white/5 hover:text-white"
             >
-              <ArrowLeft className="size-3.5" />
-              <span aria-hidden className="hidden md:inline">Business Plan</span>
+              <ArrowLeft className="size-3.5 rtl:-scale-x-100" />
+              <span aria-hidden className="hidden md:inline">{t.common.businessPlan}</span>
             </Link>
+            <LanguageSwitcher className="ms-1" />
           </div>
         </Container>
       </header>
@@ -144,9 +163,9 @@ export function LaunchPackView({ pack, sourceNote }: { pack: LaunchPack; sourceN
           <div className="max-w-2xl">
             <p className="inline-flex items-center gap-2 text-xs font-medium text-brand-300">
               <Sparkles className="size-3.5" />
-              Prepared by Ibda
+              {t.plan.preparedBy}
             </p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">Your business launch pack</h1>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">{copy.title}</h1>
             <p className="mt-2 text-base text-mist/55">{profileLine}</p>
           </div>
           <p className="inline-flex items-center gap-1.5 self-start rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1 text-xs text-mist/50 sm:self-auto">
@@ -157,18 +176,18 @@ export function LaunchPackView({ pack, sourceNote }: { pack: LaunchPack; sourceN
 
         {/* Readiness */}
         <section aria-labelledby="readiness-title" className="glass relative overflow-hidden rounded-3xl p-6 sm:p-8">
-          <div aria-hidden className={cn("pointer-events-none absolute -top-32 -left-24 size-96 rounded-full blur-[100px]", readiness.glow)} />
+          <div aria-hidden className={cn("pointer-events-none absolute -top-32 -start-24 size-96 rounded-full blur-[100px]", readiness.glow)} />
           <div className="relative flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <Caption>Launch readiness</Caption>
+              <Caption>{copy.readiness.caption}</Caption>
               <h2 id="readiness-title" className="mt-2">
                 <span className={cn("inline-flex items-center gap-2 rounded-full border px-3.5 py-1 text-sm font-semibold tracking-wide", readiness.className)}>
                   <ReadinessIcon className="size-4" />
-                  {pack.readiness.label}
+                  {copy.readiness.labels[pack.readiness.status]}
                 </span>
               </h2>
               <p className="mt-3 max-w-xl text-sm text-mist/55">
-                Based only on what Ibda has already generated for this business — not a guarantee of success.
+                {copy.readiness.note}
               </p>
             </div>
             <ul className="space-y-2 sm:max-w-md">
@@ -185,39 +204,37 @@ export function LaunchPackView({ pack, sourceNote }: { pack: LaunchPack; sourceN
         {/* Summary + pricing */}
         <div className="grid gap-6 lg:grid-cols-12">
           <div className="lg:col-span-7">
-            <DashCard id="summary" title="Executive summary" icon={FileText}>
+            <DashCard id="summary" title={copy.summary.title} icon={FileText}>
               <p className="text-[15px] leading-relaxed text-mist/75">{extras.ideaSummary}</p>
               <dl className="mt-5 grid gap-4 sm:grid-cols-2">
                 <div>
-                  <dt className="text-[11px] font-medium tracking-wider text-mist/45 uppercase">Target customer</dt>
+                  <dt className="text-[11px] font-medium tracking-wider text-mist/45 uppercase">{t.common.targetCustomer}</dt>
                   <dd className="mt-1 text-[13px] leading-relaxed text-mist/70">{plan.market.targetCustomer}</dd>
                 </div>
                 <div>
-                  <dt className="text-[11px] font-medium tracking-wider text-mist/45 uppercase">Positioning</dt>
+                  <dt className="text-[11px] font-medium tracking-wider text-mist/45 uppercase">{copy.summary.positioning}</dt>
                   <dd className="mt-1 text-[13px] leading-relaxed text-mist/70">{extras.positioning}</dd>
                 </div>
               </dl>
               <div className="mt-5 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4">
-                <Caption>Ibda&apos;s assessment</Caption>
+                <Caption>{copy.summary.assessment}</Caption>
                 <p className="mt-1 text-sm font-medium text-white">{plan.decision.headline}</p>
                 <p className="mt-1.5 text-[13px] leading-relaxed text-mist/60">{plan.decision.explanation}</p>
               </div>
             </DashCard>
           </div>
           <div className="lg:col-span-5">
-            <DashCard id="pricing-rec" title="Pricing recommendation" icon={Tags}>
-              <Caption>Recommended price</Caption>
-              <p className="mt-1.5 text-3xl font-semibold tracking-tight text-white">
-                AED {plan.pricing.min.toLocaleString("en-US")}–{plan.pricing.max.toLocaleString("en-US")}
-              </p>
+            <DashCard id="pricing-rec" title={copy.pricing.title} icon={Tags}>
+              <Caption>{copy.pricing.price}</Caption>
+              <p className="mt-1.5 text-3xl font-semibold tracking-tight text-white">{aedRange(plan.pricing.min, plan.pricing.max)}</p>
               <p className="mt-1 text-sm text-mist/55">
-                Typical price AED {plan.pricing.hero.toLocaleString("en-US")} per {plan.unit.singular} · {aed(contribution)} kept per sale after costs
+                {copy.pricing.typical(aed(plan.pricing.hero), plan.unit.singular, aed(contribution))}
               </p>
               {/* Live plans reuse the positioning as the rationale — already shown in the summary. */}
               {plan.pricing.rationale !== extras.positioning && (
                 <p className="mt-4 text-[13px] leading-relaxed text-mist/65">{plan.pricing.rationale}</p>
               )}
-              <p className="mt-auto pt-5 text-xs text-mist/40">Estimates — confirm with real supplier quotes and early sales.</p>
+              <p className="mt-auto pt-5 text-xs text-mist/40">{copy.pricing.footnote}</p>
             </DashCard>
           </div>
         </div>
@@ -227,33 +244,33 @@ export function LaunchPackView({ pack, sourceNote }: { pack: LaunchPack; sourceN
         {/* Suppliers */}
         <DashCard
           id="pack-suppliers"
-          title="Supplier shortlist"
+          title={copy.suppliers.title}
           icon={Truck}
-          action={<span className="text-xs text-mist/50">{suppliers.supplierBadge}s</span>}
+          action={<span className="text-xs text-mist/50">{supplierLabel}</span>}
         >
           <div className="-mx-5 overflow-x-auto px-5 sm:mx-0 sm:px-0">
-            <table className="w-full min-w-[640px] text-left text-[13px]">
-              <caption className="sr-only">Shortlisted suppliers with estimated first orders</caption>
+            <table className="w-full min-w-[640px] text-start text-[13px]">
+              <caption className="sr-only">{copy.suppliers.caption}</caption>
               <thead>
                 <tr className="text-[11px] font-medium tracking-wider text-mist/45 uppercase">
-                  <th scope="col" className="pb-2 font-medium">Category</th>
-                  <th scope="col" className="pb-2 font-medium">Supplier</th>
-                  <th scope="col" className="pb-2 font-medium">Minimum order</th>
-                  <th scope="col" className="pb-2 font-medium">Lead time</th>
-                  <th scope="col" className="pb-2 text-right font-medium">First order (est.)</th>
+                  <th scope="col" className="pb-2 text-start font-medium">{copy.suppliers.category}</th>
+                  <th scope="col" className="pb-2 text-start font-medium">{copy.suppliers.supplier}</th>
+                  <th scope="col" className="pb-2 text-start font-medium">{copy.suppliers.minimum}</th>
+                  <th scope="col" className="pb-2 text-start font-medium">{copy.suppliers.leadTime}</th>
+                  <th scope="col" className="pb-2 text-end font-medium">{copy.suppliers.firstOrder}</th>
                 </tr>
               </thead>
               <tbody>
                 {pack.shortlist.rows.map((r) => (
                   <tr key={r.supplier + r.category} className="border-t border-white/[0.06] align-top">
-                    <td className="py-3 pr-3 text-mist/60">{r.category}</td>
-                    <td className="py-3 pr-3">
+                    <td className="py-3 pe-3 text-mist/60">{r.category}</td>
+                    <td className="py-3 pe-3">
                       <p className="font-medium text-white">{r.supplier}</p>
                       <p className="text-xs text-mist/45">{r.location}</p>
                     </td>
-                    <td className="py-3 pr-3 text-mist/75">{r.moq}</td>
-                    <td className="py-3 pr-3 text-mist/75">{r.leadTime}</td>
-                    <td className="py-3 text-right">
+                    <td className="py-3 pe-3 text-mist/75">{r.moq}</td>
+                    <td className="py-3 pe-3 text-mist/75">{r.leadTime}</td>
+                    <td className="py-3 text-end">
                       <p className="font-medium whitespace-nowrap text-white">{aed(r.estimate)}</p>
                       <p className="text-xs text-mist/45">{r.basis}</p>
                     </td>
@@ -264,10 +281,10 @@ export function LaunchPackView({ pack, sourceNote }: { pack: LaunchPack; sourceN
           </div>
           <div className="mt-4 flex flex-wrap items-baseline justify-between gap-2 border-t border-white/[0.06] pt-3 text-sm">
             <span className="text-mist/55">
-              Total {aed(pack.shortlist.total)} vs plan {aed(suppliers.allocation)} for {suppliers.allocationLabel}
+              {copy.suppliers.total(aed(pack.shortlist.total), aed(suppliers.allocation), suppliers.allocationLabel)}
             </span>
             <span className={overAllocation > 0 ? "text-[#fcc95a]" : "text-emerald-300"}>
-              {overAllocation > 0 ? `${aed(overAllocation)} over` : "Within plan"}
+              {overAllocation > 0 ? copy.suppliers.over(aed(overAllocation)) : copy.suppliers.within}
             </span>
           </div>
           <p className="mt-3 text-xs text-mist/40">{suppliers.sourceNote}</p>
@@ -278,18 +295,19 @@ export function LaunchPackView({ pack, sourceNote }: { pack: LaunchPack; sourceN
           <div className="lg:col-span-7">
             <DashCard
               id="pack-requirements"
-              title="Requirements & licensing checklist"
+              title={copy.requirements.title}
               icon={Building2}
-              action={<span className="text-xs text-mist/50">{plan.setup.emirate}</span>}
+              action={<span className="text-xs text-mist/50">{displayValue(t, plan.setup.emirate)}</span>}
             >
               <p className="text-[13px] text-mist/65">
-                <span className="text-mist/45">Likely activity: </span>
+                <span className="text-mist/45">{copy.requirements.activity}</span>
                 {plan.setup.activity}
               </p>
               {suggestedRoute && (
                 <p className="mt-1 text-[13px] text-mist/65">
-                  <span className="text-mist/45">Suggested route: </span>
-                  {suggestedRoute.name} — fee requires official confirmation
+                  <span className="text-mist/45">{copy.requirements.route}</span>
+                  {suggestedRoute.name}
+                  {copy.requirements.fee}
                 </p>
               )}
               <div className="mt-5 space-y-5">
@@ -302,7 +320,7 @@ export function LaunchPackView({ pack, sourceNote }: { pack: LaunchPack; sourceN
                     <div key={level}>
                       <span className={cn("inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium", style.className)}>
                         <Icon className="size-3" />
-                        {style.label}
+                        {t.plan.setup.levels[level]}
                       </span>
                       <ul className="mt-2.5 space-y-2.5">
                         {items.map((r) => (
@@ -321,17 +339,17 @@ export function LaunchPackView({ pack, sourceNote }: { pack: LaunchPack; sourceN
             </DashCard>
           </div>
           <div className="lg:col-span-5">
-            <DashCard id="pack-marketing" title="4-week marketing launch" icon={Megaphone}>
+            <DashCard id="pack-marketing" title={copy.marketing.title} icon={Megaphone}>
               <ol className="space-y-3">
                 {pack.marketingWeeks.map((w) => (
                   <li key={w.week} className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-3.5">
                     <div className="flex items-baseline justify-between gap-2">
                       <p className="text-sm font-medium text-white">
-                        <span className="mr-1.5 font-mono text-[11px] text-mist/45">Week {w.week}</span>
+                        <span className="me-1.5 font-mono text-[11px] text-mist/45">{t.common.week(w.week)}</span>
                         {w.title}
                       </p>
                       <span className="shrink-0 text-[11px] text-mist/45">
-                        {w.posts} posts{w.planWeek ? ` · plan week ${w.planWeek}` : ""}
+                        {copy.marketing.posts(w.posts, w.planWeek)}
                       </span>
                     </div>
                     <p className="mt-1 text-[13px] leading-snug text-mist/60">{w.goal}</p>
@@ -340,40 +358,40 @@ export function LaunchPackView({ pack, sourceNote }: { pack: LaunchPack; sourceN
                 ))}
               </ol>
               <div className="mt-4 flex items-baseline justify-between border-t border-white/[0.06] pt-3 text-sm">
-                <span className="text-mist/55">Launch marketing budget</span>
+                <span className="text-mist/55">{copy.marketing.budget}</span>
                 <span className="font-medium text-white">{aed(marketingBudget)}</span>
               </div>
               <Link href={routes.marketing} className="mt-3 text-xs text-brand-300 hover:text-white">
-                Open the full marketing plan →
+                {copy.marketing.open}
               </Link>
             </DashCard>
           </div>
         </div>
 
         {/* Final checklist */}
-        <DashCard id="pack-checklist" title="Final launch checklist" icon={ListChecks}>
+        <DashCard id="pack-checklist" title={copy.checklist.title} icon={ListChecks}>
           <div className="grid gap-4 lg:grid-cols-3">
-            <ChecklistColumn title="Before launch" items={pack.checklist.before} prefix="before" />
-            <ChecklistColumn title="Launch week" items={pack.checklist.launch} prefix="launch" />
-            <ChecklistColumn title="After launch" items={pack.checklist.after} prefix="after" />
+            <ChecklistColumn title={copy.checklist.before} items={pack.checklist.before} prefix="before" />
+            <ChecklistColumn title={copy.checklist.launch} items={pack.checklist.launch} prefix="launch" />
+            <ChecklistColumn title={copy.checklist.after} items={pack.checklist.after} prefix="after" />
           </div>
-          <p className="mt-4 text-xs text-mist/40">
-            Every item comes from your plan, suppliers, requirements or marketing outputs — the tag shows which.
-          </p>
+          <p className="mt-4 text-xs text-mist/40">{copy.checklist.footnote}</p>
         </DashCard>
 
         {/* Outstanding */}
         <DashCard
           id="pack-outstanding"
-          title="Still to answer or verify"
+          title={copy.outstanding.title}
           icon={ClipboardList}
-          action={<span className="text-xs text-mist/50">{pack.outstanding.length} items</span>}
+          action={<span className="text-xs text-mist/50">{copy.outstanding.count(pack.outstanding.length)}</span>}
         >
           <ul className="grid gap-3 md:grid-cols-2">
             {pack.outstanding.map((o, i) => (
               <li key={`${o.kind}-${i}`} className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className={cn("rounded-md px-1.5 py-0.5 text-[11px] font-medium", kindStyle[o.kind])}>{o.kind}</span>
+                  <span className={cn("rounded-md px-1.5 py-0.5 text-[11px] font-medium", kindStyle[o.kind])}>
+                    {copy.outstanding.kinds[o.kind] ?? o.kind}
+                  </span>
                   <FromTag from={o.from} />
                 </div>
                 <p className="mt-2 text-[13px] leading-snug text-mist/85">{o.text}</p>
@@ -390,19 +408,17 @@ export function LaunchPackView({ pack, sourceNote }: { pack: LaunchPack; sourceN
 
         <p className="flex gap-2 text-xs leading-relaxed text-mist/40">
           <Info className="mt-0.5 size-3.5 shrink-0" />
-          This launch pack is planning guidance based on the information and estimates available — not financial, legal or
-          investment advice. Ibda can&apos;t issue licences, submit applications, contact suppliers or publish content for
-          you. Verify requirements with the relevant authority and replace estimates with real quotes before you commit money.
+          {copy.disclaimer}
         </p>
 
         <div className="flex flex-wrap gap-x-6 gap-y-2">
           <Link href={routes.marketing} className="inline-flex items-center gap-1.5 text-sm text-mist/55 transition-colors hover:text-white">
-            <ArrowLeft className="size-3.5" />
-            Back to Marketing Plan
+            <ArrowLeft className="size-3.5 rtl:-scale-x-100" />
+            {t.common.backToMarketingPlan}
           </Link>
           <Link href={routes.plan} className="inline-flex items-center gap-1.5 text-sm text-mist/55 transition-colors hover:text-white">
-            <ArrowLeft className="size-3.5" />
-            Back to Business Plan
+            <ArrowLeft className="size-3.5 rtl:-scale-x-100" />
+            {t.common.backToBusinessPlan}
           </Link>
         </div>
       </Container>

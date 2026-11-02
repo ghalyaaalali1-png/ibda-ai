@@ -64,6 +64,30 @@ body {
   color: var(--color-mist);
 }
 
+/*
+ * Arabic interface: IBM Plex Sans Arabic (its variable is set on <html>, so it
+ * resolves here), and no letter-spacing (it breaks joined Arabic letters).
+ */
+:root[lang="ar"] {
+  --font-sans: var(--font-plex-arabic), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-arabic), ui-monospace, monospace;
+}
+:root[dir="rtl"] body * {
+  letter-spacing: normal !important;
+}
+:root[lang="ar"] body {
+  line-height: 1.6;
+}
+
+/*
+ * Each block of text takes its direction from its own content, so English
+ * from Claude reads correctly inside the Arabic interface (and Arabic the
+ * founder types reads correctly inside the English one).
+ */
+:is(p, li, dt, dd, td, th, h1, h2, h3, h4, label, blockquote, textarea, input) {
+  unicode-bidi: plaintext;
+}
+
 ::selection {
   background: color-mix(in oklab, var(--color-brand-500) 45%, transparent);
 }

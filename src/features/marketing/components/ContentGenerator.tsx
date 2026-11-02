@@ -3,6 +3,8 @@
 import { Check, Clock, Copy, ImageIcon, Sparkles, Wand2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { TypingIndicator } from "@/features/onboarding/components/Messages";
+import { displayError } from "@/i18n";
+import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
 import type { GeneratedCaptionCopy } from "../captionSchema";
 import {
@@ -76,9 +78,12 @@ function Segmented<T extends string>({
 }
 
 export function ContentGenerator({ context }: { context?: CaptionContext }) {
+  const { t, locale } = useI18n();
+  const copy = t.marketing.generator;
   const [type, setType] = useState<ContentType>("teaser");
   const [platform, setPlatform] = useState<Platform>("instagram");
-  const [language, setLanguage] = useState<Language>("en");
+  // Captions start in the interface language; the founder can still pick either.
+  const [language, setLanguage] = useState<Language>(locale);
   const [status, setStatus] = useState<Status>("idle");
   const [post, setPost] = useState<GeneratedPost | null>(null);
   const [shown, setShown] = useState(0);
@@ -137,7 +142,7 @@ export function ContentGenerator({ context }: { context?: CaptionContext }) {
     );
   }
 
-  async function copy() {
+  async function copyPost() {
     if (!post) return;
     try {
       await navigator.clipboard.writeText(post.text);
@@ -149,7 +154,8 @@ export function ContentGenerator({ context }: { context?: CaptionContext }) {
   }
 
   const busy = status === "thinking" || status === "writing";
-  const objective = contentTypes.find((c) => c.id === type)!.objective;
+  const typeText = (id: ContentType) => copy.types[id] ?? contentTypes.find((c) => c.id === id)!;
+  const objective = typeText(type).objective;
 
   return (
     <section
@@ -159,24 +165,22 @@ export function ContentGenerator({ context }: { context?: CaptionContext }) {
     >
       <div
         aria-hidden
-        className="pointer-events-none absolute -right-24 -bottom-32 size-96 rounded-full bg-electric-500/10 blur-[100px]"
+        className="pointer-events-none absolute -end-24 -bottom-32 size-96 rounded-full bg-electric-500/10 blur-[100px]"
       />
       <div className="relative grid gap-8 lg:grid-cols-[1fr_1.15fr]">
         {/* Controls */}
         <div>
           <p className="inline-flex items-center gap-1.5 text-xs font-medium text-brand-300">
             <Sparkles className="size-3.5" />
-            AI content generator
+            {copy.eyebrow}
           </p>
           <h2 id="generator-title" className="mt-2 text-xl font-semibold tracking-tight text-white sm:text-2xl">
-            Generate a ready-to-post caption
+            {copy.title}
           </h2>
-          <p className="mt-2 text-sm leading-relaxed text-mist/55">
-            Ibda writes from your positioning, price range and launch timeline — pick what you need.
-          </p>
+          <p className="mt-2 text-sm leading-relaxed text-mist/55">{copy.description}</p>
 
-          <p className="mt-6 text-[11px] font-medium tracking-wider text-mist/45 uppercase">Content type</p>
-          <div role="radiogroup" aria-label="Content type" className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+          <p className="mt-6 text-[11px] font-medium tracking-wider text-mist/45 uppercase">{copy.contentType}</p>
+          <div role="radiogroup" aria-label={copy.contentType} className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
             {contentTypes.map((c) => (
               <button
                 key={c.id}
@@ -185,21 +189,23 @@ export function ContentGenerator({ context }: { context?: CaptionContext }) {
                 aria-checked={type === c.id}
                 onClick={() => setType(c.id)}
                 className={cn(
-                  "rounded-xl border px-3 py-2 text-left transition-all",
+                  "rounded-xl border px-3 py-2 text-start transition-all",
                   type === c.id
                     ? "border-brand-400/50 bg-brand-500/15"
                     : "border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.05]",
                 )}
               >
-                <p className={cn("text-[13px] font-medium", type === c.id ? "text-white" : "text-mist/75")}>{context && c.id === "styling" ? "Product in use" : c.label}</p>
-                <p className="text-[11px] text-mist/45">{c.objective}</p>
+                <p className={cn("text-[13px] font-medium", type === c.id ? "text-white" : "text-mist/75")}>
+                  {context && c.id === "styling" ? copy.productInUse : typeText(c.id).label}
+                </p>
+                <p className="text-[11px] text-mist/45">{typeText(c.id).objective}</p>
               </button>
             ))}
           </div>
 
           <div className="mt-5 flex flex-wrap gap-6">
             <Segmented
-              label="Platform"
+              label={copy.platform}
               value={platform}
               onChange={setPlatform}
               options={[
@@ -208,7 +214,7 @@ export function ContentGenerator({ context }: { context?: CaptionContext }) {
               ]}
             />
             <Segmented
-              label="Language"
+              label={copy.language}
               value={language}
               onChange={setLanguage}
               options={[
@@ -225,7 +231,7 @@ export function ContentGenerator({ context }: { context?: CaptionContext }) {
             className="mt-7 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-b from-brand-500 to-brand-600 px-6 text-base font-medium text-white shadow-[0_0_0_1px_rgb(255_255_255/0.12)_inset,0_10px_40px_-6px_rgb(139_108_255/0.8)] transition-all hover:-translate-y-px disabled:translate-y-0 disabled:opacity-70 sm:w-auto"
           >
             <Wand2 className="size-4" />
-            {busy ? "Generating…" : post ? "Generate again" : "Generate Content"}
+            {busy ? copy.generating : post ? copy.again : copy.generate}
           </button>
         </div>
 
@@ -235,20 +241,20 @@ export function ContentGenerator({ context }: { context?: CaptionContext }) {
             <div className="flex items-center gap-2.5">
               <span className="size-7 rounded-full bg-gradient-to-br from-brand-400 to-electric-500" aria-hidden />
               <div>
-                <p className="text-[13px] font-medium text-white">your.brand</p>
+                <p dir="ltr" className="text-[13px] font-medium text-white">your.brand</p>
                 <p className="text-[11px] text-mist/45">
-                  {platform === "instagram" ? "Instagram post" : "TikTok video"} · {objective}
+                  {platform === "instagram" ? copy.instagramPost : copy.tiktokVideo} · {objective}
                 </p>
               </div>
             </div>
             {status === "done" && (
               <button
                 type="button"
-                onClick={copy}
+                onClick={copyPost}
                 className="inline-flex items-center gap-1.5 rounded-full border border-white/10 px-3 py-1.5 text-xs text-mist/75 hover:bg-white/5 hover:text-white"
               >
                 {copied ? <Check className="size-3.5 text-emerald-400" /> : <Copy className="size-3.5" />}
-                {copied ? "Copied" : "Copy"}
+                {copied ? t.common.copied : t.common.copy}
               </button>
             )}
           </div>
@@ -257,13 +263,13 @@ export function ContentGenerator({ context }: { context?: CaptionContext }) {
             {status === "idle" && (
               <div className="grid h-full place-items-center text-center">
                 <p className="max-w-xs text-sm text-mist/45">
-                  Choose a content type and press <span className="text-mist/75">Generate Content</span>.
-                  Your caption will appear here.
+                  {copy.idleStart} <span className="text-mist/75">{copy.generate}</span>
+                  {copy.idleEnd}
                 </p>
               </div>
             )}
-            {status === "thinking" && <TypingIndicator label="Writing from your strategy…" />}
-            {status === "error" && <p className="text-sm text-mist/60">{error} Try again in a moment.</p>}
+            {status === "thinking" && <TypingIndicator label={copy.thinking} />}
+            {status === "error" && <p className="text-sm text-mist/60">{displayError(t, error)} {copy.retry}</p>}
             {(status === "writing" || status === "done") && post && (
               <p
                 dir={outputLang === "ar" ? "rtl" : "ltr"}
@@ -275,7 +281,7 @@ export function ContentGenerator({ context }: { context?: CaptionContext }) {
               >
                 {post.text.slice(0, shown)}
                 {status === "writing" && (
-                  <span aria-hidden className="ml-0.5 inline-block h-4 w-0.5 translate-y-0.5 animate-pulse bg-brand-300" />
+                  <span aria-hidden className="ms-0.5 inline-block h-4 w-0.5 translate-y-0.5 animate-pulse bg-brand-300" />
                 )}
               </p>
             )}
@@ -286,16 +292,16 @@ export function ContentGenerator({ context }: { context?: CaptionContext }) {
               <div className="flex gap-2">
                 <ImageIcon className="mt-0.5 size-3.5 shrink-0 text-brand-300" />
                 <div>
-                  <dt className="text-[10px] tracking-wider text-mist/40 uppercase">Suggested visual</dt>
+                  <dt className="text-[10px] tracking-wider text-mist/40 uppercase">{copy.visual}</dt>
                   <dd className="text-xs leading-snug text-mist/70">{post.visual}</dd>
                 </div>
               </div>
               <div className="flex gap-2">
                 <Clock className="mt-0.5 size-3.5 shrink-0 text-brand-300" />
                 <div>
-                  <dt className="text-[10px] tracking-wider text-mist/40 uppercase">Best time to post</dt>
+                  <dt className="text-[10px] tracking-wider text-mist/40 uppercase">{copy.bestTime}</dt>
                   <dd className="text-xs leading-snug text-mist/70">
-                    {post.bestTime} <span className="text-mist/40">({context ? "estimate" : "demo estimate"})</span>
+                    {post.bestTime} <span className="text-mist/40">({context ? copy.estimate : copy.demoEstimate})</span>
                   </dd>
                 </div>
               </div>

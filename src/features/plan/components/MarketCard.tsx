@@ -1,4 +1,7 @@
+"use client";
+
 import { Globe2, Users } from "lucide-react";
+import { useI18n } from "@/i18n/I18nProvider";
 import type { BusinessPlan } from "../types";
 import { Caption, DashCard } from "./DashCard";
 
@@ -15,6 +18,7 @@ function priceAxis(maxValue: number) {
 const tickLabel = (t: number) => (t === 0 ? "0" : t >= 1000 ? `${t / 1000}k` : `${t}`);
 
 export function MarketCard({ plan }: { plan: BusinessPlan }) {
+  const { t } = useI18n();
   const { market, pricing, unit } = plan;
   const { max: AXIS_MAX, ticks: AXIS_TICKS } = priceAxis(
     Math.max(pricing.max, ...market.priceBands.map((b) => b.max)),
@@ -23,7 +27,7 @@ export function MarketCard({ plan }: { plan: BusinessPlan }) {
   const unitTitle = unit.singular.charAt(0).toUpperCase() + unit.singular.slice(1);
 
   return (
-    <DashCard id="market" title="Market opportunity" icon={Globe2}>
+    <DashCard id="market" title={t.plan.market.title} icon={Globe2}>
       <div className="grid gap-8 lg:grid-cols-[1fr_1.1fr]">
         <div>
           <p className="text-[15px] leading-relaxed text-mist/65">{market.summary}</p>
@@ -39,22 +43,22 @@ export function MarketCard({ plan }: { plan: BusinessPlan }) {
           <div className="mt-5 flex gap-3 rounded-2xl border border-brand-400/20 bg-brand-500/[0.06] p-4">
             <Users className="mt-0.5 size-4 shrink-0 text-brand-300" />
             <div>
-              <Caption>Target customer</Caption>
+              <Caption>{t.common.targetCustomer}</Caption>
               <p className="mt-1 text-sm leading-relaxed text-mist/75">{market.targetCustomer}</p>
             </div>
           </div>
         </div>
 
-        {/* Competitor price bands with the recommended range overlaid */}
-        <div>
+        {/* Competitor price bands with the recommended range overlaid (a number line, so always left to right) */}
+        <div dir="ltr">
           <div className="flex items-baseline justify-between">
-            <Caption>{unitTitle} price bands, AED</Caption>
+            <Caption>{t.plan.market.bands(unitTitle)}</Caption>
             <span className="text-[11px] text-mist/35">{market.priceBandsNote}</span>
           </div>
           <ul className="mt-4 space-y-4 py-2">
             <li>
               <p className="text-xs font-medium text-brand-300">
-                Your recommended range{" "}
+                {t.plan.market.yourRange}{" "}
                 <span className="font-normal text-mist/45">
                   {pricing.min.toLocaleString("en-US")}–{pricing.max.toLocaleString("en-US")}
                 </span>

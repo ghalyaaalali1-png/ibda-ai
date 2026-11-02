@@ -1,4 +1,7 @@
+"use client";
+
 import { Info } from "lucide-react";
+import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
 import type { ActivityLogEntry, AgentAction } from "../types";
 
@@ -28,19 +31,20 @@ export function ActivityPanel({
   /** The founder's own answers are being analysed by Claude (not the demo scenario). */
   live?: boolean;
 }) {
+  const { t } = useI18n();
   const entries = [...log].reverse();
   const actions = new Set(log.map((e) => e.action)).size;
 
   return (
     <aside className="glass flex flex-col overflow-hidden rounded-3xl lg:max-h-[calc(100dvh-8rem)]">
       <div className="flex items-center justify-between border-b border-white/[0.06] px-5 py-4">
-        <h2 className="text-sm font-semibold text-white">Agent activity</h2>
+        <h2 className="text-sm font-semibold text-white">{t.analysis.activityTitle}</h2>
         <span className="font-mono text-[11px] text-mist/45">
-          {log.length} steps · {actions} action types
+          {t.analysis.activityCounts(log.length, actions)}
         </span>
       </div>
 
-      <ol className="min-h-0 flex-1 space-y-1 overflow-y-auto p-3" aria-label="Agent activity log">
+      <ol className="min-h-0 flex-1 space-y-1 overflow-y-auto p-3" aria-label={t.analysis.activityLog}>
         {entries.map((entry) => (
           <li
             key={entry.key}
@@ -59,7 +63,7 @@ export function ActivityPanel({
                     entry.status === "active" && "animate-pulse",
                   )}
                 />
-                {entry.action}
+                {t.analysis.actions[entry.action] ?? entry.action}
               </span>
               <span className="font-mono text-[11px] text-mist/35">
                 {formatTime(entry.atMs)}
@@ -70,14 +74,14 @@ export function ActivityPanel({
         ))}
         {complete && (
           <li className="animate-message-in rounded-xl px-3 py-2.5 text-[13px] text-emerald-300">
-            All stages complete — launch plan assembled.
+            {t.analysis.allComplete}
           </li>
         )}
       </ol>
 
       <p className="flex items-center gap-2 border-t border-white/[0.06] px-5 py-3 text-[11px] text-mist/40">
         <Info className="size-3.5 shrink-0" />
-        {live ? "Analysis by Claude — figures are estimates" : "Prototype analysis — demo data"}
+        {live ? t.analysis.footerLive : t.analysis.footerDemo}
       </p>
     </aside>
   );

@@ -1,22 +1,27 @@
+"use client";
+
 import { Crosshair, Gem, Megaphone, Target, Users } from "lucide-react";
+import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
 import type { MarketingPlan } from "../types";
 import { Caption } from "@/features/plan/components/DashCard";
 
 export function StrategySummary({ strategy }: { strategy: MarketingPlan["strategy"] }) {
+  const { t } = useI18n();
+  const copy = t.marketing.strategy;
   const blocks = [
-    { icon: Users, label: "Target customer", text: strategy.targetCustomer },
-    { icon: Crosshair, label: "Brand positioning", text: strategy.positioning },
-    { icon: Gem, label: "Value proposition", text: strategy.valueProposition },
+    { icon: Users, label: t.common.targetCustomer, text: strategy.targetCustomer },
+    { icon: Crosshair, label: copy.positioning, text: strategy.positioning },
+    { icon: Gem, label: copy.value, text: strategy.valueProposition },
   ];
 
   return (
     <section aria-labelledby="strategy-title" className="glass relative overflow-hidden rounded-3xl p-5 sm:p-7">
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-32 -left-24 size-96 rounded-full bg-brand-500/15 blur-[100px]"
+        className="pointer-events-none absolute -top-32 -start-24 size-96 rounded-full bg-brand-500/15 blur-[100px]"
       />
-      <h2 id="strategy-title" className="sr-only">Marketing strategy summary</h2>
+      <h2 id="strategy-title" className="sr-only">{copy.label}</h2>
 
       {/* Launch objective */}
       <div className="relative flex gap-4 rounded-2xl border border-brand-400/30 bg-brand-500/[0.08] p-4 sm:p-5">
@@ -24,7 +29,7 @@ export function StrategySummary({ strategy }: { strategy: MarketingPlan["strateg
           <Target className="size-5" />
         </span>
         <div>
-          <Caption>Launch objective</Caption>
+          <Caption>{copy.objective}</Caption>
           <p className="mt-1 text-base leading-relaxed font-medium text-white sm:text-lg">{strategy.objective}</p>
         </div>
       </div>
@@ -45,7 +50,7 @@ export function StrategySummary({ strategy }: { strategy: MarketingPlan["strateg
         <div>
           <p className="flex items-center gap-2 text-[11px] font-medium tracking-wider text-mist/45 uppercase">
             <Megaphone className="size-3.5 text-brand-300" />
-            Recommended channels
+            {copy.channels}
           </p>
           <ul className="mt-3 space-y-2">
             {strategy.channels.map((c) => (
@@ -60,7 +65,7 @@ export function StrategySummary({ strategy }: { strategy: MarketingPlan["strateg
                     c.priority === "Primary" ? "bg-brand-500/20 text-brand-300" : "bg-white/[0.06] text-mist/55",
                   )}
                 >
-                  {c.priority}
+                  {copy.priority[c.priority]}
                 </span>
               </li>
             ))}

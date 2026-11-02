@@ -22,9 +22,10 @@ import {
   setupSystemPrompt,
   suppliersSystemPrompt,
 } from "@/lib/server/ibda-agent-guide";
+import { inLanguage } from "@/lib/server/language";
 import { ask, emptyParts } from "./ask";
 
-/** What every module generator is given: the founder's answers, and their text as sent to Claude. */
+/** What every module generator is given: the founder's answers, their text as sent to Claude, and the language to write in. */
 export type GenerationContext = AssessmentRequest & { founderInput: string };
 
 type Generator<K extends ModuleKey> = (ctx: GenerationContext, upstream: Partial<ModuleOutputs>) => Promise<ModuleOutputs[K]>;
@@ -76,48 +77,48 @@ function setupTask(profile: AssessmentRequest["profile"]) {
 
 /** One Claude request per plan module. */
 export const moduleGenerators: { [K in ModuleKey]: Generator<K> } = {
-  assessment: ({ founderInput }) =>
-    ask(assessmentSystemPrompt, assessmentSchema, founderInput, "Prepare the initial business assessment for this founder.", (o) =>
+  assessment: ({ founderInput, locale }) =>
+    ask(inLanguage(assessmentSystemPrompt, locale), assessmentSchema, founderInput, "Prepare the initial business assessment for this founder.", (o) =>
       emptyParts({ "ideaSummary.headline": o.ideaSummary.headline, "feasibility.reasoning": o.feasibility.reasoning, keyAssumptions: o.keyAssumptions, "recommendedNextStep.title": o.recommendedNextStep.title }),
     ),
 
-  financials: ({ founderInput }) =>
-    ask(planInputsSystemPrompt, planFinancialsSchema, founderInput, "Prepare the FINANCIAL planning inputs (unit, budget, costs, pricing, sales, price bands) for this founder's business.", (o) =>
+  financials: ({ founderInput, locale }) =>
+    ask(inLanguage(planInputsSystemPrompt, locale), planFinancialsSchema, founderInput, "Prepare the FINANCIAL planning inputs (unit, budget, costs, pricing, sales, price bands) for this founder's business.", (o) =>
       emptyParts({ "unit.singular": o.unit.singular, "budget.amountAed": o.budget.amountAed, startupCosts: o.startupCosts, "pricing.heroAed": o.pricing.heroAed, unitCosts: o.unitCosts, monthlySales: o.monthlySales, priceBands: o.priceBands }),
     ),
 
-  narrative: ({ founderInput }) =>
-    ask(planInputsSystemPrompt, planNarrativeSchema, founderInput, "Prepare the NARRATIVE planning inputs (market, risks, UAE setup, next actions, suppliers, marketing) for this founder's business.", (o) =>
+  narrative: ({ founderInput, locale }) =>
+    ask(inLanguage(planInputsSystemPrompt, locale), planNarrativeSchema, founderInput, "Prepare the NARRATIVE planning inputs (market, risks, UAE setup, next actions, suppliers, marketing) for this founder's business.", (o) =>
       emptyParts({ "market.summary": o.market.summary, risks: o.risks, nextActions: o.nextActions, launchPathLabel: o.launchPathLabel, "suppliers.categories": o.suppliers.categories, "marketing.focusAreas": o.marketing.focusAreas }),
     ),
 
-  setup: ({ founderInput, profile }) =>
-    ask(setupSystemPrompt, setupSchema, founderInput, setupTask(profile), (o) =>
+  setup: ({ founderInput, profile, locale }) =>
+    ask(inLanguage(setupSystemPrompt, locale), setupSchema, founderInput, setupTask(profile), (o) =>
       emptyParts({ summary: o.summary, activity: o.activity, routes: o.routes, path: o.path, requirements: o.requirements }),
     ),
 
   // Reads the financial plan so its first orders fit the plan's sourcing budget.
-  suppliers: ({ founderInput }, upstream) =>
-    ask(suppliersSystemPrompt, suppliersSchema, founderInput, `Prepare the supplier categories, supplier types and enquiry details for this founder's first launch.${supplierBudgetBrief(upstream.financials!)}`, (o) =>
+  suppliers: ({ founderInput, locale }, upstream) =>
+    ask(inLanguage(suppliersSystemPrompt, locale), suppliersSchema, founderInput, `Prepare the supplier categories, supplier types and enquiry details for this founder's first launch.${supplierBudgetBrief(upstream.financials!)}`, (o) =>
       emptyParts({ categories: o.categories, options: o.options }),
       "low",
     ),
 
-  marketing_strategy: ({ founderInput }) =>
-    ask(marketingSystemPrompt, marketingStrategySchema, founderInput, "Prepare the launch marketing strategy and 13-week calendar for this founder's business.", (o) =>
+  marketing_strategy: ({ founderInput, locale }) =>
+    ask(inLanguage(marketingSystemPrompt, locale), marketingStrategySchema, founderInput, "Prepare the launch marketing strategy and 13-week calendar for this founder's business.", (o) =>
       emptyParts({ objective: o.objective, channels: o.channels, phaseGoals: o.phaseGoals, weeks: o.weeks }),
       "low",
     ),
 
-  marketing_execution: ({ founderInput }) =>
-    ask(marketingSystemPrompt, marketingExecutionSchema, founderInput, "Prepare the content plan, marketing budget split, launch KPIs and recommended next move for this founder's business.", (o) =>
+  marketing_execution: ({ founderInput, locale }) =>
+    ask(inLanguage(marketingSystemPrompt, locale), marketingExecutionSchema, founderInput, "Prepare the content plan, marketing budget split, launch KPIs and recommended next move for this founder's business.", (o) =>
       emptyParts({ contentPillars: o.contentPillars, budgetSplit: o.budgetSplit, kpis: o.kpis, "nextMove.title": o.nextMove.title, "nextMove.steps": o.nextMove.steps }),
       "low",
     ),
 
-  marketing_calendar: ({ founderInput }) =>
+  marketing_calendar: ({ founderInput, locale }) =>
     ask(
-      marketingCalendarSystemPrompt,
+      inLanguage(marketingCalendarSystemPrompt, locale),
       marketingCalendarSchema,
       founderInput,
       "Prepare the launch-month content calendar and competitor inspiration for this founder's business.",

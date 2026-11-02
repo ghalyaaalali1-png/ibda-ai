@@ -2,28 +2,32 @@
 
 import { Check, Loader2, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
-import { agentSteps } from "@/content/landing";
+import { agentStepIcons } from "@/content/landing";
+import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
 
 const STEP_MS = 1600;
 // Extra ticks to hold on the "plan ready" state before looping.
 const HOLD_TICKS = 3;
 
-/** Animated illustration of the Ibda agent working through a business idea. */
+/** Animated illustration of the KHITTA agent working through a business idea. */
 export function AgentFlow() {
+  const { t } = useI18n();
+  const copy = t.landing.agentFlow;
+  const steps = copy.steps;
   const [tick, setTick] = useState(1);
 
   useEffect(() => {
     const id = setInterval(
-      () => setTick((t) => (t + 1) % (agentSteps.length + HOLD_TICKS)),
+      () => setTick((v) => (v + 1) % (steps.length + HOLD_TICKS)),
       STEP_MS,
     );
     return () => clearInterval(id);
-  }, []);
+  }, [steps.length]);
 
-  const active = Math.min(tick, agentSteps.length);
-  const complete = active === agentSteps.length;
-  const progress = Math.round((active / agentSteps.length) * 100);
+  const active = Math.min(tick, steps.length);
+  const complete = active === steps.length;
+  const progress = Math.round((active / steps.length) * 100);
 
   return (
     <div className="relative mx-auto w-full max-w-md lg:max-w-none">
@@ -35,7 +39,7 @@ export function AgentFlow() {
 
       <div
         role="img"
-        aria-label="Ibda agent process: Business Idea, Market Research, Feasibility, Suppliers, UAE Setup, Launch Plan"
+        aria-label={copy.label}
         className="glass relative overflow-hidden rounded-3xl p-5 shadow-2xl shadow-black/40 sm:p-6"
       >
         {/* Header */}
@@ -45,8 +49,8 @@ export function AgentFlow() {
               <Sparkles className="size-4" />
             </span>
             <div>
-              <p className="text-sm font-medium text-white">Ibda Agent</p>
-              <p className="font-mono text-[11px] text-mist/45">
+              <p className="text-sm font-medium text-white">{copy.name}</p>
+              <p dir="ltr" className="font-mono text-[11px] text-mist/45">
                 launch_plan.run()
               </p>
             </div>
@@ -65,24 +69,24 @@ export function AgentFlow() {
                 complete ? "bg-emerald-400" : "animate-pulse bg-brand-400",
               )}
             />
-            {complete ? "Plan ready" : "Analyzing"}
+            {complete ? copy.planReady : copy.analyzing}
           </span>
         </div>
 
         {/* Progress */}
         <div className="mt-5 h-1 overflow-hidden rounded-full bg-white/5">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-brand-500 to-electric-400 transition-[width] duration-700 ease-out"
+            className="h-full rounded-full bg-gradient-to-r from-brand-500 to-electric-400 transition-[width] duration-700 ease-out rtl:bg-gradient-to-l"
             style={{ width: `${progress}%` }}
           />
         </div>
 
         {/* Steps */}
         <ol className="relative mt-5 space-y-1.5">
-          {agentSteps.map((step, i) => {
+          {steps.map((step, i) => {
             const state =
               i < active ? "done" : i === active ? "active" : "pending";
-            const Icon = step.icon;
+            const Icon = agentStepIcons[i];
             return (
               <li
                 key={step.label}
@@ -95,10 +99,10 @@ export function AgentFlow() {
                 )}
               >
                 {/* Connector to next step */}
-                {i < agentSteps.length - 1 && (
+                {i < steps.length - 1 && (
                   <span
                     aria-hidden
-                    className="absolute top-[calc(50%+18px)] left-[30px] h-[calc(100%-30px)] w-px overflow-hidden bg-white/10"
+                    className="absolute top-[calc(50%+18px)] start-[30px] h-[calc(100%-30px)] w-px overflow-hidden bg-white/10"
                   >
                     {state === "done" && (
                       <span className="absolute inset-0 bg-gradient-to-b from-brand-400 to-electric-400" />
@@ -140,18 +144,12 @@ export function AgentFlow() {
       </div>
 
       {/* Floating insight chips */}
-      <div className="glass absolute -bottom-10 -left-4 hidden animate-float rounded-2xl px-4 py-3 shadow-xl shadow-black/30 sm:block lg:-left-10">
-        <p className="text-[11px] tracking-wide text-mist/50 uppercase">
-          Launch budget
-        </p>
-        <p className="mt-0.5 text-lg font-semibold text-white">
-          AED 30,000
-        </p>
+      <div className="glass absolute -bottom-10 -start-4 hidden animate-float rounded-2xl px-4 py-3 shadow-xl shadow-black/30 sm:block lg:-start-10">
+        <p className="text-[11px] tracking-wide text-mist/50 uppercase">{copy.launchBudget}</p>
+        <p className="mt-0.5 text-lg font-semibold text-white">{t.fmt.aed(30000)}</p>
       </div>
-      <div className="glass absolute -top-5 -right-3 hidden animate-float rounded-2xl px-4 py-3 shadow-xl shadow-black/30 [animation-delay:-3.5s] sm:block lg:-right-6">
-        <p className="text-[11px] tracking-wide text-mist/50 uppercase">
-          Target gross margin
-        </p>
+      <div className="glass absolute -top-5 -end-3 hidden animate-float rounded-2xl px-4 py-3 shadow-xl shadow-black/30 [animation-delay:-3.5s] sm:block lg:-end-6">
+        <p className="text-[11px] tracking-wide text-mist/50 uppercase">{copy.targetMargin}</p>
         <p className="mt-0.5 text-lg font-semibold text-emerald-300">68%</p>
       </div>
     </div>

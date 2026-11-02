@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { routes } from "@/config/site";
 import { saveLaunchIdea, saveLaunchProfile } from "@/features/launch-profile/profile";
+import { displayLabel, displayValue } from "@/i18n";
+import { useI18n } from "@/i18n/I18nProvider";
 import { useOnboarding } from "../useOnboarding";
 import { IdeaComposer } from "./IdeaComposer";
 import { AgentMessage, TypingIndicator, UserMessage } from "./Messages";
@@ -13,16 +15,15 @@ import { OptionChips } from "./OptionChips";
 import { QuestionMessage } from "./QuestionMessage";
 import { SummaryCard } from "./SummaryCard";
 
-const GREETING =
-  "Hi, I'm Ibda. Tell me what you want to build, and I'll help you figure out whether it makes sense and how to launch it.";
-
 export function OnboardingChat() {
+  const { t } = useI18n();
   const flow = useOnboarding();
   const { status, idea, analysis, questions, answers, currentIndex, editing } = flow;
   const endRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
   function startAnalysis() {
+    // Stored as given (English values), whatever the interface language.
     saveLaunchProfile(flow.summary.map(({ id, label, value }) => ({ id, label, value })));
     saveLaunchIdea(idea);
     flow.startAnalysis();
@@ -43,8 +44,15 @@ export function OnboardingChat() {
 
   const total = questions.length;
   const inQuestions = status === "asking" || status === "typing";
-  const reactionFor = (index: number) =>
-    index > 0 ? questions[index - 1].reactions?.[answers[index - 1]] : undefined;
+  const reactionFor = (index: number) => {
+    if (index === 0) return undefined;
+    const q = questions[index - 1];
+    const answer = answers[index - 1];
+    return t.onboarding.reactions[q.id]?.[answer] ?? q.reactions?.[answer];
+  };
+  const known = analysis
+    ? t.fmt.list(analysis.facts.map((f) => t.onboarding.known[f.id] ?? displayLabel(t, f.id, f.label).toLowerCase()))
+    : "";
 
   return (
     <>
@@ -56,19 +64,19 @@ export function OnboardingChat() {
       <main className="mx-auto w-full max-w-2xl px-5 pt-12 pb-32 sm:px-8 sm:pt-20">
         <div role="log" aria-live="polite" className="flex flex-col gap-8">
           <AgentMessage>
-            <p className="text-lg leading-relaxed text-white sm:text-xl">{GREETING}</p>
+            <p className="text-lg leading-relaxed text-white sm:text-xl">{t.onboarding.greeting}</p>
           </AgentMessage>
 
           {status === "idle" && <IdeaComposer onSubmit={flow.submitIdea} />}
 
           {idea && <UserMessage>{idea}</UserMessage>}
 
-          {status === "thinking" && <TypingIndicator label="Reading your idea…" />}
+          {status === "thinking" && <TypingIndicator label={t.onboarding.reading} />}
 
           {analysis && (
             <AgentMessage>
               <p className="text-[15px] leading-relaxed text-mist/85 sm:text-base">
-                {analysis.acknowledgement}
+                {t.onboarding.acknowledgement(known, analysis.questions.length)}
               </p>
               <ul className="mt-4 flex flex-wrap gap-2">
                 {analysis.facts.map((fact) => (
@@ -77,8 +85,8 @@ export function OnboardingChat() {
                     className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/[0.06] px-3 py-1.5 text-sm"
                   >
                     <Check className="size-3.5 text-emerald-400" />
-                    <span className="text-mist/50">{fact.label}</span>
-                    <span className="font-medium text-white">{fact.value}</span>
+                    <span className="text-mist/50">{displayLabel(t, fact.id, fact.label)}</span>
+                    <span className="font-medium text-white">{displayValue(t, fact.value)}</span>
                   </li>
                 ))}
               </ul>
@@ -104,9 +112,9 @@ export function OnboardingChat() {
                 />
                 <UserMessage
                   onEdit={status === "starting" || editing !== null ? undefined : () => flow.editAnswer(i)}
-                  editLabel={`Change answer: ${questions[i].summaryLabel}`}
+                  editLabel={t.onboarding.changeAnswer(displayLabel(t, questions[i].id, questions[i].summaryLabel))}
                 >
-                  {answer}
+                  {displayValue(t, answer)}
                 </UserMessage>
               </div>
             ),
@@ -133,9 +141,7 @@ export function OnboardingChat() {
           {(status === "complete" || status === "starting") && (
             <AgentMessage>
               <p className="text-[15px] leading-relaxed text-mist/85 sm:text-base">
-                {reactionFor(total) ?? "Thanks — that's everything I need."} Here&apos;s
-                a quick summary before I begin. You can change anything that
-                isn&apos;t right.
+                {reactionFor(total) ?? t.onboarding.thanks} {t.onboarding.summaryIntro}
               </p>
               <SummaryCard
                 items={flow.summary}

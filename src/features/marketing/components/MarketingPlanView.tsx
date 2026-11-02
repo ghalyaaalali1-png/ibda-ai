@@ -1,8 +1,12 @@
+"use client";
+
 import { ArrowLeft, ArrowRight, CheckCircle2, Info, PackageCheck, Sparkles, Wand2 } from "lucide-react";
 import Link from "next/link";
 import { Container } from "@/components/ui/Container";
+import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 import { Logo } from "@/components/ui/Logo";
 import { routes } from "@/config/site";
+import { useI18n } from "@/i18n/I18nProvider";
 import type { CaptionContext } from "../captions";
 import type { MarketingPlan } from "../types";
 import { ContentGenerator } from "./ContentGenerator";
@@ -31,6 +35,7 @@ export function MarketingPlanView({
   /** When set, captions are written live by Claude for this business; otherwise the demo captions are used. */
   captionContext?: CaptionContext;
 }) {
+  const { t } = useI18n();
   const { profileLine } = text;
   return (
     <>
@@ -39,24 +44,25 @@ export function MarketingPlanView({
           <div className="flex min-w-0 items-center gap-4">
             <Logo />
             <span aria-hidden className="hidden h-5 w-px bg-white/10 sm:block" />
-            <span className="hidden text-sm font-medium text-mist/80 sm:block">Marketing Plan</span>
+            <span className="hidden text-sm font-medium text-mist/80 sm:block">{t.common.marketingPlan}</span>
           </div>
           <div className="flex min-w-0 items-center gap-1">
-            <span className="mr-2 hidden truncate text-sm text-mist/50 lg:block">{profileLine}</span>
+            <span className="me-2 hidden truncate text-sm text-mist/50 lg:block">{profileLine}</span>
             <Link
               href={routes.suppliers}
               className="hidden items-center rounded-full px-3 py-2 text-sm text-mist/60 transition-colors hover:bg-white/5 hover:text-white md:inline-flex"
             >
-              Suppliers
+              {t.common.suppliers}
             </Link>
             <Link
               href={routes.plan}
-              aria-label="Back to business plan"
+              aria-label={t.common.backToBusinessPlanLabel}
               className="inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-sm text-mist/60 transition-colors hover:bg-white/5 hover:text-white"
             >
-              <ArrowLeft className="size-3.5" />
-              <span aria-hidden className="hidden md:inline">Business Plan</span>
+              <ArrowLeft className="size-3.5 rtl:-scale-x-100" />
+              <span aria-hidden className="hidden md:inline">{t.common.businessPlan}</span>
             </Link>
+            <LanguageSwitcher className="ms-1" />
           </div>
         </Container>
       </header>
@@ -67,11 +73,9 @@ export function MarketingPlanView({
           <div className="max-w-2xl">
             <p className="inline-flex items-center gap-2 text-xs font-medium text-brand-300">
               <Sparkles className="size-3.5" />
-              Planned by Ibda
+              {t.marketing.plannedBy}
             </p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-              Your launch marketing plan
-            </h1>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">{t.marketing.title}</h1>
             <p className="mt-3 text-base leading-relaxed text-mist/60">
               {text.intro}
             </p>
@@ -110,13 +114,13 @@ export function MarketingPlanView({
         >
           <div
             aria-hidden
-            className="pointer-events-none absolute -top-24 -right-16 size-80 rounded-full bg-brand-500/20 blur-3xl"
+            className="pointer-events-none absolute -top-24 -end-16 size-80 rounded-full bg-brand-500/20 blur-3xl"
           />
           <div className="relative grid gap-8 lg:grid-cols-[1.2fr_1fr] lg:items-center">
             <div>
               <p className="inline-flex items-center gap-1.5 text-xs font-medium text-brand-300">
                 <Sparkles className="size-3.5" />
-                Ibda recommended next move
+                {t.marketing.nextMove.eyebrow}
               </p>
               <h2 id="next-move-title" className="mt-2 text-2xl font-semibold tracking-tight text-white">
                 {plan.nextMove.title}
@@ -129,7 +133,7 @@ export function MarketingPlanView({
                   <li key={step} className="flex gap-3 rounded-2xl border border-white/[0.07] bg-ink-900/60 px-4 py-3 text-sm text-mist/85">
                     <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-brand-300" />
                     <span>
-                      <span className="mr-1 font-mono text-xs text-mist/40">{i + 1}.</span>
+                      <span className="me-1 font-mono text-xs text-mist/40">{i + 1}.</span>
                       {step}
                     </span>
                   </li>
@@ -140,8 +144,8 @@ export function MarketingPlanView({
                 className="group mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-b from-brand-500 to-brand-600 px-6 text-base font-medium text-white shadow-[0_0_0_1px_rgb(255_255_255/0.12)_inset,0_10px_40px_-6px_rgb(139_108_255/0.8)] transition-all hover:-translate-y-px sm:w-auto"
               >
                 <Wand2 className="size-4" />
-                Draft my first teaser post
-                <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+                {t.marketing.nextMove.draft}
+                <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5 rtl:-scale-x-100 rtl:group-hover:-translate-x-0.5" />
               </a>
             </div>
           </div>
@@ -151,7 +155,7 @@ export function MarketingPlanView({
         <section className="glass relative overflow-hidden rounded-3xl p-6 sm:p-8">
           <div
             aria-hidden
-            className="pointer-events-none absolute -bottom-32 -left-20 size-80 rounded-full bg-brand-500/15 blur-3xl"
+            className="pointer-events-none absolute -bottom-32 -start-20 size-80 rounded-full bg-brand-500/15 blur-3xl"
           />
           <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-4">
@@ -159,31 +163,29 @@ export function MarketingPlanView({
                 <PackageCheck className="size-5" />
               </span>
               <div>
-                <p className="text-[11px] font-medium tracking-wider text-brand-300/80 uppercase">Final step</p>
-                <p className="mt-1 text-lg font-semibold text-white">Launch Pack</p>
-                <p className="mt-1 text-sm text-mist/55">
-                  Your plan, suppliers, requirements and marketing in one launch checklist, with what&apos;s still to verify.
-                </p>
+                <p className="text-[11px] font-medium tracking-wider text-brand-300/80 uppercase">{t.common.finalStep}</p>
+                <p className="mt-1 text-lg font-semibold text-white">{t.common.launchPack}</p>
+                <p className="mt-1 text-sm text-mist/55">{t.marketing.continueDescription}</p>
               </div>
             </div>
             <Link
               href={routes.launchPack}
               className="group inline-flex h-11 shrink-0 items-center gap-2 self-start rounded-full bg-gradient-to-b from-brand-500 to-brand-600 px-5 text-sm font-medium text-white shadow-[0_0_0_1px_rgb(255_255_255/0.12)_inset,0_10px_40px_-6px_rgb(139_108_255/0.8)] transition-all hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400 sm:self-auto"
             >
-              Continue to Launch Pack
-              <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+              {t.marketing.continueTo}
+              <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5 rtl:-scale-x-100 rtl:group-hover:-translate-x-0.5" />
             </Link>
           </div>
         </section>
 
         <div className="flex flex-wrap gap-x-6 gap-y-2">
           <Link href={routes.suppliers} className="inline-flex items-center gap-1.5 text-sm text-mist/55 transition-colors hover:text-white">
-            <ArrowLeft className="size-3.5" />
-            Back to Suppliers
+            <ArrowLeft className="size-3.5 rtl:-scale-x-100" />
+            {t.common.backToSuppliers}
           </Link>
           <Link href={routes.plan} className="inline-flex items-center gap-1.5 text-sm text-mist/55 transition-colors hover:text-white">
-            <ArrowLeft className="size-3.5" />
-            Back to Business Plan
+            <ArrowLeft className="size-3.5 rtl:-scale-x-100" />
+            {t.common.backToBusinessPlan}
           </Link>
         </div>
       </Container>

@@ -1,23 +1,16 @@
 import { businessPhrase, profileValue, type ProfileField } from "@/features/launch-profile/profile";
 import type { CaptionContext } from "@/features/marketing/captions";
 import type { MarketingViewText } from "@/features/marketing/components/MarketingPlanView";
-import type { InspirationItem, LaunchTheme, MarketingPlan, Phase, PhaseId } from "@/features/marketing/types";
-import { aed } from "@/features/plan/format";
+import type { InspirationItem, LaunchTheme, MarketingPlan, Phase } from "@/features/marketing/types";
 import type { BusinessPlan } from "@/features/plan/types";
+import { displayProfileLine, displayValue, english, type Dictionary } from "@/i18n";
 import type { InitialAssessment } from "./schema";
 
-const phaseLabels: Record<PhaseId, string> = { prelaunch: "Pre-launch", launch: "Launch", growth: "Growth" };
-
 const themeOrder: LaunchTheme[] = ["teaser", "launch", "education", "proof"];
-const themeTitles: Record<LaunchTheme, string> = {
-  teaser: "Teaser & pre-launch",
-  launch: "Launch week",
-  education: "Education & value",
-  proof: "Reviews & social proof",
-};
 
 // Inspiration must describe kinds of competitors, never real accounts or figures.
-const NAMES_OR_FIGURES = /@\w|https?:\/\/|www\.|\.(com|ae|net)\b|\d[\d,.]*\s*[km]?\s*(followers|likes|views|subscribers)/i;
+const NAMES_OR_FIGURES =
+  /@\w|https?:\/\/|www\.|\.(com|ae|net)\b|\d[\d,.]*\s*[km]?\s*(followers|likes|views|subscribers)|\d[\d,.]*\s*(ألف|مليون)?\s*(متابع|إعجاب|مشاهدة|مشترك)/i;
 const isPatternOnly = (i: InspirationItem) =>
   !NAMES_OR_FIGURES.test([i.competitorType, i.whatWorks, i.howToAdapt, i.avoid].join(" "));
 
@@ -34,10 +27,20 @@ function splitByShares(total: number, shares: number[]) {
 /**
  * Builds the Marketing screen for any business from Claude's marketing
  * planning and the plan built from the assessment. Budget totals come from
- * the plan's marketing cost lines so the two screens can't disagree.
+ * the plan's marketing cost lines so the two screens can't disagree. `t`
+ * words the screen text (English by default); what's sent to Claude for
+ * captions stays as entered.
  */
-export function buildMarketing(a: InitialAssessment, plan: BusinessPlan, profile: ProfileField[]) {
+export function buildMarketing(
+  a: InitialAssessment,
+  plan: BusinessPlan,
+  profile: ProfileField[],
+  t: Dictionary = english,
+) {
   const m = a.marketing;
+  const built = t.marketing.built;
+  const themeTitles: Record<LaunchTheme, string> = built.themes;
+  const postLabel = (label: string) => built.postLabels[label.trim()] ?? label;
 
   const phases: Phase[] = (["prelaunch", "launch", "growth"] as const).map((id) => {
     const weeks = m.weeks
@@ -48,8 +51,8 @@ export function buildMarketing(a: InitialAssessment, plan: BusinessPlan, profile
     const last = weeks.at(-1)?.week;
     return {
       id,
-      label: phaseLabels[id],
-      weeks: first === undefined ? "" : first === last ? `Week ${first}` : `Weeks ${first}–${last}`,
+      label: t.marketing.calendar.phases[id],
+      weeks: first === undefined || last === undefined ? "" : t.marketing.calendar.weeks(first, last),
       goal: m.phaseGoals.find((g) => g.phase === id)?.goal ?? "",
       plan: weeks,
     };
@@ -83,7 +86,12 @@ export function buildMarketing(a: InitialAssessment, plan: BusinessPlan, profile
       };
     }),
     posts: m.posts
-      .map((p) => ({ ...p, week: Math.min(4, Math.max(1, Math.round(p.week))) }))
+      .map((p) => ({
+        ...p,
+        week: Math.min(4, Math.max(1, Math.round(p.week))),
+        day: postLabel(p.day),
+        contentType: postLabel(p.contentType),
+      }))
       .sort((a, b) => a.week - b.week)
       .slice(0, 16),
   };
@@ -105,7 +113,7 @@ export function buildMarketing(a: InitialAssessment, plan: BusinessPlan, profile
         planLine:
           marketingTotal > 0
             ? marketingLines.map((c) => c.label).join(" + ")
-            : "Suggested marketing budget (estimate)",
+            : built.suggestedBudget,
         total,
         lines: split.map((b, i) => ({ label: b.label, amount: amounts[i], note: b.note })),
       },
@@ -113,10 +121,10 @@ export function buildMarketing(a: InitialAssessment, plan: BusinessPlan, profile
     kpis: [
       ...m.kpis.slice(0, 5),
       {
-        label: "First-month sales",
+        label: built.firstMonth.label,
         target: `${firstMonth.toLocaleString("en-US")} ${firstMonth === 1 ? unit.singular : unit.plural}`,
-        when: "End of month 1",
-        signal: "Matches the business plan's month-1 estimate",
+        when: built.firstMonth.when,
+        signal: built.firstMonth.signal,
       },
     ],
     nextMove: { title: m.nextMove.title, why: m.nextMove.why, steps: m.nextMove.steps.slice(0, 3) },
@@ -125,17 +133,16 @@ export function buildMarketing(a: InitialAssessment, plan: BusinessPlan, profile
   };
 
   const text: MarketingViewText = {
-    profileLine: ["business", "location", "budget"]
-      .map((id) => profileValue(profile, id))
-      .filter(Boolean)
-      .join(" · "),
-    intro: `Built from your business plan: your ${phrase} in ${location}, priced at ${priceRange} per ${unit.singular}${
-      launchWeek ? `, a launch in week ${launchWeek}` : ""
-    } and the marketing budget already in your plan.`,
-    sourceNote: "Prototype plan — targets are estimates",
-    budgetFootnote: `From month 2, marketing is funded from sales within your ${aed(
-      plan.breakEven.monthlyRunningCosts,
-    )} monthly running costs. Estimates.`,
+    profileLine: displayProfileLine(t, profile),
+    intro: built.intro(
+      t.locale === "en" ? phrase : displayValue(t, profileValue(profile, "business") ?? phrase),
+      displayValue(t, location),
+      t.fmt.aedRange(pricing.min, pricing.max),
+      unit.singular,
+      launchWeek,
+    ),
+    sourceNote: built.sourceNote,
+    budgetFootnote: built.footnote(t.fmt.aed(plan.breakEven.monthlyRunningCosts)),
   };
 
   const captionContext: CaptionContext = {

@@ -6,43 +6,54 @@ import { buildPlan } from "@/features/assessment/applyToPlan";
 import { buildSupplierData } from "@/features/assessment/applyToSuppliers";
 import { AnalysisStatus } from "@/features/assessment/components/AnalysisStatus";
 import { currentAssessmentInput, useAssessmentView } from "@/features/assessment/storage";
-import { demoMarketing } from "@/features/marketing/demoMarketing";
-import { demoPlan } from "@/features/plan/demoPlan";
-import { demoSupplierData } from "@/features/suppliers/demoSuppliers";
+import { demoFor } from "@/features/demo/localizedDemo";
+import { useI18n } from "@/i18n/I18nProvider";
 import { buildLaunchPack } from "../buildLaunchPack";
-import { demoExtras, extrasFromAssessment } from "../extras";
+import { extrasFromAssessment } from "../extras";
 import { LaunchPackView } from "./LaunchPackView";
 
 /** The launch pack for the analysed business, or the abaya demo when there's no onboarding. */
 export function LiveLaunchPack() {
+  const { t } = useI18n();
   const view = useAssessmentView();
   const assessment = view.kind === "live" ? view.assessment : null;
   const pack = useMemo(() => {
+    const { plan: demoPlan, suppliers: demoSupplierData, marketing: demoMarketing, extras: demoExtras } = demoFor(t.locale);
     if (!assessment) {
-      return buildLaunchPack({ plan: demoPlan, suppliers: demoSupplierData, marketing: demoMarketing, extras: demoExtras });
+      const demo = t.suppliers.demo;
+      const suppliers = {
+        ...demoSupplierData,
+        sourceNote: demo.sourceNote,
+        allocationLabel: demo.allocationLabel,
+      };
+      return buildLaunchPack({ plan: demoPlan, suppliers, marketing: demoMarketing, extras: demoExtras }, t);
     }
     const { profile } = currentAssessmentInput();
-    const plan = buildPlan(demoPlan, assessment, profile);
-    return buildLaunchPack({
-      plan,
-      suppliers: buildSupplierData(assessment, plan, profile),
-      marketing: buildMarketing(assessment, plan, profile).marketing,
-      extras: extrasFromAssessment(assessment),
-    });
-  }, [assessment]);
+    const plan = buildPlan(demoPlan, assessment, profile, t);
+    return buildLaunchPack(
+      {
+        plan,
+        suppliers: buildSupplierData(assessment, plan, profile, t),
+        marketing: buildMarketing(assessment, plan, profile, t).marketing,
+        extras: extrasFromAssessment(assessment),
+      },
+      t,
+    );
+  }, [assessment, t]);
 
-  if (view.kind === "checking" || view.kind === "unavailable") {
-    return <AnalysisStatus state={view.kind} screen="Launch Pack" />;
+  if (view.kind !== "live" && view.kind !== "demo") {
+    return view.kind === "translationFailed" ? (
+      <AnalysisStatus state={view.kind} screen="launchPack" message={view.message} onRetry={view.retry} />
+    ) : (
+      <AnalysisStatus state={view.kind} screen="launchPack" />
+    );
   }
   return (
     <LaunchPackView
       key={assessment ? "live" : "demo"}
       pack={pack}
-      sourceNote={
-        assessment
-          ? "Built from Ibda's analysis of your answers — figures are estimates, not yet verified"
-          : "Prototype launch pack — demo data"
-      }
+      sourceNote={assessment ? t.launchPack.sourceLive : t.launchPack.sourceDemo}
+      supplierLabel={assessment ? t.suppliers.built.badgePlural : t.suppliers.demo.badgePlural}
     />
   );
 }

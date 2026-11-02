@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { locales } from "@/i18n/config";
 
 /**
  * Shape of Claude's initial business assessment. Shared by the API route
@@ -161,7 +162,7 @@ export type PlanInputs = z.infer<typeof planFinancialsSchema> & z.infer<typeof p
  * Guide Step 2). Kept flat to stay within the structured-output grammar limit.
  */
 export const suppliersSchema = z.object({
-  intro: z.string().describe("One sentence in Ibda's voice on how it organised sourcing for this business"),
+  intro: z.string().describe("One sentence in KHITTA's voice on how it organised sourcing for this business"),
   categories: z
     .array(
       z.object({
@@ -246,7 +247,7 @@ export const marketingExecutionSchema = z.object({
   nextMove: z.object({
     title: z.string().describe("Imperative, max ~8 words"),
     why: z.string(),
-    steps: z.array(z.string()).describe("Exactly 3 steps; the last can mention Ibda drafting the first post"),
+    steps: z.array(z.string()).describe("Exactly 3 steps; the last can mention KHITTA drafting the first post"),
   }),
 });
 
@@ -342,8 +343,21 @@ export type InitialAssessment = z.infer<typeof assessmentSchema> & {
   marketing: MarketingInputs;
 };
 
-/** What the browser sends: the founder's own words plus their onboarding answers. */
+/** The whole assessment as one schema, to validate a stored or translated result. */
+export const initialAssessmentSchema = assessmentSchema.extend({
+  plan: planFinancialsSchema.extend(planNarrativeSchema.shape),
+  setup: setupSchema,
+  suppliers: suppliersSchema,
+  marketing: marketingStrategySchema.extend(marketingExecutionSchema.shape).extend(marketingCalendarSchema.shape),
+});
+
+/**
+ * What the browser sends: the founder's own words plus their onboarding
+ * answers, and the interface language Claude should write in (English if
+ * not given). The answers themselves are always stored in English.
+ */
 export const assessmentRequestSchema = z.object({
+  locale: z.enum(locales).optional(),
   idea: z.string().trim().min(1).max(600),
   profile: z
     .array(
@@ -359,8 +373,8 @@ export const assessmentRequestSchema = z.object({
 
 export type AssessmentRequest = z.infer<typeof assessmentRequestSchema>;
 
-export const feasibilityLabel: Record<InitialAssessment["feasibility"]["status"], string> = {
-  FEASIBLE: "Feasible",
-  FEASIBLE_WITH_CHANGES: "Feasible with changes",
-  CURRENTLY_NOT_FEASIBLE: "Currently not feasible",
-};
+/** A stored assessment and the language to translate it into. */
+export const translationRequestSchema = z.object({
+  assessment: initialAssessmentSchema,
+  locale: z.enum(locales),
+});

@@ -1,7 +1,11 @@
+"use client";
+
+import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
 import { scoreTone } from "../format";
 
 export function MatchScore({ score, compact }: { score: number; compact?: boolean }) {
+  const { t } = useI18n();
   const tone = scoreTone(score);
   return (
     <div className={cn("flex items-center gap-2", compact ? "w-24" : "w-28")}>
@@ -10,7 +14,7 @@ export function MatchScore({ score, compact }: { score: number; compact?: boolea
       </div>
       <span className={cn("font-mono text-xs font-medium", tone.text)}>
         {score}
-        <span className="sr-only"> out of 100 Ibda match</span>
+        <span className="sr-only">{t.suppliers.matchSr}</span>
       </span>
     </div>
   );

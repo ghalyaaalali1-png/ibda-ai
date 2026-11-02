@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
-import { siteConfig } from "@/config/site";
 import { LiveSuppliers } from "@/features/suppliers/components/LiveSuppliers";
+import { getServerDictionary } from "@/i18n/server";
 
-export const metadata: Metadata = {
-  title: `Suppliers — ${siteConfig.name}`,
-  description: "Sourcing options Ibda researched and ranked for your launch.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getServerDictionary();
+  const page = t.meta.pages.suppliers;
+  return { title: `${page.title} — ${t.locale === "ar" ? t.common.brandArabic : t.common.brand}`, description: page.description };
+}
 
 export default function SuppliersPage() {
   // Live supplier planning when an assessment exists; the abaya demo otherwise.

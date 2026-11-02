@@ -63,4 +63,17 @@ Module links: `suppliers` depends on `financials`. Anything downstream of an aff
 | 7 | Visual identity and logo |
 | 8 | Production hardening |
 
+## Phase 2 — language and branding (implemented, awaiting review)
+
+- Interface copy lives in `src/i18n/dictionaries/en.ts` and `ar.ts`; Arabic must match the English keys (tested).
+- The language is chosen with the EN / عربي switcher and kept in the `khitta-locale` cookie; `<html lang dir>` follow it. The founder's answers and results are kept when switching.
+- Answers are stored in English whatever the interface language, so the analysis input is unchanged; the dictionary shows them in the interface language.
+- Text the builders add around Claude's output is worded by the dictionary; figures are identical in both languages (tested).
+- Approved: the prompts and schema descriptions now call the product KHITTA (خِطّة) instead of Ibda. Results saved before the rename can still say "Ibda".
+- Approved: generated content follows the interface language.
+  - A new plan is generated in the interface language: the browser sends `locale`, and Arabic adds an output-language rule to every plan prompt (English prompts are unchanged). Codes, enum values and source ids stay in English.
+  - Switching language after a plan exists translates its text once (`/api/translate`) instead of generating it again, so figures, codes and structure are identical in both languages. The translation is kept with the result (`translations[locale]`); results record the language Claude wrote them in.
+  - The abaya demo has an Arabic text overlay (`src/features/demo`); every figure comes from the English demo (tested).
+  - The founder's own free-text answers (for example the business name) show as they typed them.
+
 Deferred until separately approved: splitting `assessment` and `narrative` into smaller modules, and passing more upstream output into prompts (for example, aligning the marketing calendar with the strategy's launch week). Both change AI output.

@@ -1,4 +1,5 @@
 import type { ProfileField } from "@/features/launch-profile/profile";
+import { english, type Dictionary } from "@/i18n";
 import {
   emirateFrom,
   licensingSourcesFor,
@@ -16,12 +17,6 @@ const verdictFor: Record<InitialAssessment["feasibility"]["status"], Decision> =
   FEASIBLE: "GO",
   FEASIBLE_WITH_CHANGES: "CAUTION",
   CURRENTLY_NOT_FEASIBLE: "NO-GO",
-};
-
-const evidenceTag: Record<Evidence, string> = {
-  USER_PROVIDED: "Your figure",
-  ESTIMATE: "Estimate",
-  NOT_YET_CONFIRMED: "To confirm",
 };
 
 const HORIZON_MONTHS = 6;
@@ -67,7 +62,7 @@ function cashflowFor(spend: number, sales: number[], contribution: number, runni
  * are resolved against the verified list; anything unknown or from another
  * emirate is dropped, and the emirate's licensing authority is always added.
  */
-function buildSetup(a: InitialAssessment, profile: ProfileField[]): BusinessPlan["setup"] {
+function buildSetup(a: InitialAssessment, profile: ProfileField[], t: Dictionary): BusinessPlan["setup"] {
   const location = profile.find((f) => f.id === "location")?.value;
   const emirate = emirateFrom(location);
   const allowed = new Set(sourcesFor(emirate).map((x) => x.id));
@@ -93,7 +88,7 @@ function buildSetup(a: InitialAssessment, profile: ProfileField[]): BusinessPlan
   const options = a.setup.routes.slice(0, 3).map((o) => ({
     name: o.name,
     fit: o.fit,
-    cost: "Fee requires official confirmation",
+    cost: t.plan.built.feeToConfirm,
     recommended: o.recommended,
     authority: resolve(o.sourceId),
   }));
@@ -121,10 +116,18 @@ function buildSetup(a: InitialAssessment, profile: ProfileField[]): BusinessPlan
 /**
  * Builds the dashboard plan for any business from Claude's assessment and
  * the founder's answers. Claude supplies estimated inputs; every total,
- * margin and break-even figure is calculated here.
+ * margin and break-even figure is calculated here. `t` words the text added
+ * around Claude's output (English by default).
  */
-export function buildPlan(base: BusinessPlan, a: InitialAssessment, profile: ProfileField[]): BusinessPlan {
+export function buildPlan(
+  base: BusinessPlan,
+  a: InitialAssessment,
+  profile: ProfileField[],
+  t: Dictionary = english,
+): BusinessPlan {
   const p = a.plan;
+  const built = t.plan.built;
+  const evidenceTag: Record<Evidence, string> = built.evidence;
 
   const budget = Math.max(0, Math.round(p.budget.amountAed));
   const fitted = fitCostsToBudget(budget, p.startupCosts);
@@ -138,7 +141,7 @@ export function buildPlan(base: BusinessPlan, a: InitialAssessment, profile: Pro
   const spend = sum(costs.map((c) => c.amount));
   const budgetBasis = [
     `${p.budget.basis} (${evidenceTag[p.budget.type].toLowerCase()})`,
-    fitted.scaled ? "Cost estimates exceeded it and were scaled to fit" : null,
+    fitted.scaled ? built.scaled : null,
   ]
     .filter(Boolean)
     .join(". ");
@@ -163,9 +166,9 @@ export function buildPlan(base: BusinessPlan, a: InitialAssessment, profile: Pro
     verdict === "NO-GO"
       ? []
       : contribution <= 0
-        ? ["Estimated price doesn't cover unit costs"]
+        ? [built.priceBelowCost]
         : breakEvenMonth === null
-          ? [`No break-even within ${HORIZON_MONTHS} months (estimate)`]
+          ? [built.noBreakEven(HORIZON_MONTHS)]
           : [];
   const conditions = [
     ...a.feasibility.conditions.slice(0, 3 - consistencyNotes.length),
@@ -208,12 +211,12 @@ export function buildPlan(base: BusinessPlan, a: InitialAssessment, profile: Pro
         min: Math.round(b.minAed),
         max: Math.round(b.maxAed),
       })),
-      priceBandsNote: "Estimates — not yet researched",
+      priceBandsNote: built.priceBandsNote,
     },
     risks: p.risks.slice(0, 4),
     nextActions: p.nextActions.slice(0, 6),
     nextActionsLabel: p.launchPathLabel,
-    setup: buildSetup(a, profile),
+    setup: buildSetup(a, profile, t),
     upcoming: base.upcoming.map((section) => {
       if (section.id === "suppliers") {
         return { ...section, description: p.suppliers.description, includes: p.suppliers.categories.slice(0, 5) };

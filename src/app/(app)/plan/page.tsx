@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
-import { siteConfig } from "@/config/site";
 import { LivePlanDashboard } from "@/features/plan/components/LivePlanDashboard";
-import { demoPlan } from "@/features/plan/demoPlan";
+import { getServerDictionary } from "@/i18n/server";
 
-export const metadata: Metadata = {
-  title: `Business Plan — ${siteConfig.name}`,
-  description: "Your launch-ready business plan, prepared by Ibda.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getServerDictionary();
+  const page = t.meta.pages.plan;
+  return { title: `${page.title} — ${t.locale === "ar" ? t.common.brandArabic : t.common.brand}`, description: page.description };
+}
 
 export default function PlanPage() {
-  // Demo plan, with Claude's initial assessment applied in the browser when available.
-  return <LivePlanDashboard plan={demoPlan} />;
+  // Claude's assessment applied in the browser when available; otherwise the abaya demo.
+  return <LivePlanDashboard />;
 }

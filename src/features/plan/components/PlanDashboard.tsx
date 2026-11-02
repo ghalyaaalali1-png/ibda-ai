@@ -1,6 +1,9 @@
+"use client";
+
 import { Info, Sparkles } from "lucide-react";
 import { Container } from "@/components/ui/Container";
-import { profileValue } from "@/features/launch-profile/profile";
+import { displayProfileLine } from "@/i18n";
+import { useI18n } from "@/i18n/I18nProvider";
 import type { BusinessPlan } from "../types";
 import { BreakEvenChart } from "./BreakEvenChart";
 import { CostBreakdown } from "./CostBreakdown";
@@ -17,16 +20,14 @@ import { UpcomingSections } from "./UpcomingSections";
 
 export function PlanDashboard({
   plan,
-  sourceNote = "Prototype analysis — demo data",
+  sourceNote,
 }: {
   plan: BusinessPlan;
-  /** Where the content came from, shown under the title. */
+  /** Where the content came from, shown under the title (the demo note when not set). */
   sourceNote?: string;
 }) {
-  const profileLine = ["business", "location", "budget"]
-    .map((id) => profileValue(plan.profile, id))
-    .filter(Boolean)
-    .join(" · ");
+  const { t } = useI18n();
+  const profileLine = displayProfileLine(t, plan.profile);
 
   return (
     <>
@@ -38,16 +39,14 @@ export function PlanDashboard({
           <div>
             <p className="inline-flex items-center gap-2 text-xs font-medium text-brand-300">
               <Sparkles className="size-3.5" />
-              Prepared by Ibda
+              {t.plan.preparedBy}
             </p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-              Your launch plan
-            </h1>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">{t.plan.title}</h1>
             <p className="mt-2 text-base text-mist/55">{profileLine}</p>
           </div>
           <p className="inline-flex items-center gap-1.5 self-start rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1 text-xs text-mist/50 sm:self-auto">
             <Info className="size-3.5" />
-            {sourceNote}
+            {sourceNote ?? t.plan.sourceDemo}
           </p>
         </div>
 

@@ -1,4 +1,8 @@
+"use client";
+
 import { ArrowRight, Check, Loader2, Pencil } from "lucide-react";
+import { displayLabel, displayValue } from "@/i18n";
+import { useI18n } from "@/i18n/I18nProvider";
 import type { SummaryItem } from "../types";
 
 export function SummaryCard({
@@ -12,43 +16,42 @@ export function SummaryCard({
   onEdit: (questionIndex: number) => void;
   onStart: () => void;
 }) {
+  const { t } = useI18n();
   return (
     <div className="glass mt-4 overflow-hidden rounded-3xl">
       <div className="flex items-center justify-between border-b border-white/[0.06] px-5 py-4 sm:px-6">
-        <h2 className="text-base font-semibold text-white">
-          Here&apos;s what I understand
-        </h2>
+        <h2 className="text-base font-semibold text-white">{t.onboarding.summaryTitle}</h2>
         <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-400/10 px-2.5 py-1 font-mono text-[11px] text-emerald-300">
           <Check className="size-3" />
-          Ready
+          {t.onboarding.ready}
         </span>
       </div>
 
       <dl className="divide-y divide-white/[0.05] px-5 sm:px-6">
-        {items.map((item) => (
-          <div
-            key={item.label}
-            className="flex items-center justify-between gap-4 py-3"
-          >
-            <dt className="text-sm text-mist/50">{item.label}</dt>
-            <dd className="flex items-center gap-1 text-right text-sm font-medium text-white">
-              {item.value}
-              {(item.questionIndex === undefined || starting) && (
-                <span aria-hidden className="size-7" />
-              )}
-              {item.questionIndex !== undefined && !starting && (
-                <button
-                  type="button"
-                  onClick={() => onEdit(item.questionIndex!)}
-                  aria-label={`Change ${item.label.toLowerCase()}`}
-                  className="grid size-7 place-items-center rounded-full text-mist/35 transition-colors hover:bg-white/5 hover:text-mist"
-                >
-                  <Pencil className="size-3.5" />
-                </button>
-              )}
-            </dd>
-          </div>
-        ))}
+        {items.map((item) => {
+          const label = displayLabel(t, item.id, item.label);
+          return (
+            <div key={item.id} className="flex items-center justify-between gap-4 py-3">
+              <dt className="text-sm text-mist/50">{label}</dt>
+              <dd className="flex items-center gap-1 text-end text-sm font-medium text-white">
+                {displayValue(t, item.value)}
+                {(item.questionIndex === undefined || starting) && (
+                  <span aria-hidden className="size-7" />
+                )}
+                {item.questionIndex !== undefined && !starting && (
+                  <button
+                    type="button"
+                    onClick={() => onEdit(item.questionIndex!)}
+                    aria-label={t.onboarding.changeField(label)}
+                    className="grid size-7 place-items-center rounded-full text-mist/35 transition-colors hover:bg-white/5 hover:text-mist"
+                  >
+                    <Pencil className="size-3.5" />
+                  </button>
+                )}
+              </dd>
+            </div>
+          );
+        })}
       </dl>
 
       <div className="border-t border-white/[0.06] bg-white/[0.02] px-5 py-6 sm:px-6">
@@ -61,19 +64,16 @@ export function SummaryCard({
           {starting ? (
             <>
               <Loader2 className="size-4 animate-spin" />
-              Starting analysis…
+              {t.onboarding.starting}
             </>
           ) : (
             <>
-              Start Analysis
-              <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+              {t.onboarding.startAnalysis}
+              <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5 rtl:-scale-x-100 rtl:group-hover:-translate-x-0.5" />
             </>
           )}
         </button>
-        <p className="mt-4 text-center text-sm leading-relaxed text-mist/50">
-          Ibda will research the market, calculate feasibility, find supplier
-          options, review UAE setup requirements and build your launch plan.
-        </p>
+        <p className="mt-4 text-center text-sm leading-relaxed text-mist/50">{t.onboarding.startFootnote}</p>
       </div>
     </div>
   );

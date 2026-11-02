@@ -1,9 +1,7 @@
+/** Brand names; interface copy in both languages lives in src/i18n/dictionaries. */
 export const siteConfig = {
-  name: "Ibda",
-  nameArabic: "ابدأ",
-  tagline: "AI Business Launch Agent",
-  description:
-    "Ibda turns your business idea into a launch-ready plan — feasibility, pricing, suppliers, UAE setup and marketing.",
+  name: "KHITTA",
+  nameArabic: "خِطّة",
 } as const;
 
 /** Central route map. Every "Start My Business" button uses `start`. */
@@ -20,8 +18,9 @@ export const routes = {
   uae: "#uae",
 } as const;
 
+/** Landing-page sections; labels come from the dictionary's `nav`. */
 export const navLinks = [
-  { label: "How it Works", href: routes.howItWorks },
-  { label: "What Ibda Does", href: routes.capabilities },
-  { label: "For UAE Entrepreneurs", href: routes.uae },
+  { key: "howItWorks", href: routes.howItWorks },
+  { key: "whatWeDo", href: routes.capabilities },
+  { key: "forUae", href: routes.uae },
 ] as const;

@@ -1,41 +1,45 @@
-import { aed } from "@/features/plan/format";
 import { leadTimeLabel, moqLabel } from "@/features/suppliers/format";
+import { english, type Dictionary } from "@/i18n";
 import type { ChecklistItem, LaunchPack, OutstandingItem, PackInputs, Readiness } from "./types";
 
 const HORIZON = 6;
 
 /**
- * Overall readiness from rules over what Ibda has already generated —
+ * Overall readiness from rules over what KHITTA has already generated —
  * never a new judgement. Mirrors the Agent Guide's final status:
  * Ready to Launch / Proceed With Conditions / Needs Work.
  */
-function readinessFor(p: PackInputs, contribution: number, overAllocation: number): Readiness {
+function readinessFor(p: PackInputs, contribution: number, overAllocation: number, t: Dictionary): Readiness {
   const { plan, extras } = p;
+  const b = t.launchPack.built;
+  const labels = t.launchPack.readiness.labels;
   const blockers: string[] = [];
   const conditions: string[] = [];
 
-  if (plan.decision.verdict === "NO-GO") blockers.push(`Ibda's assessment: ${plan.decision.headline}`);
-  if (contribution <= 0) blockers.push("The planned price doesn't cover the estimated cost per sale");
+  if (plan.decision.verdict === "NO-GO") blockers.push(b.assessment(plan.decision.headline));
+  if (contribution <= 0) blockers.push(b.priceBelowCost);
 
-  if (plan.decision.verdict === "CAUTION") conditions.push(`Ibda's assessment: feasible with changes — ${plan.decision.headline}`);
-  if (plan.breakEven.month === null) conditions.push(`No break-even within ${HORIZON} months on current estimates`);
-  if (overAllocation > 0) conditions.push(`Supplier estimates are ${aed(overAllocation)} over the plan's sourcing allocation`);
+  if (plan.decision.verdict === "CAUTION") conditions.push(b.assessmentChanges(plan.decision.headline));
+  if (plan.breakEven.month === null) conditions.push(b.noBreakEven(HORIZON));
+  if (overAllocation > 0) conditions.push(b.overAllocation(t.fmt.aed(overAllocation)));
   const toConfirm = plan.setup.requirements.filter((r) => r.level === "confirm").length;
-  if (toConfirm > 0) conditions.push(`${toConfirm} setup requirement${toConfirm > 1 ? "s need" : " needs"} official confirmation`);
-  if (extras.questions.length > 0) conditions.push(`${extras.questions.length} open question${extras.questions.length > 1 ? "s" : ""} for you`);
-  if (extras.outputStatus === "PARTIAL") conditions.push("Some information is still missing or unverified");
+  if (toConfirm > 0) conditions.push(b.toConfirm(toConfirm));
+  if (extras.questions.length > 0) conditions.push(b.openQuestions(extras.questions.length));
+  if (extras.outputStatus === "PARTIAL") conditions.push(b.partial);
 
-  if (blockers.length > 0) return { status: "needs-work", label: "Needs work", reasons: [...blockers, ...conditions] };
-  if (conditions.length > 0) return { status: "conditions", label: "Proceed with conditions", reasons: conditions };
-  return { status: "ready", label: "Ready to launch", reasons: ["No open conditions in Ibda's analysis"] };
+  if (blockers.length > 0) return { status: "needs-work", label: labels["needs-work"], reasons: [...blockers, ...conditions] };
+  if (conditions.length > 0) return { status: "conditions", label: labels.conditions, reasons: conditions };
+  return { status: "ready", label: labels.ready, reasons: [b.noConditions] };
 }
 
 /**
  * Consolidates the plan, supplier, requirements and marketing outputs into
- * one launch pack. Pure assembly: every item comes from those outputs.
+ * one launch pack. Pure assembly: every item comes from those outputs. `t`
+ * words the text it adds (English by default).
  */
-export function buildLaunchPack(p: PackInputs): LaunchPack {
+export function buildLaunchPack(p: PackInputs, t: Dictionary = english): LaunchPack {
   const { plan, suppliers, marketing, extras } = p;
+  const b = t.launchPack.built;
 
   const contribution = plan.unitEconomics.price - plan.unitEconomics.costs.reduce((s, c) => s + c.amount, 0);
 
@@ -51,8 +55,8 @@ export function buildLaunchPack(p: PackInputs): LaunchPack {
       location: s.location,
       estimate: item.estimate,
       basis: item.basis,
-      moq: moqLabel(s),
-      leadTime: leadTimeLabel(s),
+      moq: moqLabel(s, t),
+      leadTime: leadTimeLabel(s, t),
     }];
   });
   const shortlistTotal = rows.reduce((sum, r) => sum + r.estimate, 0);
@@ -73,10 +77,10 @@ export function buildLaunchPack(p: PackInputs): LaunchPack {
   const before: ChecklistItem[] = [
     ...actions.slice(0, Math.max(0, actions.length - 1)).slice(0, 5).map((a) => ({ text: a.title, detail: a.timing, from: "Plan" as const })),
     ...(rows.length
-      ? [{ text: "Request quotes from your shortlisted suppliers", detail: rows.map((r) => r.category).join(", "), from: "Suppliers" as const }]
+      ? [{ text: b.requestQuotes, detail: rows.map((r) => r.category).join(", "), from: "Suppliers" as const }]
       : []),
-    ...reqs.filter((r) => r.level === "likely").slice(0, 4).map((r) => ({ text: `Arrange: ${r.item}`, from: "Requirements" as const, link: r.authority, viaPortal: r.viaPortal })),
-    ...(week(1) ? [{ text: `Run your teaser week: ${week(1)!.goal}`, from: "Marketing" as const }] : []),
+    ...reqs.filter((r) => r.level === "likely").slice(0, 4).map((r) => ({ text: b.arrange(r.item), from: "Requirements" as const, link: r.authority, viaPortal: r.viaPortal })),
+    ...(week(1) ? [{ text: b.teaserWeek(week(1)!.goal), from: "Marketing" as const }] : []),
   ];
   const launch: ChecklistItem[] = [
     ...(actions.length ? [{ text: actions[actions.length - 1].title, detail: actions[actions.length - 1].timing, from: "Plan" as const }] : []),
@@ -87,27 +91,27 @@ export function buildLaunchPack(p: PackInputs): LaunchPack {
   const after: ChecklistItem[] = [
     ...[3, 4].flatMap((n) => (week(n) ? [{ text: `${week(n)!.title}: ${week(n)!.goal}`, from: "Marketing" as const }] : [])),
     ...(phase("growth")?.plan.flatMap((w) => w.actions).slice(0, 2).map((a) => ({ text: a.text, from: "Marketing" as const })) ?? []),
-    ...reqs.filter((r) => r.level === "depends").slice(0, 3).map((r) => ({ text: `Check if needed: ${r.item}`, detail: r.why, from: "Requirements" as const, link: r.authority, viaPortal: r.viaPortal })),
+    ...reqs.filter((r) => r.level === "depends").slice(0, 3).map((r) => ({ text: b.checkIfNeeded(r.item), detail: r.why, from: "Requirements" as const, link: r.authority, viaPortal: r.viaPortal })),
   ];
 
   // Everything still to answer, verify or replace with real figures.
   const outstanding: OutstandingItem[] = [
     ...extras.questions.map((q) => ({ kind: "Question for you" as const, text: q.question, why: q.why, from: "Assessment" as const })),
     ...reqs.filter((r) => r.level === "confirm").map((r) => ({ kind: "To verify" as const, text: r.item, why: r.why, from: "Requirements" as const, link: r.authority, viaPortal: r.viaPortal })),
-    ...extras.assumptions.filter((a) => a.label !== "Your figure").map((a) => ({ kind: "Assumption" as const, text: a.text, why: a.label === "Estimate" ? "Estimate" : "Not yet confirmed", from: "Assessment" as const })),
-    { kind: "Assumption", text: "Startup costs, prices, unit costs and monthly sales are estimates", why: "Replace them with real quotes and early sales data", from: "Plan" },
+    ...extras.assumptions.filter((a) => a.label !== "Your figure").map((a) => ({ kind: "Assumption" as const, text: a.text, why: a.label === "Estimate" ? b.estimate : b.notConfirmed, from: "Assessment" as const })),
+    { kind: "Assumption", text: b.estimatesNote, why: b.estimatesWhy, from: "Plan" },
     ...(plan.breakEven.month === null
-      ? [{ kind: "Assumption" as const, text: `On current estimates the business doesn't break even within ${HORIZON} months`, why: "Revisit pricing, costs or sales once you have real figures", from: "Plan" as const }]
+      ? [{ kind: "Assumption" as const, text: b.noBreakEvenNote(HORIZON), why: b.noBreakEvenWhy, from: "Plan" as const }]
       : []),
-    { kind: "To verify", text: suppliers.sourceNote, why: "Get real quotes, samples and terms before ordering", from: "Suppliers" },
+    { kind: "To verify", text: suppliers.sourceNote, why: b.quotesWhy, from: "Suppliers" },
     ...(overAllocation > 0
-      ? [{ kind: "To verify" as const, text: `Supplier estimates exceed the sourcing allocation by ${aed(overAllocation)}`, why: "Adjust quantities or the budget split", from: "Suppliers" as const }]
+      ? [{ kind: "To verify" as const, text: b.overNote(t.fmt.aed(overAllocation)), why: b.overWhy, from: "Suppliers" as const }]
       : []),
   ];
 
   return {
     inputs: p,
-    readiness: readinessFor(p, contribution, overAllocation),
+    readiness: readinessFor(p, contribution, overAllocation, t),
     shortlist: { rows, total: shortlistTotal },
     requirements: reqs,
     marketingWeeks,

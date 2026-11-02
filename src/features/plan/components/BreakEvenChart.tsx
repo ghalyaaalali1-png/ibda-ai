@@ -2,7 +2,8 @@
 
 import { TrendingUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { aed, aedShort } from "../format";
+import { useI18n } from "@/i18n/I18nProvider";
+import { aedShort } from "../format";
 import type { BusinessPlan } from "../types";
 import { DashCard } from "./DashCard";
 
@@ -26,6 +27,9 @@ function yScale(values: number[]) {
 }
 
 export function BreakEvenChart({ plan }: { plan: BusinessPlan }) {
+  const { t } = useI18n();
+  const { aed } = t.fmt;
+  const copy = t.plan.breakEven;
   const { cashflow, month: beMonth, totalSales, monthlyRunningCosts, salesToCoverRunningCosts } =
     plan.breakEven;
   const [hover, setHover] = useState<number | null>(null);
@@ -56,34 +60,32 @@ export function BreakEvenChart({ plan }: { plan: BusinessPlan }) {
   return (
     <DashCard
       id="break-even"
-      title="Break-even estimate"
+      title={copy.title}
       icon={TrendingUp}
-      action={<span className="text-xs text-mist/50">Cumulative cash, AED</span>}
+      action={<span className="text-xs text-mist/50">{copy.axis}</span>}
     >
       <div className="flex flex-wrap gap-x-8 gap-y-2">
         <p className="text-sm text-mist/55">
           <span className="text-2xl font-semibold text-white">
-            {beMonth === null ? `Beyond month ${lastMonth}` : `Month ${beMonth}`}
+            {beMonth === null ? t.plan.beyondMonth(lastMonth) : t.plan.month(beMonth)}
           </span>
-          <span className="ml-2">
-            ≈{totalSales.toLocaleString("en-US")} sales{beMonth === null ? ` in ${lastMonth} months` : ""}
-          </span>
+          <span className="ms-2">{t.plan.tiles.sales(totalSales, beMonth === null ? lastMonth : null)}</span>
         </p>
         <p className="self-end text-sm text-mist/55">
           {salesToCoverRunningCosts === null
-            ? `Each sale loses money, so no volume covers ${aed(monthlyRunningCosts)} running costs`
-            : `${salesToCoverRunningCosts.toLocaleString("en-US")} sales/month cover ${aed(monthlyRunningCosts)} running costs`}
+            ? copy.loses(aed(monthlyRunningCosts))
+            : copy.cover(salesToCoverRunningCosts, aed(monthlyRunningCosts))}
         </p>
       </div>
 
-      <div ref={wrapRef} className="relative mt-4">
+      <div ref={wrapRef} dir="ltr" className="relative mt-4">
         <svg
           viewBox={`0 0 ${W} ${H}`}
           width={W}
           height={H}
           className="block w-full"
           role="img"
-          aria-label={`Cumulative cash from ${aed(cashflow[0].cumulative)} at launch to ${aed(cashflow.at(-1)!.cumulative)} by month ${lastMonth}, ${beMonth === null ? "not breaking even in that period" : `breaking even in month ${beMonth}`}.`}
+          aria-label={copy.chart(aed(cashflow[0].cumulative), aed(cashflow.at(-1)!.cumulative), lastMonth, beMonth)}
           onMouseLeave={() => setHover(null)}
         >
           <defs>
@@ -113,7 +115,7 @@ export function BreakEvenChart({ plan }: { plan: BusinessPlan }) {
           {/* X axis labels */}
           {cashflow.map((p) => (
             <text key={p.month} x={x(p.month)} y={H - 8} textAnchor="middle" className="fill-mist/40 text-[11px]">
-              {p.month === 0 ? "Launch" : `M${p.month}`}
+              {p.month === 0 ? copy.launch : copy.monthShort(p.month)}
             </text>
           ))}
 
@@ -126,7 +128,7 @@ export function BreakEvenChart({ plan }: { plan: BusinessPlan }) {
               <line x1={x(be.month)} x2={x(be.month)} y1={PAD.top} y2={H - PAD.bottom} stroke="rgb(52 211 153 / 0.35)" />
               <circle cx={x(be.month)} cy={y(be.cumulative)} r="6" fill="#34d399" stroke="#0d1130" strokeWidth="2" />
               <text x={x(be.month) - 10} y={PAD.top + 4} textAnchor="end" className="fill-emerald-300 text-[11px] font-medium">
-                Break-even
+                {copy.marker}
               </text>
             </>
           )}
@@ -157,9 +159,9 @@ export function BreakEvenChart({ plan }: { plan: BusinessPlan }) {
             style={{ left: `${Math.min(Math.max((x(hovered.month) / W) * 100, 15), 85)}%` }}
           >
             <p className="font-medium text-white">
-              {hovered.month === 0 ? "Launch" : `Month ${hovered.month}`}
+              {hovered.month === 0 ? copy.launch : t.plan.month(hovered.month)}
             </p>
-            {hovered.month > 0 && <p className="mt-1 text-mist/55">{hovered.sales} sales</p>}
+            {hovered.month > 0 && <p className="mt-1 text-mist/55">{copy.salesCount(hovered.sales)}</p>}
             <p className="mt-0.5 text-mist/80">{aed(hovered.cumulative)}</p>
           </div>
         )}
@@ -168,9 +170,9 @@ export function BreakEvenChart({ plan }: { plan: BusinessPlan }) {
       {/* Assumptions behind the curve */}
       <dl className="mt-auto grid grid-cols-1 gap-3 pt-6 sm:grid-cols-3">
         {[
-          { label: "Startup spend to recover", value: aed(-cashflow[0].cumulative) },
-          { label: "Contribution per sale", value: aed(contributionPerSale) },
-          { label: "Monthly running costs", value: aed(monthlyRunningCosts) },
+          { label: copy.toRecover, value: aed(-cashflow[0].cumulative) },
+          { label: t.plan.unit.contribution, value: aed(contributionPerSale) },
+          { label: copy.runningCosts, value: aed(monthlyRunningCosts) },
         ].map((item) => (
           <div key={item.label} className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-3.5">
             <dt className="text-[11px] font-medium tracking-wider text-mist/45 uppercase">{item.label}</dt>

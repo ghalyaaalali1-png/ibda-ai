@@ -1,23 +1,23 @@
+import { english, type Dictionary } from "@/i18n";
 import type { Supplier } from "./types";
 
-export function priceLabel(s: Supplier) {
-  const n = (v: number) => v.toLocaleString("en-US");
-  return `AED ${n(s.price.min)}–${n(s.price.max)}`;
+// Labels in the interface language (English by default); units come from the supplier data as written.
+
+export function priceLabel(s: Supplier, t: Dictionary = english) {
+  return t.fmt.aedRange(s.price.min, s.price.max);
 }
 
-export function moqLabel(s: Supplier) {
-  return s.moq ? `${s.moq.value} ${s.moq.unit}` : "No minimum";
+export function moqLabel(s: Supplier, t: Dictionary = english) {
+  return s.moq ? `${s.moq.value} ${s.moq.unit}` : t.suppliers.format.noMinimum;
 }
 
-export function leadTimeLabel(s: Supplier) {
+export function leadTimeLabel(s: Supplier, t: Dictionary = english) {
   const { minDays, maxDays } = s.leadTime;
   if (maxDays >= 14) {
     const weeks = (d: number) => Math.round(d / 7);
-    return weeks(minDays) === weeks(maxDays)
-      ? `${weeks(maxDays)} weeks`
-      : `${weeks(minDays)}–${weeks(maxDays)} weeks`;
+    return t.suppliers.format.weeks(weeks(minDays), weeks(maxDays));
   }
-  return `${minDays}–${maxDays} days`;
+  return t.suppliers.format.days(minDays, maxDays);
 }
 
 export function scoreTone(score: number) {

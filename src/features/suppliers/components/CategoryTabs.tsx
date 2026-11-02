@@ -1,5 +1,8 @@
+"use client";
+
 import { Boxes, Gem, Package, Scissors, Shirt, Store, Truck, type LucideIcon } from "lucide-react";
 import type { KeyboardEvent } from "react";
+import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
 import type { CategoryInfo, SupplierCategory } from "../types";
 
@@ -23,8 +26,12 @@ export function CategoryTabs({
   active: SupplierCategory;
   onChange: (id: SupplierCategory) => void;
 }) {
+  const { t, dir } = useI18n();
   function onKeyDown(e: KeyboardEvent<HTMLButtonElement>, index: number) {
-    const delta = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+    // Arrow keys follow the reading direction: in Arabic the next tab is to the left.
+    const forward = dir === "rtl" ? "ArrowLeft" : "ArrowRight";
+    const back = dir === "rtl" ? "ArrowRight" : "ArrowLeft";
+    const delta = e.key === forward ? 1 : e.key === back ? -1 : 0;
     if (!delta) return;
     e.preventDefault();
     const next = categories[(index + delta + categories.length) % categories.length];
@@ -35,7 +42,7 @@ export function CategoryTabs({
   return (
     <div
       role="tablist"
-      aria-label="Supplier categories"
+      aria-label={t.suppliers.categoriesLabel}
       className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:px-0"
     >
       {categories.map((c, i) => {

@@ -1,14 +1,18 @@
+"use client";
+
 import { CheckCircle2, CircleAlert, CircleX } from "lucide-react";
+import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
 import type { BusinessPlan, Decision } from "../types";
 
-const verdicts: Record<Decision, { label: string; tone: string; icon: typeof CheckCircle2 }> = {
-  GO: { label: "GO", tone: "text-emerald-300 border-emerald-400/40 bg-emerald-400/10", icon: CheckCircle2 },
-  CAUTION: { label: "CAUTION", tone: "text-amber-300 border-amber-400/40 bg-amber-400/10", icon: CircleAlert },
-  "NO-GO": { label: "NO-GO", tone: "text-red-300 border-red-400/40 bg-red-400/10", icon: CircleX },
+const verdicts: Record<Decision, { tone: string; icon: typeof CheckCircle2 }> = {
+  GO: { tone: "text-emerald-300 border-emerald-400/40 bg-emerald-400/10", icon: CheckCircle2 },
+  CAUTION: { tone: "text-amber-300 border-amber-400/40 bg-amber-400/10", icon: CircleAlert },
+  "NO-GO": { tone: "text-red-300 border-red-400/40 bg-red-400/10", icon: CircleX },
 };
 
 function ScoreRing({ score }: { score: number }) {
+  const { t } = useI18n();
   const r = 52;
   const c = 2 * Math.PI * r;
   return (
@@ -35,23 +39,25 @@ function ScoreRing({ score }: { score: number }) {
       </svg>
       <div className="text-center">
         <p className="text-4xl font-semibold tracking-tight text-white">{score}</p>
-        <p className="text-[11px] text-mist/45">Viability / 100</p>
+        <p className="text-[11px] text-mist/45">{t.plan.decision.viability}</p>
       </div>
     </div>
   );
 }
 
 export function DecisionCard({ decision }: { decision: BusinessPlan["decision"] }) {
+  const { t } = useI18n();
+  const labels = t.plan.decision.verdicts;
   const v = verdicts[decision.verdict];
   const Icon = v.icon;
   return (
     <section
-      aria-label="Overall decision"
+      aria-label={t.plan.decision.label}
       className="glass relative overflow-hidden rounded-3xl p-6 sm:p-8"
     >
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-32 -left-24 size-96 rounded-full bg-emerald-400/10 blur-[100px]"
+        className="pointer-events-none absolute -top-32 -start-24 size-96 rounded-full bg-emerald-400/10 blur-[100px]"
       />
       <div className="relative flex flex-col gap-8 sm:flex-row sm:items-center">
         <ScoreRing score={decision.score} />
@@ -64,10 +70,10 @@ export function DecisionCard({ decision }: { decision: BusinessPlan["decision"] 
               )}
             >
               <Icon className="size-4" />
-              {v.label}
+              {labels[decision.verdict]}
             </span>
             {/* Where this verdict sits on the scale */}
-            <ol className="flex items-center gap-1 font-mono text-[10px] text-mist/40" aria-label="Decision scale">
+            <ol className="flex items-center gap-1 font-mono text-[10px] text-mist/40" aria-label={t.plan.decision.scale}>
               {(Object.keys(verdicts) as Decision[]).map((d) => (
                 <li
                   key={d}
@@ -77,7 +83,7 @@ export function DecisionCard({ decision }: { decision: BusinessPlan["decision"] 
                     d === decision.verdict ? "bg-white/10 text-mist" : "bg-white/[0.03]",
                   )}
                 >
-                  {d}
+                  {labels[d]}
                 </li>
               ))}
             </ol>

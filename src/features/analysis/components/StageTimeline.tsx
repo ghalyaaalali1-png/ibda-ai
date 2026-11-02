@@ -1,4 +1,7 @@
+"use client";
+
 import { Check, Loader2 } from "lucide-react";
+import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
 import type { AgentStage, StepStatus } from "../types";
 
@@ -18,8 +21,9 @@ export function StageTimeline({
   format,
   stopped = false,
 }: StageTimelineProps) {
+  const { t } = useI18n();
   return (
-    <ol className="relative space-y-3" aria-label="Analysis stages">
+    <ol className="relative space-y-3" aria-label={t.analysis.stagesLabel}>
       {stages.map((stage, i) => {
         const halted = stopped && stageStatus(i) === "active";
         const status = halted ? "pending" : stageStatus(i);
@@ -56,7 +60,7 @@ export function StageTimeline({
 
               <div className="min-w-0 flex-1">
                 <p className="font-mono text-[11px] tracking-wider text-mist/40 uppercase">
-                  Stage {i + 1}
+                  {t.analysis.stageNumber(i + 1)}
                 </p>
                 <h3 className="mt-0.5 text-[15px] font-semibold text-white sm:text-base">
                   {stage.title}
@@ -71,12 +75,18 @@ export function StageTimeline({
                   status === "pending" && (halted ? "text-[#fcc95a]" : "text-mist/40"),
                 )}
               >
-                {status === "done" ? "Done" : status === "active" ? "Working" : halted ? "Not completed" : "Queued"}
+                {status === "done"
+                  ? t.analysis.stageDone
+                  : status === "active"
+                    ? t.analysis.stageWorking
+                    : halted
+                      ? t.analysis.stageNotCompleted
+                      : t.analysis.stageQueued}
               </span>
             </div>
 
             {status === "active" && (
-              <ul className="mt-4 space-y-2 pl-14" aria-live="polite">
+              <ul className="mt-4 space-y-2 ps-14" aria-live="polite">
                 {stage.activities.map((activity, a) => {
                   const s = activityStatus(i, a);
                   if (s === "pending") return null;
@@ -100,7 +110,7 @@ export function StageTimeline({
             )}
 
             {status === "done" && (
-              <p className="mt-2 animate-message-in pl-14 text-sm text-mist/50">
+              <p className="mt-2 animate-message-in ps-14 text-sm text-mist/50">
                 {stage.result}
               </p>
             )}

@@ -1,4 +1,7 @@
+"use client";
+
 import { AlertTriangle, ArrowRight, CircleAlert, Info, ShieldAlert } from "lucide-react";
+import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
 import type { BusinessPlan, Severity } from "../types";
 import { DashCard } from "./DashCard";
@@ -10,8 +13,9 @@ const severityStyle: Record<Severity, { className: string; icon: typeof Info }> 
 };
 
 export function RisksCard({ plan }: { plan: BusinessPlan }) {
+  const { t } = useI18n();
   return (
-    <DashCard id="risks" title="Key risks" icon={ShieldAlert}>
+    <DashCard id="risks" title={t.plan.risks.title} icon={ShieldAlert}>
       <ul className="space-y-3">
         {plan.risks.map((risk) => {
           const s = severityStyle[risk.severity];
@@ -27,12 +31,12 @@ export function RisksCard({ plan }: { plan: BusinessPlan }) {
                   )}
                 >
                   <Icon className="size-3" />
-                  {risk.severity}
+                  {t.plan.risks.severity[risk.severity]}
                 </span>
               </div>
               <p className="mt-1.5 text-[13px] leading-relaxed text-mist/55">{risk.detail}</p>
               <p className="mt-2 flex gap-1.5 text-[13px] leading-relaxed text-mist/80">
-                <ArrowRight className="mt-0.5 size-3.5 shrink-0 text-brand-300" />
+                <ArrowRight className="mt-0.5 size-3.5 shrink-0 text-brand-300 rtl:-scale-x-100" />
                 {risk.mitigation}
               </p>
             </li>
