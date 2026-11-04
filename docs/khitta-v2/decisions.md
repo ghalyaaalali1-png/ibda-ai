@@ -76,4 +76,9 @@ Module links: `suppliers` depends on `financials`. Anything downstream of an aff
   - The abaya demo has an Arabic text overlay (`src/features/demo`); every figure comes from the English demo (tested).
   - The founder's own free-text answers (for example the business name) show as they typed them.
 
+## Phase 3 — accounts and projects (in progress)
+
+- Sign-in: email/password and Google. The no-account journey stays; an account is needed to save, reopen, keep history and (later) edit projects.
+- Step 1 (connection and database foundation): `@supabase/supabase-js` and `@supabase/ssr`, browser and server clients in `src/lib/supabase/` using only the publishable key, and `supabase/migrations/20261104000000_khitta_foundation.sql` (profiles, projects, core_versions, generation_runs, module_revisions, module_translations). Row Level Security on every table: users reach only their own rows, rows can only point inside a project they own, history rows are never edited, anonymous visitors get no access.
+
 Deferred until separately approved: splitting `assessment` and `narrative` into smaller modules, and passing more upstream output into prompts (for example, aligning the marketing calendar with the strategy's launch week). Both change AI output.
