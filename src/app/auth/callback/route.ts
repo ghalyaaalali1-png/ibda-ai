@@ -5,8 +5,8 @@ import { hasSupabaseConfig } from "@/lib/supabase/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 /**
- * Where Supabase sends people back to after confirming their email (and,
- * later, after Google sign-in): swaps the one-time code for a session, then
+ * Where Supabase sends people back to after confirming their email or
+ * signing in with Google: swaps the one-time code for a session, then
  * continues to `next`.
  */
 export async function GET(request: NextRequest) {
@@ -19,5 +19,7 @@ export async function GET(request: NextRequest) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) return NextResponse.redirect(new URL(next, origin));
   }
-  return NextResponse.redirect(new URL(`${routes.login}?error=link`, origin));
+  // Google sends `error` when sign-in was cancelled or refused.
+  const reason = searchParams.has("error") && !code ? "google" : "link";
+  return NextResponse.redirect(new URL(`${routes.login}?error=${reason}`, origin));
 }

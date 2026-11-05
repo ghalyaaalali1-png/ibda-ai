@@ -6,7 +6,8 @@ import { useActionState } from "react";
 import { routes } from "@/config/site";
 import { buttonClass } from "@/components/ui/Button";
 import { useI18n } from "@/i18n/I18nProvider";
-import { logIn, signUp, type AuthErrorKey, type AuthFormState } from "../actions";
+import { continueWithGoogle, logIn, signUp, type AuthErrorKey, type AuthFormState } from "../actions";
+import { GoogleButton } from "./GoogleButton";
 
 const inputClass =
   "mt-1.5 block h-11 w-full rounded-xl border border-white/10 bg-white/[0.03] px-3.5 text-[15px] text-white placeholder:text-mist/30 transition-colors focus:border-brand-400/60 focus:bg-white/[0.05] focus:outline-none rtl:text-right";
@@ -55,7 +56,18 @@ export function AuthForm({
       </h1>
       <p className="mt-2 text-[15px] text-mist/60">{copy.subtitle}</p>
 
-      <form action={action} className="mt-7 flex flex-col gap-4" noValidate>
+      <form action={continueWithGoogle} className="mt-7">
+        {next && <input type="hidden" name="next" value={next} />}
+        <GoogleButton label={t.auth.continueWithGoogle} />
+      </form>
+
+      <div className="my-6 flex items-center gap-3 text-xs text-mist/40" aria-hidden>
+        <span className="h-px flex-1 bg-white/10" />
+        {t.auth.or}
+        <span className="h-px flex-1 bg-white/10" />
+      </div>
+
+      <form action={action} className="flex flex-col gap-4" noValidate>
         {next && <input type="hidden" name="next" value={next} />}
         {mode === "signup" && (
           <label className="text-sm font-medium text-mist/80">

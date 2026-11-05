@@ -18,6 +18,7 @@ export type AuthErrorKey =
   | "weakPassword"
   | "rateLimit"
   | "notConfigured"
+  | "googleFailed"
   | "generic";
 
 export type AuthFormState =
@@ -98,6 +99,24 @@ export async function signUp(_previous: AuthFormState, form: FormData): Promise<
   // Signed in straight away when email confirmation is turned off in Supabase.
   if (data.session) redirect(next);
   return { status: "checkEmail", email };
+}
+
+/**
+ * Sends the founder to Google to sign in. Google returns them to Supabase,
+ * which returns them to /auth/callback and then on to `next`. Works for new
+ * and existing accounts alike.
+ */
+export async function continueWithGoogle(form: FormData) {
+  const next = safeNext(String(form.get("next") ?? ""));
+  if (!hasSupabaseConfig()) redirect(`${routes.login}?error=google`);
+  const origin = (await headers()).get("origin") ?? "";
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo: `${origin}${routes.authCallback}?next=${encodeURIComponent(next)}` },
+  });
+  if (error || !data.url) redirect(`${routes.login}?error=google`);
+  redirect(data.url);
 }
 
 /** Logs out and returns to the home page. */

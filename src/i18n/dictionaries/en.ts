@@ -84,6 +84,7 @@ export const en = {
     logIn: "Log in",
     signUp: "Sign up",
     logOut: "Log out",
+    continueWithGoogle: "Continue with Google",
     myProjects: "My projects",
     or: "or",
     tryWithout: "Just trying KHITTA? You can start without an account.",
@@ -126,6 +127,7 @@ export const en = {
       rateLimit: "Too many attempts. Please wait a few minutes and try again.",
       linkInvalid:
         "We couldn't sign you in from that link — it may have been opened in a different browser, or already used. If you just confirmed your email, your account is ready: log in below.",
+      googleFailed: "We couldn't connect to Google. Please try again, or use your email.",
       notConfigured: "Accounts aren't available right now.",
       generic: "Something went wrong. Please try again.",
     },
