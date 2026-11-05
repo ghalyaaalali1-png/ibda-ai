@@ -11,8 +11,12 @@ import { Logo } from "@/components/ui/Logo";
 import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
 
-export function Navbar() {
+/** `signedIn` swaps "Log in" for "My projects". */
+export function Navbar({ signedIn = false }: { signedIn?: boolean }) {
   const { t } = useI18n();
+  const account = signedIn
+    ? { href: routes.projects, label: t.auth.myProjects }
+    : { href: routes.login, label: t.auth.logIn };
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -51,6 +55,12 @@ export function Navbar() {
 
         <div className="flex items-center gap-2">
           <LanguageSwitcher />
+          <Link
+            href={account.href}
+            className="hidden rounded-full px-3 py-2 text-sm text-mist/70 transition-colors hover:text-white sm:inline-flex"
+          >
+            {account.label}
+          </Link>
           <div className="hidden sm:block">
             <ButtonLink href={routes.start} size="sm">
               {t.common.startMyBusiness}
@@ -81,6 +91,13 @@ export function Navbar() {
                 {t.nav[link.key]}
               </Link>
             ))}
+            <Link
+              href={account.href}
+              onClick={() => setOpen(false)}
+              className="rounded-xl px-3 py-3 text-base text-mist/80 hover:bg-white/5"
+            >
+              {account.label}
+            </Link>
             <ButtonLink href={routes.start} onClick={() => setOpen(false)} className="mt-3">
               {t.common.startMyBusiness}
             </ButtonLink>

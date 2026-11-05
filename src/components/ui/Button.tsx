@@ -22,6 +22,10 @@ const sizes: Record<Size, string> = {
   lg: "h-12 px-6 text-base",
 };
 
+/** The button look, for a <button> (a form submit, say). */
+export const buttonClass = (variant: Variant = "primary", size: Size = "md", className?: string) =>
+  cn(base, variants[variant], sizes[size], className);
+
 type ButtonLinkProps = ComponentProps<typeof Link> & {
   variant?: Variant;
   size?: Size;
