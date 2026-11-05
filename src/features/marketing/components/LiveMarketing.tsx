@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { buildMarketing } from "@/features/assessment/applyToMarketing";
 import { buildPlan } from "@/features/assessment/applyToPlan";
 import { AnalysisStatus } from "@/features/assessment/components/AnalysisStatus";
-import { currentAssessmentInput, useAssessmentView } from "@/features/assessment/storage";
+import { useAssessmentView } from "@/features/assessment/storage";
 import { demoFor } from "@/features/demo/localizedDemo";
 import { displayProfileLine } from "@/i18n";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -15,9 +15,11 @@ export function LiveMarketing() {
   const { t } = useI18n();
   const view = useAssessmentView();
   const assessment = view.kind === "live" ? view.assessment : null;
+  // The founder's answers, with the business name in the interface language.
+  const profile = view.kind === "live" ? view.profile : null;
   const data = useMemo(() => {
     const { plan: demoPlan, marketing: demoMarketing } = demoFor(t.locale);
-    if (!assessment) {
+    if (!assessment || !profile) {
       const demo = t.marketing.demo;
       return {
         marketing: demoMarketing,
@@ -30,9 +32,8 @@ export function LiveMarketing() {
         captionContext: undefined,
       };
     }
-    const { profile } = currentAssessmentInput();
     return buildMarketing(assessment, buildPlan(demoPlan, assessment, profile, t), profile, t);
-  }, [assessment, t]);
+  }, [assessment, profile, t]);
 
   if (view.kind !== "live" && view.kind !== "demo") {
     return view.kind === "translationFailed" ? (

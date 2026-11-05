@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ar } from "./dictionaries/ar";
 import { en } from "./dictionaries/en";
-import { displayError, displayLabel, displayProfileLine, displayValue } from "./index";
+import { displayError, displayLabel, displayProfileLine, displayValue, nameNeedsTranslation } from "./index";
 
 /** Every key path in a dictionary, with arrays compared by length. */
 function shape(value: unknown, path = ""): string[] {
@@ -78,5 +78,20 @@ describe("display helpers", () => {
     expect(displayError(ar, "Invalid onboarding answers.")).toBe("إجابات الإعداد غير صالحة.");
     expect(displayError(ar, "Something unexpected")).toBe("Something unexpected");
     expect(displayError(en, "Invalid onboarding answers.")).toBe("Invalid onboarding answers.");
+  });
+});
+
+describe("names the founder typed", () => {
+  it("translates a name only when it's in the other language's script", () => {
+    expect(nameNeedsTranslation("Specialty coffee kiosk", "ar")).toBe(true);
+    expect(nameNeedsTranslation("Specialty coffee kiosk", "en")).toBe(false);
+    expect(nameNeedsTranslation("مخبز منزلي", "en")).toBe(true);
+    expect(nameNeedsTranslation("مخبز منزلي", "ar")).toBe(false);
+    expect(nameNeedsTranslation("", "ar")).toBe(false);
+    expect(nameNeedsTranslation(undefined, "ar")).toBe(false);
+  });
+
+  it("leaves names the dictionary already words in Arabic", () => {
+    expect(nameNeedsTranslation("Online abaya brand", "ar")).toBe(false);
   });
 });

@@ -373,8 +373,14 @@ export const assessmentRequestSchema = z.object({
 
 export type AssessmentRequest = z.infer<typeof assessmentRequestSchema>;
 
-/** A stored assessment and the language to translate it into. */
-export const translationRequestSchema = z.object({
-  assessment: initialAssessmentSchema,
-  locale: z.enum(locales),
-});
+/**
+ * What to translate into another interface language: a stored assessment,
+ * the founder's business name as they typed it, or both.
+ */
+export const translationRequestSchema = z
+  .object({
+    assessment: initialAssessmentSchema.optional(),
+    businessName: z.string().trim().min(1).max(120).optional(),
+    locale: z.enum(locales),
+  })
+  .refine((r) => r.assessment || r.businessName, { message: "Nothing to translate" });

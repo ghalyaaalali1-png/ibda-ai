@@ -2,10 +2,12 @@ import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { assessmentRequestSchema } from "@/features/assessment/schema";
 import { assembleAssessment } from "@/features/plan-modules/assemble";
+import { nameNeedsTranslation } from "@/i18n";
 import type { Locale } from "@/i18n/config";
 import { hasAnthropicKey } from "@/lib/server/anthropic";
 import { AssessmentError } from "@/lib/server/modules/ask";
 import { runAllModules } from "@/lib/server/modules/run";
+import { translateTexts } from "@/lib/server/translate";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
@@ -42,6 +44,21 @@ function plainLabels<T>(value: T, locale: Locale): T {
 }
 
 /**
+ * The business name in the plan's language when the founder typed it in the
+ * other one (an English name for an Arabic plan, say). Best effort: if it
+ * fails, the plan still returns and the screens ask for the name separately.
+ */
+async function businessNameIn(name: string | undefined, locale: Locale) {
+  if (!name || !nameNeedsTranslation(name, locale)) return undefined;
+  try {
+    return (await translateTexts([name], locale)).get(name);
+  } catch (error) {
+    console.warn("Business name not translated", error instanceof Error ? error.message : error);
+    return undefined;
+  }
+}
+
+/**
  * Sends the founder's onboarding answers to Claude and returns a structured
  * initial assessment plus plan, setup, supplier and marketing inputs, written
  * in the founder's interface language. Each
@@ -62,8 +79,10 @@ export async function POST(request: Request) {
   if (!input.success) return fail("Invalid onboarding answers.", 400);
 
   try {
+    const locale = input.data.locale ?? "en";
     const result = assembleAssessment(await runAllModules(input.data));
-    return NextResponse.json({ assessment: plainLabels(result, input.data.locale ?? "en") });
+    const businessName = await businessNameIn(input.data.profile.find((f) => f.id === "business")?.value, locale);
+    return NextResponse.json({ assessment: plainLabels(result, locale), ...(businessName ? { businessName } : {}) });
   } catch (error) {
     if (error instanceof AssessmentError) return fail(error.message, error.status);
     if (error instanceof Anthropic.AuthenticationError) {

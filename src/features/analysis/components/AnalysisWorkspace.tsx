@@ -43,12 +43,14 @@ function Workspace() {
   const { t, locale } = useI18n();
   // Profile handed over from onboarding; the demo profile when visited directly.
   const stored = useSyncExternalStore(noopSubscribe, readStoredProfile, () => null);
-  const profile = useMemo(() => parseLaunchProfile(stored) ?? demoProfile, [stored]);
+  const answers = useMemo(() => parseLaunchProfile(stored) ?? demoProfile, [stored]);
 
   // Claude's initial assessment runs on the server while the workspace plays.
   const [assessmentState, setAssessmentState] = useState<AssessmentState>({ status: "loading" });
   const retryAssessment = useAssessmentRun(setAssessmentState);
   const assessment = assessmentState.status === "ready" ? assessmentState.assessment : null;
+  // Once results are in, the business name shows in the interface language.
+  const profile = assessmentState.status === "ready" ? assessmentState.profile : answers;
   const failed = assessmentState.status === "error";
 
   const stages = useMemo(() => {

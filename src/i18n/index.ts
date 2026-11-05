@@ -37,3 +37,14 @@ export function displayProfileLine(t: Dictionary, profile: { id: string; value: 
 
 /** An error message from the API in the interface language, when there's a translation for it. */
 export const displayError = (t: Dictionary, message: string) => t.errors[message] ?? message;
+
+/**
+ * True when a name the founder typed (their business, say) is written in the
+ * other language's script and the dictionary has no wording for it, so it is
+ * translated for this interface language.
+ */
+export function nameNeedsTranslation(name: string | null | undefined, locale: Locale) {
+  if (!name?.trim() || dictionaries[locale].profile.values[name]) return false;
+  const arabic = /[\u0600-\u06FF]/.test(name);
+  return locale === "ar" ? !arabic : arabic;
+}

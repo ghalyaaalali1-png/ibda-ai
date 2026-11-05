@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { buildPlan } from "@/features/assessment/applyToPlan";
 import { AnalysisStatus } from "@/features/assessment/components/AnalysisStatus";
-import { currentAssessmentInput, useAssessmentView } from "@/features/assessment/storage";
+import { useAssessmentView } from "@/features/assessment/storage";
 import { useI18n } from "@/i18n/I18nProvider";
 import { demoFor } from "@/features/demo/localizedDemo";
 import { PlanDashboard } from "./PlanDashboard";
@@ -14,12 +14,14 @@ export function LivePlanDashboard() {
   const plan = demoFor(t.locale).plan;
   const view = useAssessmentView();
   const assessment = view.kind === "live" ? view.assessment : null;
+  // The founder's answers, with the business name in the interface language.
+  const profile = view.kind === "live" ? view.profile : null;
   const merged = useMemo(
     () =>
-      assessment
-        ? buildPlan(plan, assessment, currentAssessmentInput().profile, t)
+      assessment && profile
+        ? buildPlan(plan, assessment, profile, t)
         : { ...plan, market: { ...plan.market, priceBandsNote: t.plan.demo.priceBandsNote } },
-    [plan, assessment, t],
+    [plan, assessment, profile, t],
   );
 
   if (view.kind !== "live" && view.kind !== "demo") {

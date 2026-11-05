@@ -5,26 +5,34 @@ import { demoIdea } from "@/content/landing";
 import {
   demoProfile,
   parseLaunchProfile,
+  profileValue,
   readLaunchIdea,
   readStoredProfile,
+  type LaunchProfile,
 } from "@/features/launch-profile/profile";
+import { nameNeedsTranslation } from "@/i18n";
 import type { Locale } from "@/i18n/config";
 import { useI18n } from "@/i18n/I18nProvider";
 import type { AssessmentRequest, InitialAssessment } from "./schema";
 
 export type AssessmentState =
   | { status: "loading" }
-  | { status: "ready"; assessment: InitialAssessment }
+  | { status: "ready"; assessment: InitialAssessment; profile: LaunchProfile }
   | { status: "error"; message: string };
 
-type Stored = {
+export type Stored = {
   key: string;
   /** The language Claude wrote the result in (results saved before languages were added are English). */
   locale?: Locale;
   assessment: InitialAssessment;
   /** The same result translated into another interface language: same figures, other words. */
   translations?: Partial<Record<Locale, InitialAssessment>>;
+  /** The business name in a language other than the one the founder typed it in. */
+  businessNames?: Partial<Record<Locale, string>>;
 };
+
+/** The result in one interface language, with the profile to show beside it. */
+type Localized = { assessment: InitialAssessment; profile: LaunchProfile };
 
 // Versioned so results saved by an older version of the request are never reused.
 const STORAGE_KEY = "ibda:assessment:v6";
@@ -65,6 +73,22 @@ function readStored(): Stored | null {
 /** The stored result in this language, if Claude wrote it in it or it has been translated. */
 const inLocale = (stored: Stored, locale: Locale) =>
   (stored.locale ?? "en") === locale ? stored.assessment : (stored.translations?.[locale] ?? null);
+
+const typedBusiness = (input: AssessmentRequest) => profileValue(input.profile, "business");
+
+/**
+ * The result and profile in this language, or null while something is still
+ * to be translated: the plan, or a business name typed in the other language.
+ */
+export function localized(stored: Stored, input: AssessmentRequest, locale: Locale): Localized | null {
+  const assessment = inLocale(stored, locale);
+  const business = typedBusiness(input);
+  if (!assessment) return null;
+  if (!business || !nameNeedsTranslation(business, locale)) return { assessment, profile: input.profile };
+  const name = stored.businessNames?.[locale];
+  if (!name) return null;
+  return { assessment, profile: input.profile.map((f) => (f.id === "business" ? { ...f, value: name } : f)) };
+}
 
 const notify = () => window.dispatchEvent(new Event(CHANGE_EVENT));
 
@@ -107,7 +131,8 @@ const noopSubscribe = () => () => {};
 export type AssessmentView =
   /** Saved results not read yet (first render), or Claude is still working. */
   | { kind: "checking" }
-  | { kind: "live"; assessment: InitialAssessment }
+  /** `profile` shows the business name in the interface language. */
+  | { kind: "live"; assessment: InitialAssessment; profile: LaunchProfile }
   /** The result exists in the other language and is being translated into this one. */
   | { kind: "translating" }
   | { kind: "translationFailed"; message: string; retry: () => void }
@@ -133,9 +158,10 @@ export function useAssessmentView(): AssessmentView {
   const [attempt, setAttempt] = useState(0);
 
   const stored = hydrated && raw ? readStored() : null;
-  const matches = stored !== null && stored.key === keyFor(currentAssessmentInput());
-  const assessment = matches ? inLocale(stored, locale) : null;
-  const needsTranslation = matches && !assessment;
+  const input = hydrated ? currentAssessmentInput() : null;
+  const matches = stored !== null && input !== null && stored.key === keyFor(input);
+  const ready = matches ? localized(stored, input, locale) : null;
+  const needsTranslation = matches && !ready;
 
   useEffect(() => {
     if (!needsTranslation) return;
@@ -149,7 +175,7 @@ export function useAssessmentView(): AssessmentView {
   }, [needsTranslation, locale, attempt]);
 
   if (!hydrated) return { kind: "checking" };
-  if (assessment) return { kind: "live", assessment };
+  if (ready) return { kind: "live", ...ready };
   if (needsTranslation) {
     return failure?.locale === locale
       ? {
@@ -166,7 +192,9 @@ export function useAssessmentView(): AssessmentView {
   return idea === null ? { kind: "demo" } : { kind: "unavailable" };
 }
 
-async function post<T>(url: string, body: unknown, fallback: string, timeoutMessage: string): Promise<T> {
+type Reply = { assessment?: InitialAssessment; businessName?: string };
+
+async function post(url: string, body: unknown, fallback: string, timeoutMessage: string, expectAssessment: boolean): Promise<Reply> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
@@ -176,15 +204,11 @@ async function post<T>(url: string, body: unknown, fallback: string, timeoutMess
       body: JSON.stringify(body),
       signal: controller.signal,
     });
-    const data = (await res.json().catch(() => ({}))) as {
-      assessment?: InitialAssessment;
-      error?: string;
-      detail?: string;
-    };
+    const data = (await res.json().catch(() => ({}))) as Reply & { error?: string; detail?: string };
     // Technical detail (development only) goes to the console, not the screen.
     if (data.detail) console.error(`${url} failed:`, data.detail);
-    if (!res.ok || !data.assessment) throw new Error(data.error ?? fallback);
-    return data.assessment as T;
+    if (!res.ok || (expectAssessment && !data.assessment)) throw new Error(data.error ?? fallback);
+    return data;
   } catch (error) {
     if (controller.signal.aborted) throw new Error(timeoutMessage);
     throw error;
@@ -196,38 +220,60 @@ async function post<T>(url: string, body: unknown, fallback: string, timeoutMess
 /**
  * The founder's result in this language: generated by Claude in it if there
  * is no result yet, otherwise the saved result (translated once, then kept).
+ * A business name typed in the other language is translated with it.
  */
-async function assessmentIn(input: AssessmentRequest, locale: Locale): Promise<InitialAssessment> {
+async function assessmentIn(input: AssessmentRequest, locale: Locale): Promise<Localized> {
   const key = keyFor(input);
   const saved = readStored();
   const generated =
     saved?.key === key
       ? saved
       : await shared(`generate:${key}`, async () => {
-          const assessment = await post<InitialAssessment>(
+          const reply = await post(
             "/api/assessment",
             { ...input, locale },
             "The assessment couldn't be completed.",
             "The assessment took too long. Please try again.",
+            true,
           );
-          const result: Stored = { key, locale, assessment };
+          const result: Stored = {
+            key,
+            locale,
+            assessment: reply.assessment!,
+            ...(reply.businessName ? { businessNames: { [locale]: reply.businessName } } : {}),
+          };
           save(result);
           return result;
         });
-  const ready = inLocale(generated, locale);
+  const ready = localized(generated, input, locale);
   if (ready) return ready;
 
   return shared(`translate:${key}:${locale}`, async () => {
-    const translated = await post<InitialAssessment>(
+    const missingPlan = !inLocale(generated, locale);
+    const business = typedBusiness(input);
+    const missingName = Boolean(business && nameNeedsTranslation(business, locale) && !generated.businessNames?.[locale]);
+    const reply = await post(
       "/api/translate",
-      { assessment: generated.assessment, locale },
+      {
+        locale,
+        ...(missingPlan ? { assessment: generated.assessment } : {}),
+        ...(missingName ? { businessName: business } : {}),
+      },
       "The translation couldn't be completed. Please try again.",
       "The translation took too long. Please try again.",
+      missingPlan,
     );
     const latest = readStored();
     const base = latest?.key === key ? latest : generated;
-    save({ ...base, translations: { ...base.translations, [locale]: translated } });
-    return translated;
+    const updated: Stored = {
+      ...base,
+      ...(reply.assessment ? { translations: { ...base.translations, [locale]: reply.assessment } } : {}),
+      ...(reply.businessName ? { businessNames: { ...base.businessNames, [locale]: reply.businessName } } : {}),
+    };
+    save(updated);
+    const result = localized(updated, input, locale);
+    if (!result) throw new Error("The translation couldn't be completed. Please try again.");
+    return result;
   });
 }
 
@@ -245,16 +291,16 @@ export function useAssessmentRun(onState: (state: AssessmentState) => void) {
     // Read inputs straight from storage so the first render's placeholders are never sent.
     const input = currentAssessmentInput();
     const stored = readStored();
-    const ready = stored?.key === keyFor(input) ? inLocale(stored, locale) : null;
+    const ready = stored?.key === keyFor(input) ? localized(stored, input, locale) : null;
     if (ready) {
-      onState({ status: "ready", assessment: ready });
+      onState({ status: "ready", ...ready });
       return;
     }
 
     onState({ status: "loading" });
     let active = true;
     assessmentIn(input, locale)
-      .then((assessment) => active && onState({ status: "ready", assessment }))
+      .then((result) => active && onState({ status: "ready", ...result }))
       .catch((error: Error) => active && onState({ status: "error", message: error.message }));
     return () => {
       active = false;
