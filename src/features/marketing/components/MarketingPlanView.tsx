@@ -5,8 +5,9 @@ import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 import { Logo } from "@/components/ui/Logo";
-import { routes } from "@/config/site";
 import { useI18n } from "@/i18n/I18nProvider";
+import { JourneyTabs } from "@/features/projects/JourneyTabs";
+import { useJourneyRoutes } from "@/features/projects/ProjectProvider";
 import type { CaptionContext } from "../captions";
 import type { MarketingPlan } from "../types";
 import { ContentGenerator } from "./ContentGenerator";
@@ -36,6 +37,7 @@ export function MarketingPlanView({
   captionContext?: CaptionContext;
 }) {
   const { t } = useI18n();
+  const journey = useJourneyRoutes();
   const { profileLine } = text;
   return (
     <>
@@ -48,23 +50,10 @@ export function MarketingPlanView({
           </div>
           <div className="flex min-w-0 items-center gap-1">
             <span className="me-2 hidden truncate text-sm text-mist/50 lg:block">{profileLine}</span>
-            <Link
-              href={routes.suppliers}
-              className="hidden items-center rounded-full px-3 py-2 text-sm text-mist/60 transition-colors hover:bg-white/5 hover:text-white md:inline-flex"
-            >
-              {t.common.suppliers}
-            </Link>
-            <Link
-              href={routes.plan}
-              aria-label={t.common.backToBusinessPlanLabel}
-              className="inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-sm text-mist/60 transition-colors hover:bg-white/5 hover:text-white"
-            >
-              <ArrowLeft className="size-3.5 rtl:-scale-x-100" />
-              <span aria-hidden className="hidden md:inline">{t.common.businessPlan}</span>
-            </Link>
             <LanguageSwitcher className="ms-1" />
           </div>
         </Container>
+        <JourneyTabs />
       </header>
 
       <Container className="space-y-6 py-10 sm:py-14">
@@ -169,7 +158,7 @@ export function MarketingPlanView({
               </div>
             </div>
             <Link
-              href={routes.launchPack}
+              href={journey.launchPack}
               className="group inline-flex h-11 shrink-0 items-center gap-2 self-start rounded-full bg-gradient-to-b from-brand-500 to-brand-600 px-5 text-sm font-medium text-white shadow-[0_0_0_1px_rgb(255_255_255/0.12)_inset,0_10px_40px_-6px_rgb(139_108_255/0.8)] transition-all hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400 sm:self-auto"
             >
               {t.marketing.continueTo}
@@ -179,11 +168,11 @@ export function MarketingPlanView({
         </section>
 
         <div className="flex flex-wrap gap-x-6 gap-y-2">
-          <Link href={routes.suppliers} className="inline-flex items-center gap-1.5 text-sm text-mist/55 transition-colors hover:text-white">
+          <Link href={journey.suppliers} className="inline-flex items-center gap-1.5 text-sm text-mist/55 transition-colors hover:text-white">
             <ArrowLeft className="size-3.5 rtl:-scale-x-100" />
             {t.common.backToSuppliers}
           </Link>
-          <Link href={routes.plan} className="inline-flex items-center gap-1.5 text-sm text-mist/55 transition-colors hover:text-white">
+          <Link href={journey.plan} className="inline-flex items-center gap-1.5 text-sm text-mist/55 transition-colors hover:text-white">
             <ArrowLeft className="size-3.5 rtl:-scale-x-100" />
             {t.common.backToBusinessPlan}
           </Link>

@@ -4,6 +4,7 @@ import { Container } from "@/components/ui/Container";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 import { Logo } from "@/components/ui/Logo";
 import { useI18n } from "@/i18n/I18nProvider";
+import { JourneyTabs } from "@/features/projects/JourneyTabs";
 import { cn } from "@/lib/cn";
 
 export function StatusPill({ complete, failed = false }: { complete: boolean; failed?: boolean }) {
@@ -68,6 +69,7 @@ export function WorkspaceHeader({
           <LanguageSwitcher />
         </div>
       </Container>
+      <JourneyTabs />
     </header>
   );
 }

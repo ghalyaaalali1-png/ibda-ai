@@ -2,6 +2,7 @@
 
 import { ArrowRight, Megaphone, PackageCheck, Truck, type LucideIcon } from "lucide-react";
 import Link from "next/link";
+import { useJourneyRoutes } from "@/features/projects/ProjectProvider";
 import { useI18n } from "@/i18n/I18nProvider";
 import type { BusinessPlan } from "../types";
 
@@ -10,6 +11,9 @@ const icons: Record<string, LucideIcon> = { suppliers: Truck, marketing: Megapho
 export function UpcomingSections({ plan }: { plan: BusinessPlan }) {
   const { t } = useI18n();
   const copy = t.plan.upcoming;
+  const journey = useJourneyRoutes();
+  // Each card links to its screen in this journey (inside a saved project, or without an account).
+  const hrefs: Record<string, string> = { suppliers: journey.suppliers, marketing: journey.marketing, launch: journey.launchPack };
   return (
     <section aria-labelledby="upcoming-title">
       <div className="flex items-end justify-between gap-4">
@@ -24,7 +28,8 @@ export function UpcomingSections({ plan }: { plan: BusinessPlan }) {
       </div>
 
       <div className="mt-5 grid gap-4 lg:grid-cols-3">
-        {plan.upcoming.map((section) => {
+        {plan.upcoming.map((planned) => {
+          const section = { ...planned, href: planned.href && (hrefs[planned.id] ?? planned.href) };
           const Icon = icons[section.id] ?? ArrowRight;
           // The Launch Pack card is fixed copy; the others describe this business.
           const fixed = section.id === "launch";

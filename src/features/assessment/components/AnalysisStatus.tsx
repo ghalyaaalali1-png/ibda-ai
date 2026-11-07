@@ -8,6 +8,8 @@ import { Logo } from "@/components/ui/Logo";
 import { routes } from "@/config/site";
 import { displayError } from "@/i18n";
 import { useI18n } from "@/i18n/I18nProvider";
+import { JourneyTabs } from "@/features/projects/JourneyTabs";
+import { useJourneyRoutes } from "@/features/projects/ProjectProvider";
 
 export type StatusScreen = "plan" | "suppliers" | "marketing" | "launchPack" | "workspace";
 
@@ -31,6 +33,7 @@ export function AnalysisStatus({
   onRetry?: () => void;
 }) {
   const { t } = useI18n();
+  const journey = useJourneyRoutes();
   const name = t.status.screens[screen];
   const failedTranslation = state === "translationFailed";
   const buttonClass =
@@ -46,6 +49,7 @@ export function AnalysisStatus({
           </div>
           <LanguageSwitcher />
         </Container>
+        <JourneyTabs />
       </header>
 
       <Container className="py-16 sm:py-24">
@@ -81,7 +85,7 @@ export function AnalysisStatus({
                   {t.analysis.tryAgain}
                 </button>
               ) : (
-                <Link href={routes.analysis} className={buttonClass}>
+                <Link href={journey.analysis} className={buttonClass}>
                   <RotateCcw className="size-4" />
                   {t.analysis.tryAgain}
                 </Link>

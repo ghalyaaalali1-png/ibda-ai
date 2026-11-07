@@ -22,13 +22,14 @@ import { useState } from "react";
 import { Container } from "@/components/ui/Container";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 import { Logo } from "@/components/ui/Logo";
-import { routes } from "@/config/site";
 import { Caption, DashCard } from "@/features/plan/components/DashCard";
 import { MetricTiles } from "@/features/plan/components/MetricTiles";
 import { SourceLink } from "@/features/plan/components/SourceLink";
 import type { RequirementLevel } from "@/features/plan/types";
 import { displayProfileLine, displayValue } from "@/i18n";
 import { useI18n } from "@/i18n/I18nProvider";
+import { JourneyTabs } from "@/features/projects/JourneyTabs";
+import { useJourneyRoutes } from "@/features/projects/ProjectProvider";
 import { cn } from "@/lib/cn";
 import type { ChecklistItem, LaunchPack, OutstandingItem, ReadinessStatus } from "../types";
 
@@ -119,6 +120,7 @@ export function LaunchPackView({
   supplierLabel: string;
 }) {
   const { t } = useI18n();
+  const journey = useJourneyRoutes();
   const { aed, aedRange } = t.fmt;
   const copy = t.launchPack;
   const { plan, suppliers, marketing, extras } = pack.inputs;
@@ -141,20 +143,10 @@ export function LaunchPackView({
           </div>
           <div className="flex min-w-0 items-center gap-1">
             <span className="me-2 hidden truncate text-sm text-mist/50 lg:block">{profileLine}</span>
-            <Link href={routes.marketing} className="hidden items-center rounded-full px-3 py-2 text-sm text-mist/60 transition-colors hover:bg-white/5 hover:text-white md:inline-flex">
-              {t.common.marketing}
-            </Link>
-            <Link
-              href={routes.plan}
-              aria-label={t.common.backToBusinessPlanLabel}
-              className="inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-sm text-mist/60 transition-colors hover:bg-white/5 hover:text-white"
-            >
-              <ArrowLeft className="size-3.5 rtl:-scale-x-100" />
-              <span aria-hidden className="hidden md:inline">{t.common.businessPlan}</span>
-            </Link>
             <LanguageSwitcher className="ms-1" />
           </div>
         </Container>
+        <JourneyTabs />
       </header>
 
       <Container className="space-y-6 py-10 sm:py-14">
@@ -361,7 +353,7 @@ export function LaunchPackView({
                 <span className="text-mist/55">{copy.marketing.budget}</span>
                 <span className="font-medium text-white">{aed(marketingBudget)}</span>
               </div>
-              <Link href={routes.marketing} className="mt-3 text-xs text-brand-300 hover:text-white">
+              <Link href={journey.marketing} className="mt-3 text-xs text-brand-300 hover:text-white">
                 {copy.marketing.open}
               </Link>
             </DashCard>
@@ -412,11 +404,11 @@ export function LaunchPackView({
         </p>
 
         <div className="flex flex-wrap gap-x-6 gap-y-2">
-          <Link href={routes.marketing} className="inline-flex items-center gap-1.5 text-sm text-mist/55 transition-colors hover:text-white">
+          <Link href={journey.marketing} className="inline-flex items-center gap-1.5 text-sm text-mist/55 transition-colors hover:text-white">
             <ArrowLeft className="size-3.5 rtl:-scale-x-100" />
             {t.common.backToMarketingPlan}
           </Link>
-          <Link href={routes.plan} className="inline-flex items-center gap-1.5 text-sm text-mist/55 transition-colors hover:text-white">
+          <Link href={journey.plan} className="inline-flex items-center gap-1.5 text-sm text-mist/55 transition-colors hover:text-white">
             <ArrowLeft className="size-3.5 rtl:-scale-x-100" />
             {t.common.backToBusinessPlan}
           </Link>

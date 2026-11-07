@@ -6,8 +6,9 @@ import { useCallback, useMemo, useState } from "react";
 import { Container } from "@/components/ui/Container";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 import { Logo } from "@/components/ui/Logo";
-import { routes } from "@/config/site";
 import { useI18n } from "@/i18n/I18nProvider";
+import { JourneyTabs } from "@/features/projects/JourneyTabs";
+import { useJourneyRoutes } from "@/features/projects/ProjectProvider";
 import type { SupplierCategory, SupplierScreenData } from "../types";
 import { CategoryTabs } from "./CategoryTabs";
 import { CompareTable } from "./CompareTable";
@@ -26,6 +27,7 @@ export function SuppliersWorkspace({
   budget: number;
 }) {
   const { t } = useI18n();
+  const journey = useJourneyRoutes();
   const { categories, suppliers, shortlist, brief, profileLine } = data;
   const [category, setCategory] = useState<SupplierCategory>(categories[0]?.id ?? "");
   const [compareIds, setCompareIds] = useState<string[]>(data.defaultCompare);
@@ -76,17 +78,10 @@ export function SuppliersWorkspace({
                 {t.suppliers.rfqCount(rfqCounts.length, sentCount)}
               </span>
             )}
-            <Link
-              href={routes.plan}
-              aria-label={t.common.backToBusinessPlanLabel}
-              className="inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-sm text-mist/60 transition-colors hover:bg-white/5 hover:text-white"
-            >
-              <ArrowLeft className="size-3.5 rtl:-scale-x-100" />
-              <span aria-hidden className="hidden md:inline">{t.common.businessPlan}</span>
-            </Link>
             <LanguageSwitcher />
           </div>
         </Container>
+        <JourneyTabs />
       </header>
 
       <Container className="space-y-6 py-10 sm:py-14">
@@ -182,7 +177,7 @@ export function SuppliersWorkspace({
             </div>
             <div className="flex flex-col items-start gap-2 sm:items-end">
               <Link
-                href={routes.marketing}
+                href={journey.marketing}
                 className="group inline-flex h-11 shrink-0 items-center gap-2 rounded-full bg-gradient-to-b from-brand-500 to-brand-600 px-5 text-sm font-medium text-white shadow-[0_0_0_1px_rgb(255_255_255/0.12)_inset,0_10px_40px_-6px_rgb(139_108_255/0.8)] transition-all hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
               >
                 {t.suppliers.continueTo}
@@ -193,7 +188,7 @@ export function SuppliersWorkspace({
         </section>
 
         <Link
-          href={routes.plan}
+          href={journey.plan}
           className="inline-flex items-center gap-1.5 text-sm text-mist/55 transition-colors hover:text-white"
         >
           <ArrowLeft className="size-3.5 rtl:-scale-x-100" />

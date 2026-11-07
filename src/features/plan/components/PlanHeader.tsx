@@ -1,12 +1,11 @@
 "use client";
 
-import { ArrowLeft, Check } from "lucide-react";
-import Link from "next/link";
-import { routes } from "@/config/site";
+import { Check } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 import { Logo } from "@/components/ui/Logo";
 import { useI18n } from "@/i18n/I18nProvider";
+import { JourneyTabs } from "@/features/projects/JourneyTabs";
 
 export function PlanHeader({ profileLine }: { profileLine: string }) {
   const { t } = useI18n();
@@ -24,17 +23,10 @@ export function PlanHeader({ profileLine }: { profileLine: string }) {
             <Check className="size-3" />
             {t.plan.planReady}
           </span>
-          <Link
-            href={routes.analysis}
-            aria-label={t.plan.backToWorkspace}
-            className="inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-sm text-mist/60 transition-colors hover:bg-white/5 hover:text-white"
-          >
-            <ArrowLeft className="size-3.5 rtl:-scale-x-100" />
-            <span aria-hidden className="hidden md:inline">{t.common.workspace}</span>
-          </Link>
           <LanguageSwitcher />
         </div>
       </Container>
+      <JourneyTabs />
     </header>
   );
 }

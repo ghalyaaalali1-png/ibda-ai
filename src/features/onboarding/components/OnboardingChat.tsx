@@ -2,9 +2,11 @@
 
 import { Check } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { routes } from "@/config/site";
 import { saveLaunchIdea, saveLaunchProfile } from "@/features/launch-profile/profile";
+import { saveNewProject } from "@/features/projects/actions";
+import { projectRoutes } from "@/features/projects/types";
 import { displayLabel, displayValue } from "@/i18n";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useOnboarding } from "../useOnboarding";
@@ -21,13 +23,24 @@ export function OnboardingChat() {
   const { status, idea, analysis, questions, answers, currentIndex, editing } = flow;
   const endRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const [saveFailed, setSaveFailed] = useState(false);
 
-  function startAnalysis() {
+  async function startAnalysis() {
     // Stored as given (English values), whatever the interface language.
-    saveLaunchProfile(flow.summary.map(({ id, label, value }) => ({ id, label, value })));
+    const profile = flow.summary.map(({ id, label, value }) => ({ id, label, value }));
+    saveLaunchProfile(profile);
     saveLaunchIdea(idea);
+    setSaveFailed(false);
     flow.startAnalysis();
-    router.push(routes.analysis);
+    // Signed in: saved as a project in the account. Otherwise: kept in this browser session.
+    const saved = await saveNewProject({ idea, profile }).catch(() => ({ status: "failed" }) as const);
+    if (saved.status === "failed") {
+      // Stop before any analysis runs, so nothing is generated that can't be kept.
+      setSaveFailed(true);
+      flow.startFailed();
+      return;
+    }
+    router.push(saved.status === "saved" ? projectRoutes(saved.id).analysis : routes.analysis);
   }
 
   // Keep the newest message in view as the conversation grows.
@@ -149,6 +162,11 @@ export function OnboardingChat() {
                 onEdit={flow.editAnswer}
                 onStart={startAnalysis}
               />
+              {saveFailed && (
+                <p role="alert" className="mt-3 rounded-xl border border-[#fab219]/25 bg-[#fab219]/10 px-3.5 py-2.5 text-sm text-[#fcc95a]">
+                  {t.onboarding.saveFailed}
+                </p>
+              )}
             </AgentMessage>
           )}
 

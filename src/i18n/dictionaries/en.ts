@@ -56,6 +56,7 @@ export const en = {
     requestQuote: "Request quote",
     targetCustomer: "Target customer",
     goal: "Goal: ",
+    sections: "Business sections",
     week: (w: number) => `Week ${w}`,
   },
 
@@ -135,9 +136,20 @@ export const en = {
       title: "My projects",
       signedInAs: (email: string) => `Signed in as ${email}`,
       emptyTitle: "No saved businesses yet",
-      emptyBody:
-        "Saving businesses to your account is coming next. For now, you can start a new business plan — it works the same as before.",
+      emptyBody: "Start your first business. Its plan is saved here automatically, so you can come back to it anytime.",
       newBusiness: "Start a new business",
+      newProject: "New project",
+      updated: (when: string) => `Last updated: ${when}`,
+      today: "today",
+      yesterday: "yesterday",
+      status: {
+        draft: "Not started",
+        generating: "Preparing…",
+        failed: "Needs attention",
+        ready: "Plan ready",
+        archived: "Archived",
+      },
+      open: (name: string) => `Open ${name}`,
     },
   },
 
@@ -320,6 +332,7 @@ export const en = {
     summaryTitle: "Here's what I understand",
     ready: "Ready",
     changeField: (label: string) => `Change ${label.toLowerCase()}`,
+    saveFailed: "Your business couldn't be saved to your account, so the analysis hasn't started. Please try again in a moment.",
     startAnalysis: "Start Analysis",
     starting: "Starting analysis…",
     startFootnote:

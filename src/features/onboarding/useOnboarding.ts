@@ -31,6 +31,7 @@ type Action =
   | { type: "reveal" }
   | { type: "edit"; index: number }
   | { type: "start" }
+  | { type: "startFailed" }
   | { type: "reset" };
 
 const initialState: State = {
@@ -67,6 +68,8 @@ function reducer(state: State, action: Action): State {
       return { ...state, editing: action.index, status: "asking" };
     case "start":
       return { ...state, status: "starting" };
+    case "startFailed":
+      return state.status === "starting" ? { ...state, status: "complete" } : state;
     case "reset":
       return initialState;
   }
@@ -122,6 +125,8 @@ export function useOnboarding(agent: OnboardingAgent = prototypeAgent) {
     answer: useCallback((value: string) => dispatch({ type: "answer", value }), []),
     editAnswer: useCallback((index: number) => dispatch({ type: "edit", index }), []),
     startAnalysis: useCallback(() => dispatch({ type: "start" }), []),
+    /** Back to the summary when the analysis couldn't start (the project wasn't saved). */
+    startFailed: useCallback(() => dispatch({ type: "startFailed" }), []),
     reset,
   };
 }

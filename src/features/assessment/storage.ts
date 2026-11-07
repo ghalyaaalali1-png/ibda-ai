@@ -13,6 +13,9 @@ import {
 import { nameNeedsTranslation } from "@/i18n";
 import type { Locale } from "@/i18n/config";
 import { useI18n } from "@/i18n/I18nProvider";
+import { useProject } from "@/features/projects/ProjectProvider";
+import type { ProjectView } from "@/features/projects/types";
+import { useRouter } from "next/navigation";
 import type { AssessmentRequest, InitialAssessment } from "./schema";
 
 export type AssessmentState =
@@ -142,13 +145,24 @@ export type AssessmentView =
   | { kind: "demo" };
 
 /**
- * What a results screen should show, in the interface language. A result
- * Claude wrote in the other language is translated (same figures, other
- * words) rather than shown as written. Never falls back to the abaya demo for
+ * What a results screen should show, in the interface language: the saved
+ * project's plan inside a project, otherwise this browser session's result.
+ * A result Claude wrote in the other language is translated (same figures,
+ * other words) rather than shown as written.
+ */
+export function useAssessmentView(): AssessmentView {
+  const project = useProject();
+  const fromProject = useProjectView(project);
+  const fromSession = useSessionView(project === null);
+  return project ? fromProject : fromSession;
+}
+
+/**
+ * The journey without an account. Never falls back to the abaya demo for
  * someone who entered their own business, and never renders the demo before
  * this browser's saved results have been read.
  */
-export function useAssessmentView(): AssessmentView {
+function useSessionView(enabled: boolean): AssessmentView {
   const { locale } = useI18n();
   const hydrated = useSyncExternalStore(noopSubscribe, () => true, () => false);
   const raw = useSyncExternalStore(subscribe, readRaw, () => null);
@@ -161,7 +175,7 @@ export function useAssessmentView(): AssessmentView {
   const input = hydrated ? currentAssessmentInput() : null;
   const matches = stored !== null && input !== null && stored.key === keyFor(input);
   const ready = matches ? localized(stored, input, locale) : null;
-  const needsTranslation = matches && !ready;
+  const needsTranslation = enabled && matches && !ready;
 
   useEffect(() => {
     if (!needsTranslation) return;
@@ -191,6 +205,82 @@ export function useAssessmentView(): AssessmentView {
   if (pending) return { kind: "checking" };
   return idea === null ? { kind: "demo" } : { kind: "unavailable" };
 }
+
+/**
+ * A saved project's plan. The server sends it in the interface language when
+ * it has it; otherwise the plan is translated once, saved, and the page reloads
+ * its data.
+ */
+function useProjectView(project: ProjectView | null): AssessmentView {
+  const { locale } = useI18n();
+  const router = useRouter();
+  const [failure, setFailure] = useState<{ locale: Locale; message: string } | null>(null);
+  const [attempt, setAttempt] = useState(0);
+  const projectId = project?.id;
+  const needsTranslation = project?.state === "needsTranslation";
+
+  useEffect(() => {
+    if (!projectId || !needsTranslation) return;
+    let active = true;
+    translateProject(projectId, locale)
+      .then(() => active && router.refresh())
+      .catch((error: Error) => active && setFailure({ locale, message: error.message }));
+    return () => {
+      active = false;
+    };
+  }, [projectId, needsTranslation, locale, attempt, router]);
+
+  if (!project) return { kind: "checking" };
+  if (project.state === "ready" && project.assessment) {
+    return { kind: "live", assessment: project.assessment, profile: project.profile };
+  }
+  if (needsTranslation) {
+    return failure?.locale === locale
+      ? {
+          kind: "translationFailed",
+          message: failure.message,
+          retry: () => {
+            setFailure(null);
+            setAttempt((n) => n + 1);
+          },
+        }
+      : { kind: "translating" };
+  }
+  return { kind: "unavailable" };
+}
+
+const translateProject = (id: string, locale: Locale) =>
+  shared(`project-translate:${id}:${locale}`, () =>
+    post(
+      `/api/projects/${id}/translate`,
+      {},
+      "The translation couldn't be completed. Please try again.",
+      "The translation took too long. Please try again.",
+      false,
+    ),
+  );
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+// While another request is generating the same project, check back every few seconds.
+const WAIT_MS = 5_000;
+const MAX_WAITS = 40;
+
+/** Generates a saved project's plan (or waits for a generation already running). */
+const generateProject = (id: string) =>
+  shared(`project-generate:${id}`, async () => {
+    for (let wait = 0; wait <= MAX_WAITS; wait++) {
+      const res = await fetch(`/api/projects/${id}/generate`, { method: "POST" });
+      const data = (await res.json().catch(() => ({}))) as Reply & { status?: string; error?: string; detail?: string };
+      if (res.status === 409 && data.status === "running") {
+        await sleep(WAIT_MS);
+        continue;
+      }
+      if (data.detail) console.error("Project generation failed:", data.detail);
+      if (!res.ok) throw new Error(data.error ?? "The assessment couldn't be completed.");
+      return data;
+    }
+    throw new Error("The assessment took too long. Please try again.");
+  });
 
 type Reply = { assessment?: InitialAssessment; businessName?: string };
 
@@ -285,9 +375,58 @@ async function assessmentIn(input: AssessmentRequest, locale: Locale): Promise<L
  * after a failure.
  */
 export function useAssessmentRun(onState: (state: AssessmentState) => void) {
+  const project = useProject();
+  const retrySession = useSessionRun(onState, project === null);
+  const retryProject = useProjectRun(onState, project);
+  return project ? retryProject : retrySession;
+}
+
+/** The analysis for a saved project: generated into it once, then read back. */
+function useProjectRun(onState: (state: AssessmentState) => void, project: ProjectView | null) {
+  const { locale } = useI18n();
+  const router = useRouter();
+  const [attempt, setAttempt] = useState(0);
+  const projectId = project?.id;
+  const state = project?.state;
+
+  useEffect(() => {
+    if (!project) return;
+    if (project.state === "ready" && project.assessment) {
+      onState({ status: "ready", assessment: project.assessment, profile: project.profile });
+      return;
+    }
+    onState({ status: "loading" });
+    let active = true;
+    const work =
+      project.state === "needsTranslation"
+        ? translateProject(project.id, locale).then(() => router.refresh())
+        : generateProject(project.id).then((reply) => {
+            if (active && reply.assessment) {
+              const profile = reply.businessName
+                ? project.answers.map((f) => (f.id === "business" ? { ...f, value: reply.businessName! } : f))
+                : project.answers;
+              onState({ status: "ready", assessment: reply.assessment, profile });
+            }
+            // The saved plan is now the project's; reload the page's data so every screen has it.
+            router.refresh();
+          });
+    work.catch((error: Error) => active && onState({ status: "error", message: error.message }));
+    return () => {
+      active = false;
+    };
+    // Runs per project, state, language and retry; onState is expected to be a stable setter.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId, state, locale, attempt]);
+
+  return useCallback(() => setAttempt((n) => n + 1), []);
+}
+
+/** The analysis in the journey without an account (results kept in this browser session). */
+function useSessionRun(onState: (state: AssessmentState) => void, enabled: boolean) {
   const { locale } = useI18n();
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
+    if (!enabled) return;
     // Read inputs straight from storage so the first render's placeholders are never sent.
     const input = currentAssessmentInput();
     const stored = readStored();
@@ -307,7 +446,7 @@ export function useAssessmentRun(onState: (state: AssessmentState) => void) {
     };
     // Runs once per mount, per retry and per language; onState is expected to be a stable setter.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [attempt, locale]);
+  }, [attempt, locale, enabled]);
 
   return useCallback(() => setAttempt((n) => n + 1), []);
 }
