@@ -3,31 +3,20 @@
 import Link from "next/link";
 import { routes, siteConfig } from "@/config/site";
 import { useI18n } from "@/i18n/I18nProvider";
+import { KhittaMark } from "./KhittaMark";
 
-/** Placeholder mark until the KHITTA visual identity is designed; the two names are the brand. */
+/** The KHITTA logo: the K mark, then "KHITTA | خِطّة". Links home. */
 export function Logo() {
   const { t } = useI18n();
   return (
-    <Link href={routes.home} className="group flex items-center gap-2.5" aria-label={t.common.homeLabel}>
-      <span className="relative grid size-9 place-items-center overflow-hidden rounded-xl bg-gradient-to-br from-brand-400 via-brand-600 to-electric-500 shadow-[0_0_24px_-4px_rgb(139_108_255/0.7)]">
-        {/* Upward "launch" mark */}
-        <svg viewBox="0 0 24 24" className="size-5 text-white" aria-hidden>
-          <path
-            d="M5 17 L12 6 L19 17"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.4"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <circle cx="12" cy="17" r="1.8" fill="currentColor" />
-        </svg>
-      </span>
-      <span className="flex items-baseline gap-2">
-        <span lang="en" className="text-lg font-semibold tracking-tight text-white">
+    <Link href={routes.home} className="group flex shrink-0 items-center gap-2.5" aria-label={t.common.homeLabel}>
+      <KhittaMark className="size-9 drop-shadow-[0_0_14px_rgb(122_108_255/0.45)] transition-transform group-hover:scale-105" />
+      <span className="flex items-center gap-2" dir="ltr">
+        <span lang="en" className="text-lg font-semibold tracking-[0.04em] text-white">
           {siteConfig.name}
         </span>
-        <span lang="ar" className="font-arabic text-sm font-semibold text-brand-300/80">
+        <span aria-hidden className="h-4 w-px bg-white/30" />
+        <span lang="ar" className="font-arabic text-base font-semibold text-white/90">
           {siteConfig.nameArabic}
         </span>
       </span>
