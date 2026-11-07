@@ -41,9 +41,19 @@ export const projectRoutes = (id: string) => ({
   suppliers: `/projects/${id}/suppliers`,
   marketing: `/projects/${id}/marketing`,
   launchPack: `/projects/${id}/launch-pack`,
+  edit: `/projects/${id}/edit`,
 });
 
 export type JourneyRoutes = ReturnType<typeof projectRoutes>;
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export const isProjectId = (id: string) => UUID.test(id);
+
+/** One saved version of a project's answers, with what changed from the version before. */
+export type HistoryEntry = {
+  version: number;
+  createdAt: string;
+  current: boolean;
+  /** Answers that changed (by field id; "idea" for the idea itself). Empty for the first version. */
+  changes: { id: string; label: string; from: string; to: string }[];
+};

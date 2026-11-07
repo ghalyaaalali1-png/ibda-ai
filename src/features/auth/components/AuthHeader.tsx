@@ -8,8 +8,11 @@ import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 import { Logo } from "@/components/ui/Logo";
 import { useI18n } from "@/i18n/I18nProvider";
 
-/** Header for the account screens: logo, back to home, language. `actions` adds controls (log out, say). */
-export function AuthHeader({ actions }: { actions?: React.ReactNode }) {
+/**
+ * Header for the account screens: logo, back to home, language. `actions`
+ * adds controls (log out, say); `tabs` adds a second row (a project's tab bar).
+ */
+export function AuthHeader({ actions, tabs }: { actions?: React.ReactNode; tabs?: React.ReactNode }) {
   const { t } = useI18n();
   return (
     <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-ink-950/80 backdrop-blur-xl">
@@ -28,6 +31,7 @@ export function AuthHeader({ actions }: { actions?: React.ReactNode }) {
           <LanguageSwitcher className="ms-1" />
         </div>
       </Container>
+      {tabs}
     </header>
   );
 }

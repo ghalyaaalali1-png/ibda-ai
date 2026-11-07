@@ -20,6 +20,8 @@ const sessionRoutes: JourneyRoutes = {
   suppliers: routes.suppliers,
   marketing: routes.marketing,
   launchPack: routes.launchPack,
+  // Editing needs a saved project; without one it leads to My projects.
+  edit: routes.projects,
 };
 
 /** Links between the journey's pages: inside the saved project, or the no-account pages. */

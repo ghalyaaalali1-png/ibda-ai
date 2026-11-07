@@ -8,7 +8,7 @@ import { coreInfoFromProfile } from "@/features/project/coreInfo";
 import type { Locale } from "@/i18n/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { localizedAnswers } from "./localize";
-import { isProjectId, type ProjectStatus, type ProjectSummary, type ProjectView } from "./types";
+import { isProjectId, type HistoryEntry, type ProjectStatus, type ProjectSummary, type ProjectView } from "./types";
 
 /*
  * Saved projects, read and written as the signed-in user: Row Level Security
@@ -94,13 +94,16 @@ export async function loadProject(supabase: Db, id: string) {
   return core ? { project, core } : null;
 }
 
-/** The latest revision of every module for this core version, or null while any is missing. */
-export async function latestRevisions(supabase: Db, projectId: string, coreVersionId: string) {
+/**
+ * The newest revision of every module, or null while any module has none.
+ * After an edit, modules that didn't need updating keep their earlier
+ * revision; the ones that did have a newer one.
+ */
+export async function latestRevisions(supabase: Db, projectId: string) {
   const { data } = await supabase
     .from("module_revisions")
     .select("id, module_key, output, source_locale")
     .eq("project_id", projectId)
-    .eq("core_version_id", coreVersionId)
     .order("created_at", { ascending: false })
     .returns<RevisionRow[]>();
   const latest = new Map<ModuleKey, RevisionRow>();
@@ -119,14 +122,18 @@ export async function translationsOf(supabase: Db, revisionIds: string[], locale
   return new Map((data ?? []).map((row) => [row.revision_id, row.output]));
 }
 
-/** The module outputs in a language: as written, or from saved translations; null if not all are there. */
+/**
+ * The module outputs in a language: each as written if it was written in it,
+ * otherwise its saved translation; null while any translation is missing.
+ */
 export async function modulesIn(supabase: Db, revisions: Map<ModuleKey, RevisionRow>, locale: Locale) {
-  const source = revisions.get("assessment")!.source_locale;
   const entries = [...revisions.entries()];
-  if (source === locale) return Object.fromEntries(entries.map(([k, r]) => [k, r.output])) as ModuleOutputs;
-  const translated = await translationsOf(supabase, entries.map(([, r]) => r.id), locale);
-  if (!entries.every(([, r]) => translated.has(r.id))) return null;
-  return Object.fromEntries(entries.map(([k, r]) => [k, translated.get(r.id)])) as ModuleOutputs;
+  const foreign = entries.filter(([, r]) => r.source_locale !== locale).map(([, r]) => r.id);
+  const translated = foreign.length ? await translationsOf(supabase, foreign, locale) : new Map<string, unknown>();
+  if (!foreign.every((id) => translated.has(id))) return null;
+  return Object.fromEntries(
+    entries.map(([k, r]) => [k, r.source_locale === locale ? r.output : translated.get(r.id)]),
+  ) as ModuleOutputs;
 }
 
 /** Everything a project screen shows, in the interface language; null if not found. */
@@ -136,7 +143,7 @@ export async function projectView(id: string, locale: Locale): Promise<ProjectVi
   if (!loaded) return null;
   const { project, core } = loaded;
   const { profile, nameReady } = localizedAnswers(core.answers, project.name_translations, locale);
-  const revisions = await latestRevisions(supabase, project.id, core.id);
+  const revisions = await latestRevisions(supabase, project.id);
   const modules = revisions ? await modulesIn(supabase, revisions, locale) : null;
   const assessment = modules ? assembleAssessment(modules) : null;
   return {
@@ -150,4 +157,40 @@ export async function projectView(id: string, locale: Locale): Promise<ProjectVi
     assessment: assessment && nameReady ? assessment : null,
     updatedAt: project.updated_at,
   };
+}
+
+/**
+ * The project's answer history, newest first: every version a plan was made
+ * from (an edit that failed to update the plan isn't listed).
+ */
+export async function projectHistory(id: string): Promise<HistoryEntry[]> {
+  const supabase = await createSupabaseServerClient();
+  const loaded = await loadProject(supabase, id);
+  if (!loaded) return [];
+  const [{ data: versions }, { data: used }] = await Promise.all([
+    supabase
+      .from("core_versions")
+      .select("id, version, idea, answers, created_at")
+      .eq("project_id", id)
+      .order("version", { ascending: true })
+      .returns<(CoreVersionRow & { version: number; created_at: string })[]>(),
+    supabase.from("module_revisions").select("core_version_id").eq("project_id", id).returns<{ core_version_id: string }[]>(),
+  ]);
+  const madePlans = new Set((used ?? []).map((r) => r.core_version_id));
+  const applied = (versions ?? []).filter((v) => v.version === 1 || madePlans.has(v.id));
+
+  return applied
+    .map((v, i) => {
+      const before = applied[i - 1];
+      const changes: HistoryEntry["changes"] = [];
+      if (before) {
+        if (before.idea.trim() !== v.idea.trim()) changes.push({ id: "idea", label: "Idea", from: before.idea, to: v.idea });
+        for (const field of v.answers) {
+          const old = profileValue(before.answers, field.id);
+          if (old !== field.value) changes.push({ id: field.id, label: field.label, from: old ?? "", to: field.value });
+        }
+      }
+      return { version: v.version, createdAt: v.created_at, current: v.id === loaded.core.id, changes };
+    })
+    .reverse();
 }

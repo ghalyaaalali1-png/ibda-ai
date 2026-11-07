@@ -151,6 +151,36 @@ export const ar: Dictionary = {
     },
   },
 
+  edit: {
+    tab: "تعديل البيانات",
+    title: "عدّل بيانات مشروعك",
+    subtitle: "غيّر ما تريد أدناه. ستحدّث خِطّة فقط أجزاء الخطة التي تتأثر بتغييراتك، وتحتفظ بنسخك السابقة.",
+    idea: "فكرتك",
+    budgetAmount: "الميزانية (درهم)",
+    willUpdate: "سيتم تحديثه",
+    staysSame: "يبقى كما هو",
+    noChanges: "غيّر أي معلومة لترى أجزاء الخطة التي ستتحدّث.",
+    save: "حدّث خطتي",
+    saving: "جارٍ تحديث خطتك…",
+    savingHint: "يستغرق ذلك عادةً نحو دقيقة. يُرجى إبقاء هذه الصفحة مفتوحة.",
+    cancel: "إلغاء",
+    sections: {
+      assessment: "التقييم والحكم",
+      financials: "الميزانية والتسعير ونقطة التعادل",
+      narrative: "السوق والمخاطر والخطوات التالية",
+      setup: "التراخيص والمتطلبات",
+      suppliers: "الموردون",
+      marketing: "خطة التسويق",
+    },
+    history: {
+      title: "السجل",
+      version: (n: number) => `النسخة ${n}`,
+      current: "الحالية",
+      first: "الخطة الأولى",
+      changedTo: (from: string, to: string) => `${from} ← ${to}`,
+    },
+  },
+
   nav: {
     howItWorks: "كيف تعمل",
     whatWeDo: "ماذا تقدّم خِطّة",
@@ -603,6 +633,9 @@ export const ar: Dictionary = {
     "Invalid translation request.": "طلب الترجمة غير صالح.",
     "The translation couldn't be completed. Please try again.": "تعذّر إكمال الترجمة. يرجى المحاولة مرة أخرى.",
     "The translation took too long. Please try again.": "استغرقت الترجمة وقتاً طويلاً. يرجى المحاولة مرة أخرى.",
+    "Project not found.": "لم يُعثر على المشروع.",
+    "Please log in again.": "يُرجى تسجيل الدخول مرة أخرى.",
+    "Accounts aren't available right now.": "الحسابات غير متاحة حالياً.",
   },
   genericError: "حدث خطأ. يرجى المحاولة مرة أخرى.",
 

@@ -153,6 +153,37 @@ export const en = {
     },
   },
 
+  /** Editing a saved business: changed answers update only the parts of the plan they affect. */
+  edit: {
+    tab: "Edit details",
+    title: "Edit your business details",
+    subtitle: "Change anything below. KHITTA updates only the parts of your plan that your changes affect, and keeps your earlier versions.",
+    idea: "Your idea",
+    budgetAmount: "Budget (AED)",
+    willUpdate: "Will update",
+    staysSame: "Stays as it is",
+    noChanges: "Change a detail to see which parts of your plan will update.",
+    save: "Update my plan",
+    saving: "Updating your plan…",
+    savingHint: "This usually takes about a minute. Please keep this page open.",
+    cancel: "Cancel",
+    sections: {
+      assessment: "Assessment and verdict",
+      financials: "Budget, pricing and break-even",
+      narrative: "Market, risks and next steps",
+      setup: "Licences and requirements",
+      suppliers: "Suppliers",
+      marketing: "Marketing plan",
+    },
+    history: {
+      title: "History",
+      version: (n: number) => `Version ${n}`,
+      current: "Current",
+      first: "First plan",
+      changedTo: (from: string, to: string) => `${from} → ${to}`,
+    },
+  },
+
   nav: {
     howItWorks: "How it Works",
     whatWeDo: "What KHITTA Does",

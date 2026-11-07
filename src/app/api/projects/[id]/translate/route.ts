@@ -1,10 +1,10 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
-import { assessmentTexts, withTranslations } from "@/features/assessment/translatable";
+import { mapTexts } from "@/features/assessment/translatable";
 import { profileValue } from "@/features/launch-profile/profile";
-import { assembleAssessment, splitAssessment } from "@/features/plan-modules/assemble";
+import { moduleDefinitions } from "@/features/plan-modules/registry";
 import { localizedAnswers } from "@/features/projects/localize";
-import { latestRevisions, loadProject, modulesIn, translationsOf } from "@/features/projects/server";
+import { latestRevisions, loadProject, translationsOf } from "@/features/projects/server";
 import { getLocale } from "@/i18n/server";
 import { hasAnthropicKey, IBDA_MODEL } from "@/lib/server/anthropic";
 import { fail } from "@/lib/server/assessmentOutput";
@@ -15,10 +15,21 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
 
+/** Every piece of text in a module's output. */
+function textsOf(schema: Parameters<typeof mapTexts>[0], output: unknown) {
+  const texts: string[] = [];
+  mapTexts(schema, output, (text) => {
+    if (text.trim()) texts.push(text);
+    return text;
+  });
+  return texts;
+}
+
 /**
  * Translates a saved project's plan (and business name, if typed in the other
- * language) into the interface language, once, and saves the translation
- * beside each module revision. Figures, codes and structure stay identical.
+ * language) into the interface language, once, and saves each module's
+ * translation beside its revision. Only modules written in the other language
+ * and not yet translated are sent; figures, codes and structure stay identical.
  */
 export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   if (!hasAnthropicKey()) return fail("The AI service isn't configured.", 503);
@@ -31,29 +42,33 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   if (!loaded) return fail("Project not found.", 404);
   const { project, core } = loaded;
   const locale = await getLocale();
-  const revisions = await latestRevisions(supabase, project.id, core.id);
+  const revisions = await latestRevisions(supabase, project.id);
   if (!revisions) return fail("The assessment couldn't be completed.", 409);
 
-  const planReady = (await modulesIn(supabase, revisions, locale)) !== null;
+  const foreign = [...revisions.entries()].filter(([, r]) => r.source_locale !== locale);
+  const existing = await translationsOf(supabase, foreign.map(([, r]) => r.id), locale);
+  const missing = foreign.filter(([, r]) => !existing.has(r.id));
   const business = profileValue(core.answers, "business");
   const nameMissing = !localizedAnswers(core.answers, project.name_translations, locale).nameReady;
-  if (planReady && !nameMissing) return NextResponse.json({ status: "ready" });
+  if (missing.length === 0 && !nameMissing) return NextResponse.json({ status: "ready" });
 
   try {
-    const source = planReady ? null : assembleAssessment((await modulesIn(supabase, revisions, revisions.get("assessment")!.source_locale))!);
     const translations = await translateTexts(
-      [...(source ? assessmentTexts(source) : []), ...(nameMissing && business ? [business] : [])],
+      [
+        ...missing.flatMap(([key, r]) => textsOf(moduleDefinitions[key].schema, r.output)),
+        ...(nameMissing && business ? [business] : []),
+      ],
       locale,
     );
-
-    if (source) {
-      const translated = splitAssessment(withTranslations(source, translations));
-      const existing = await translationsOf(supabase, [...revisions.values()].map((r) => r.id), locale);
-      const rows = [...revisions.entries()]
-        .filter(([, r]) => !existing.has(r.id))
-        .map(([key, r]) => ({ revision_id: r.id, locale, output: translated[key], model: IBDA_MODEL }));
+    if (missing.length) {
+      const rows = missing.map(([key, r]) => ({
+        revision_id: r.id,
+        locale,
+        output: mapTexts(moduleDefinitions[key].schema, r.output, (text) => translations.get(text) ?? text),
+        model: IBDA_MODEL,
+      }));
       // A translation saved meanwhile by another request is fine to keep.
-      const { error } = rows.length ? await supabase.from("module_translations").insert(rows) : { error: null };
+      const { error } = await supabase.from("module_translations").insert(rows);
       if (error && error.code !== "23505") throw new Error(`Translation not saved: ${error.message}`);
     }
     if (nameMissing && business && translations.get(business)) {

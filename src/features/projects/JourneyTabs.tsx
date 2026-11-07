@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Pencil } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
@@ -67,6 +67,25 @@ export function JourneyTabs() {
             </Link>
           );
         })}
+        {project && (
+          <>
+            <span aria-hidden className="mx-1 h-4 w-px shrink-0 bg-white/10" />
+            <Link
+              href={journey.edit}
+              ref={pathname === journey.edit ? activeRef : undefined}
+              aria-current={pathname === journey.edit ? "page" : undefined}
+              className={cn(
+                "inline-flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm transition-colors",
+                pathname === journey.edit
+                  ? "bg-brand-500/20 font-medium text-white shadow-[0_0_0_1px_rgb(164_139_255/0.35)_inset]"
+                  : "text-brand-300 hover:bg-white/5 hover:text-white",
+              )}
+            >
+              <Pencil aria-hidden className="size-3.5" />
+              {t.edit.tab}
+            </Link>
+          </>
+        )}
       </Container>
     </nav>
   );

@@ -35,7 +35,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   const { project, core } = loaded;
   const locale = await getLocale();
 
-  if (await latestRevisions(supabase, project.id, core.id)) return NextResponse.json({ status: "ready" });
+  if (await latestRevisions(supabase, project.id)) return NextResponse.json({ status: "ready" });
 
   const { data: running } = await supabase
     .from("generation_runs")
