@@ -16,6 +16,8 @@ export const routes = {
   print: "/print",
   login: "/login",
   signup: "/signup",
+  forgotPassword: "/forgot-password",
+  resetPassword: "/reset-password",
   projects: "/projects",
   authCallback: "/auth/callback",
   howItWorks: "#how-it-works",

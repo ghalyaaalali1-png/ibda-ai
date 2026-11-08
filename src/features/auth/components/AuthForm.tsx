@@ -88,8 +88,17 @@ export function AuthForm({
           />
         </label>
         <label className="text-sm font-medium text-mist/80">
-          {t.auth.fields.password}
-          {mode === "signup" && <span className="font-normal text-mist/40"> · {t.auth.fields.passwordHint}</span>}
+          <span className="flex items-baseline justify-between gap-2">
+            <span>
+              {t.auth.fields.password}
+              {mode === "signup" && <span className="font-normal text-mist/40"> · {t.auth.fields.passwordHint}</span>}
+            </span>
+            {mode === "login" && (
+              <Link href={routes.forgotPassword} className="text-xs font-normal text-brand-300 hover:text-brand-200">
+                {t.auth.forgot.link}
+              </Link>
+            )}
+          </span>
           <input
             name="password"
             type="password"

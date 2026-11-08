@@ -10,6 +10,8 @@ import { businessNameIn, fail, generationFailure, plainLabels } from "@/lib/serv
 import { runAllModules } from "@/lib/server/modules/run";
 import { hasSupabaseConfig } from "@/lib/supabase/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { withinGenerationLimit } from "@/features/projects/limits";
+import { LIMIT_MESSAGE } from "@/lib/server/rateLimit";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
@@ -46,6 +48,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
     .limit(1);
   if (running?.length) return NextResponse.json({ status: "running" }, { status: 409 });
 
+  if (!(await withinGenerationLimit(supabase))) return fail(LIMIT_MESSAGE, 429);
   const { data: run, error: runError } = await supabase
     .from("generation_runs")
     .insert({ project_id: project.id, core_version_id: core.id, locale, module_keys: [...moduleKeys], model: IBDA_MODEL })

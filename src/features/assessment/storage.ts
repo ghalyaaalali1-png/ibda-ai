@@ -450,3 +450,32 @@ function useSessionRun(onState: (state: AssessmentState) => void, enabled: boole
 
   return useCallback(() => setAttempt((n) => n + 1), []);
 }
+
+const IMPORTED_KEY = "ibda:imported";
+
+/**
+ * A plan made in this browser session without an account (and not yet saved
+ * to one): the answers and the stored result, or null.
+ */
+export function readGuestPlan(): { input: AssessmentRequest; stored: Stored } | null {
+  const stored = readStored();
+  if (!stored || readLaunchIdea() === null) return null;
+  const input = currentAssessmentInput();
+  if (stored.key !== keyFor(input)) return null;
+  try {
+    if (sessionStorage.getItem(IMPORTED_KEY) === stored.key) return null;
+  } catch {
+    return null;
+  }
+  return { input, stored };
+}
+
+/** Remembers that this session's plan was saved to an account (or dismissed), so it isn't offered again. */
+export function markGuestPlanHandled() {
+  const stored = readStored();
+  try {
+    if (stored) sessionStorage.setItem(IMPORTED_KEY, stored.key);
+  } catch {
+    // Storage unavailable: the offer may appear again, which is harmless.
+  }
+}

@@ -5,6 +5,7 @@ import { captionCopySchema, captionRequestSchema } from "@/features/marketing/ca
 import { contentTypes } from "@/features/marketing/captions";
 import { IBDA_MODEL, getAnthropic, hasAnthropicKey } from "@/lib/server/anthropic";
 import { captionSystemPrompt } from "@/lib/server/ibda-agent-guide";
+import { allowRequest, hourlyLimits, LIMIT_MESSAGE, requesterKey } from "@/lib/server/rateLimit";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -28,6 +29,7 @@ export async function POST(request: Request) {
   }
   const input = captionRequestSchema.safeParse(body);
   if (!input.success) return fail("Invalid caption request.", 400);
+  if (!allowRequest(`caption:${requesterKey(request)}`, hourlyLimits.caption)) return fail(LIMIT_MESSAGE, 429);
 
   const { type, platform, language, context } = input.data;
   const kind = contentTypes.find((c) => c.id === type)!;

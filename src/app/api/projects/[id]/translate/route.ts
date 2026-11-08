@@ -11,6 +11,7 @@ import { fail } from "@/lib/server/assessmentOutput";
 import { translateTexts } from "@/lib/server/translate";
 import { hasSupabaseConfig } from "@/lib/supabase/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { allowRequest, hourlyLimits, LIMIT_MESSAGE, requesterKey } from "@/lib/server/rateLimit";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
@@ -31,7 +32,7 @@ function textsOf(schema: Parameters<typeof mapTexts>[0], output: unknown) {
  * translation beside its revision. Only modules written in the other language
  * and not yet translated are sent; figures, codes and structure stay identical.
  */
-export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   if (!hasAnthropicKey()) return fail("The AI service isn't configured.", 503);
   if (!hasSupabaseConfig()) return fail("Accounts aren't available right now.", 503);
   const supabase = await createSupabaseServerClient();
@@ -51,6 +52,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   const business = profileValue(core.answers, "business");
   const nameMissing = !localizedAnswers(core.answers, project.name_translations, locale).nameReady;
   if (missing.length === 0 && !nameMissing) return NextResponse.json({ status: "ready" });
+  if (!allowRequest(`translation:${requesterKey(request, auth.user.id)}`, hourlyLimits.translation)) return fail(LIMIT_MESSAGE, 429);
 
   try {
     const translations = await translateTexts(

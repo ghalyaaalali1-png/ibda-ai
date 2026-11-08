@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, History, Loader2, RefreshCw } from "lucide-react";
+import { Check, History, Loader2, RefreshCw, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -40,6 +40,29 @@ export function EditProject({ history }: { history: HistoryEntry[] }) {
     [project.idea, project.answers, idea, answers],
   );
   const set = (id: string, value: string) => setAnswers((all) => all.map((f) => (f.id === id ? { ...f, value } : f)));
+
+  const [confirming, setConfirming] = useState<number | null>(null);
+
+  /** Brings back an earlier version's answers and plan (no AI work), then opens the plan. */
+  async function restore(version: number) {
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/projects/${project.id}/restore`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ version }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
+      if (!res.ok) throw new Error(data.error ?? t.genericError);
+      router.push(journey.plan);
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t.genericError);
+      setSaving(false);
+      setConfirming(null);
+    }
+  }
 
   async function save() {
     setSaving(true);
@@ -192,12 +215,43 @@ export function EditProject({ history }: { history: HistoryEntry[] }) {
               <li key={entry.version} className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-4">
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-sm font-medium text-white">{copy.history.version(entry.version)}</span>
-                  {entry.current && (
+                  {entry.current ? (
                     <span className="rounded-full bg-brand-500/20 px-2 py-0.5 text-[11px] text-brand-300">
                       {copy.history.current}
                     </span>
+                  ) : (
+                    !saving &&
+                    confirming !== entry.version && (
+                      <button
+                        type="button"
+                        onClick={() => setConfirming(entry.version)}
+                        className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] text-brand-300 hover:bg-white/5 hover:text-white"
+                      >
+                        <RotateCcw aria-hidden className="size-3" />
+                        {copy.history.restore}
+                      </button>
+                    )
                   )}
                 </div>
+                {confirming === entry.version && (
+                  <div className="mt-2 rounded-xl border border-brand-400/25 bg-brand-500/10 p-3 text-xs text-mist/80">
+                    <p>{copy.history.restoreConfirm(entry.version)}</p>
+                    <div className="mt-2 flex justify-end gap-2">
+                      <button type="button" onClick={() => setConfirming(null)} disabled={saving} className="px-2 py-1 text-mist/60 hover:text-white">
+                        {copy.cancel}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => restore(entry.version)}
+                        disabled={saving}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-brand-500/80 px-3 py-1 font-medium text-white hover:bg-brand-500"
+                      >
+                        {saving && <Loader2 aria-hidden className="size-3 animate-spin" />}
+                        {saving ? copy.history.restoring : copy.history.restore}
+                      </button>
+                    </div>
+                  </div>
+                )}
                 <p className="mt-1 text-xs text-mist/45">{updatedOn(entry.createdAt, locale, t)}</p>
                 <ul className="mt-2 space-y-1 text-xs text-mist/65">
                   {entry.changes.length === 0 ? (

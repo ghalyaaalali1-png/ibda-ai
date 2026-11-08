@@ -19,6 +19,7 @@ export type AuthErrorKey =
   | "rateLimit"
   | "notConfigured"
   | "googleFailed"
+  | "samePassword"
   | "generic";
 
 export type AuthFormState =
@@ -126,4 +127,42 @@ export async function logOut() {
     await supabase.auth.signOut();
   }
   redirect(routes.home);
+}
+
+export type ResetRequestState = { status: "idle" } | { status: "sent"; email: string } | { status: "error"; error: AuthErrorKey; email: string };
+
+/**
+ * Emails a password reset link. Always answers "sent" for a well-formed
+ * email, so the page never reveals whether an account exists.
+ */
+export async function requestPasswordReset(_previous: ResetRequestState, form: FormData): Promise<ResetRequestState> {
+  const email = String(form.get("email") ?? "").trim();
+  if (!hasSupabaseConfig()) return { status: "error", error: "notConfigured", email };
+  if (!EMAIL.test(email)) return { status: "error", error: "invalidEmail", email };
+  const origin = (await headers()).get("origin") ?? "";
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}${routes.authCallback}?next=${encodeURIComponent(routes.resetPassword)}`,
+  });
+  if (error?.code === "over_email_send_rate_limit" || error?.code === "over_request_rate_limit") {
+    return { status: "error", error: "rateLimit", email };
+  }
+  return { status: "sent", email };
+}
+
+export type NewPasswordState = { status: "idle" } | { status: "error"; error: AuthErrorKey | "mismatch" | "expired" };
+
+/** Saves a new password for the user signed in by the reset link, then opens My projects. */
+export async function setNewPassword(_previous: NewPasswordState, form: FormData): Promise<NewPasswordState> {
+  const password = String(form.get("password") ?? "");
+  const confirm = String(form.get("confirm") ?? "");
+  if (!hasSupabaseConfig()) return { status: "error", error: "notConfigured" };
+  if (password.length < MIN_PASSWORD) return { status: "error", error: "passwordTooShort" };
+  if (password !== confirm) return { status: "error", error: "mismatch" };
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase.auth.getUser();
+  if (!data.user) return { status: "error", error: "expired" };
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) return { status: "error", error: error.code === "same_password" ? "samePassword" : errorKey(error.code) };
+  redirect(routes.projects);
 }

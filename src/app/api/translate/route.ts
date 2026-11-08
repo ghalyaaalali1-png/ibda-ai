@@ -5,6 +5,7 @@ import { assessmentTexts, withTranslations } from "@/features/assessment/transla
 import { hasAnthropicKey } from "@/lib/server/anthropic";
 import { AssessmentError } from "@/lib/server/modules/ask";
 import { translateTexts } from "@/lib/server/translate";
+import { allowRequest, hourlyLimits, LIMIT_MESSAGE, requesterKey } from "@/lib/server/rateLimit";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
@@ -31,6 +32,7 @@ export async function POST(request: Request) {
   }
   const input = translationRequestSchema.safeParse(body);
   if (!input.success) return fail("Invalid translation request.", 400);
+  if (!allowRequest(`translation:${requesterKey(request)}`, hourlyLimits.translation)) return fail(LIMIT_MESSAGE, 429);
   const { assessment, businessName, locale } = input.data;
 
   try {

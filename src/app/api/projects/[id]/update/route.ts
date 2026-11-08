@@ -12,6 +12,8 @@ import { businessNameIn, fail, generationFailure, plainLabels } from "@/lib/serv
 import { runModules } from "@/lib/server/modules/run";
 import { hasSupabaseConfig } from "@/lib/supabase/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { withinGenerationLimit } from "@/features/projects/limits";
+import { LIMIT_MESSAGE } from "@/lib/server/rateLimit";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
@@ -56,6 +58,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const changed = previous.success ? changedFields(previous.data, next) : (Object.keys(next) as (keyof typeof next)[]);
   if (changed.length === 0) return NextResponse.json({ status: "unchanged" });
 
+  if (!(await withinGenerationLimit(supabase))) return fail(LIMIT_MESSAGE, 429);
   const revisions = await latestRevisions(supabase, project.id);
   if (!revisions) return fail("The assessment couldn't be completed.", 409);
   const keys = affectedModules(changed);

@@ -9,6 +9,8 @@ import { logOut } from "@/features/auth/actions";
 import { AuthHeader } from "@/features/auth/components/AuthHeader";
 import { currentUser } from "@/features/auth/session";
 import { profileValue } from "@/features/launch-profile/profile";
+import { GuestPlanOffer } from "@/features/projects/components/GuestPlanOffer";
+import { ProjectCardMenu } from "@/features/projects/components/ProjectCardMenu";
 import { updatedOn } from "@/features/projects/format";
 import { listProjects } from "@/features/projects/server";
 import { projectRoutes, type ProjectSummary } from "@/features/projects/types";
@@ -36,18 +38,18 @@ function ProjectCard({ project, t, locale }: { project: ProjectSummary; t: Dicti
   const ready = project.status === "ready";
   const href = ready ? projectRoutes(project.id).plan : projectRoutes(project.id).analysis;
   return (
-    <li>
+    <li className="relative">
+      {/* Rename / delete, beside (not inside) the card's link. */}
+      <div className="absolute end-4 top-4 z-10">
+        <ProjectCardMenu id={project.id} name={name} />
+      </div>
       <Link
         href={href}
         aria-label={copy.open(name)}
         className="group glass flex h-full flex-col rounded-3xl p-6 transition-colors hover:border-brand-400/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
       >
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start gap-3 pe-10">
           <h2 className="text-lg font-semibold text-white">{name}</h2>
-          <ArrowRight
-            aria-hidden
-            className="mt-1 size-4 shrink-0 text-mist/30 transition-all group-hover:translate-x-0.5 group-hover:text-brand-300 rtl:-scale-x-100 rtl:group-hover:-translate-x-0.5"
-          />
         </div>
         <dl className="mt-3 flex flex-col gap-1 text-sm text-mist/65">
           {location && (
@@ -64,7 +66,13 @@ function ProjectCard({ project, t, locale }: { project: ProjectSummary; t: Dicti
           )}
         </dl>
         <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-5">
-          <p className="text-xs text-mist/45">{copy.updated(updatedOn(project.updatedAt, locale, t))}</p>
+          <p className="flex items-center gap-1.5 text-xs text-mist/45">
+            {copy.updated(updatedOn(project.updatedAt, locale, t))}
+            <ArrowRight
+              aria-hidden
+              className="size-3.5 text-mist/30 transition-all group-hover:translate-x-0.5 group-hover:text-brand-300 rtl:-scale-x-100 rtl:group-hover:-translate-x-0.5"
+            />
+          </p>
           {!ready && (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[11px] text-mist/60">
               {project.status === "generating" && <Loader2 aria-hidden className="size-3 animate-spin" />}
@@ -114,6 +122,8 @@ export default async function ProjectsPage() {
               </ButtonLink>
             )}
           </div>
+
+          <GuestPlanOffer />
 
           {projects.length > 0 ? (
             <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

@@ -4,6 +4,7 @@ import { assembleAssessment } from "@/features/plan-modules/assemble";
 import { hasAnthropicKey } from "@/lib/server/anthropic";
 import { businessNameIn, fail, generationFailure, plainLabels } from "@/lib/server/assessmentOutput";
 import { runAllModules } from "@/lib/server/modules/run";
+import { allowRequest, hourlyLimits, LIMIT_MESSAGE, requesterKey } from "@/lib/server/rateLimit";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
@@ -28,6 +29,7 @@ export async function POST(request: Request) {
   }
   const input = assessmentRequestSchema.safeParse(body);
   if (!input.success) return fail("Invalid onboarding answers.", 400);
+  if (!allowRequest(`assessment:${requesterKey(request)}`, hourlyLimits.assessment)) return fail(LIMIT_MESSAGE, 429);
 
   try {
     const locale = input.data.locale ?? "en";
