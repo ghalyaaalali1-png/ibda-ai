@@ -178,7 +178,7 @@ export function SuppliersWorkspace({
             <div className="flex flex-col items-start gap-2 sm:items-end">
               <Link
                 href={journey.marketing}
-                className="group inline-flex h-11 shrink-0 items-center gap-2 rounded-full bg-gradient-to-b from-brand-500 to-brand-600 px-5 text-sm font-medium text-white shadow-[0_0_0_1px_rgb(255_255_255/0.12)_inset,0_10px_40px_-6px_rgb(139_108_255/0.8)] transition-all hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
+                className="group inline-flex h-11 shrink-0 items-center gap-2 rounded-full bg-gradient-to-r from-electric-500 to-brand-500 rtl:bg-gradient-to-l px-5 text-sm font-medium text-white shadow-[0_0_0_1px_rgb(255_255_255/0.12)_inset,0_10px_40px_-6px_rgb(139_108_255/0.8)] transition-all hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
               >
                 {t.suppliers.continueTo}
                 <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5 rtl:-scale-x-100 rtl:group-hover:-translate-x-0.5" />

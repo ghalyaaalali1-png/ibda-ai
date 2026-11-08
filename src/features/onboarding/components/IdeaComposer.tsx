@@ -62,7 +62,7 @@ export function IdeaComposer({ onSubmit }: { onSubmit: (idea: string) => void })
             className={cn(
               "ms-auto grid size-10 place-items-center rounded-full transition-all",
               canSend
-                ? "bg-gradient-to-b from-brand-500 to-brand-600 text-white shadow-[0_8px_24px_-6px_rgb(139_108_255/0.8)] hover:-translate-y-px"
+                ? "bg-gradient-to-r from-electric-500 to-brand-500 rtl:bg-gradient-to-l text-white shadow-[0_8px_24px_-6px_rgb(139_108_255/0.8)] hover:-translate-y-px"
                 : "bg-white/5 text-mist/30",
             )}
           >

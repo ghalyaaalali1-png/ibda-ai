@@ -227,6 +227,10 @@ export const en = {
     footer: "Footer",
     openMenu: "Open menu",
     closeMenu: "Close menu",
+    product: "Product",
+    account: "Account",
+    footerTagline: "Turn a business idea into a clear, launch-ready plan — built for founders in the UAE.",
+    disclaimer: "Planning guidance only — not financial, legal or investment advice.",
     copyright: (year: number) => `© ${year} KHITTA. Made in the UAE.`,
   },
 
@@ -320,6 +324,21 @@ export const en = {
       ],
       process: ["Research", "Analyze", "Calculate", "Find", "Guide", "Plan"],
       processLabel: "How the KHITTA agent works through your launch",
+    },
+    preview: {
+      eyebrow: "What you get",
+      title: "A complete launch plan, ready in minutes.",
+      description: "Every plan gives you a clear verdict, the figures behind it and the steps to take next.",
+      sample: "Sample plan",
+      features: [
+        { title: "Saved to your account", description: "Every business you plan is kept in My projects, ready to reopen." },
+        {
+          title: "Edit anytime, with history",
+          description: "Change your budget, location or offer. Only the affected sections are recalculated, and earlier versions are kept.",
+        },
+        { title: "Download as PDF", description: "A clean, print-ready copy of your full plan to share or keep." },
+        { title: "Arabic and English", description: "Switch language at any time. Your figures stay exactly the same." },
+      ],
     },
     uae: {
       eyebrow: "For UAE Entrepreneurs",

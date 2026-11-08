@@ -113,7 +113,7 @@ export function SupplierCard({
         <button
           type="button"
           onClick={onRequestQuote}
-          className="inline-flex h-9 items-center gap-1.5 rounded-full bg-gradient-to-b from-brand-500 to-brand-600 px-4 text-sm font-medium text-white shadow-[0_6px_20px_-8px_rgb(139_108_255/0.8)] transition-all hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
+          className="inline-flex h-9 items-center gap-1.5 rounded-full bg-gradient-to-r from-electric-500 to-brand-500 rtl:bg-gradient-to-l px-4 text-sm font-medium text-white shadow-[0_6px_20px_-8px_rgb(139_108_255/0.8)] transition-all hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
         >
           <Send className="size-3.5 rtl:-scale-x-100" />
           {rfqStatus ? copy.openRfq : t.common.requestQuote}

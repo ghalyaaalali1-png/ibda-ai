@@ -1,21 +1,22 @@
 @import "tailwindcss";
 
 @theme {
-  /* Deep navy surfaces */
-  --color-ink-950: #04061a;
-  --color-ink-900: #080b24;
-  --color-ink-800: #0e1333;
-  --color-ink-700: #171d45;
+  /* Deep navy surfaces, softened so long reading is comfortable */
+  --color-ink-950: #070a1c;
+  --color-ink-900: #0c1129;
+  --color-ink-800: #131a3a;
+  --color-ink-700: #1d2550;
 
-  /* Electric violet brand */
-  --color-brand-300: #c4b5ff;
-  --color-brand-400: #a48bff;
-  --color-brand-500: #8b6cff;
-  --color-brand-600: #7048f5;
+  /* Calm violet (in the family of the logo, less saturated) */
+  --color-brand-300: #cfc8ff;
+  --color-brand-400: #a99cf7;
+  --color-brand-500: #8576ec;
+  --color-brand-600: #6b5cdb;
 
-  /* Subtle blue accent */
-  --color-electric-400: #6aa8ff;
-  --color-electric-500: #4c8dff;
+  /* Calm periwinkle blue */
+  --color-electric-300: #b6ccff;
+  --color-electric-400: #86a6f3;
+  --color-electric-500: #5f7ee8;
 
   --color-mist: #eef0ff;
 
@@ -103,11 +104,12 @@ body {
 }
 
 @utility text-gradient {
+  /* White into soft lavender and blue: readable, not neon. */
   background: linear-gradient(
     100deg,
     #ffffff 0%,
     var(--color-brand-300) 45%,
-    var(--color-electric-400) 100%
+    var(--color-electric-300) 100%
   );
   -webkit-background-clip: text;
   background-clip: text;

@@ -59,7 +59,7 @@ export function SummaryCard({
           type="button"
           onClick={onStart}
           disabled={starting}
-          className="group inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-b from-brand-500 to-brand-600 text-base font-medium text-white shadow-[0_0_0_1px_rgb(255_255_255/0.12)_inset,0_10px_40px_-6px_rgb(139_108_255/0.8)] transition-all hover:-translate-y-px hover:shadow-[0_0_0_1px_rgb(255_255_255/0.2)_inset,0_12px_48px_-4px_rgb(139_108_255/0.9)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400 disabled:translate-y-0 disabled:opacity-80"
+          className="group inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-electric-500 to-brand-500 rtl:bg-gradient-to-l text-base font-medium text-white shadow-[0_0_0_1px_rgb(255_255_255/0.12)_inset,0_10px_40px_-6px_rgb(139_108_255/0.8)] transition-all hover:-translate-y-px hover:shadow-[0_0_0_1px_rgb(255_255_255/0.2)_inset,0_12px_48px_-4px_rgb(139_108_255/0.9)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400 disabled:translate-y-0 disabled:opacity-80"
         >
           {starting ? (
             <>

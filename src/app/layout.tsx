@@ -40,10 +40,13 @@ export default async function RootLayout({
 }>) {
   const locale = await getLocale();
   return (
-    <html lang={locale} dir={directionOf(locale)} className={plexArabic.variable}>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} ${kufi.variable} font-sans antialiased`}
-      >
+    // Font variables sit on <html> so the theme's font stacks (defined at :root) can use them.
+    <html
+      lang={locale}
+      dir={directionOf(locale)}
+      className={`${geistSans.variable} ${geistMono.variable} ${kufi.variable} ${plexArabic.variable}`}
+    >
+      <body className="font-sans antialiased">
         <I18nProvider locale={locale}>{children}</I18nProvider>
       </body>
     </html>

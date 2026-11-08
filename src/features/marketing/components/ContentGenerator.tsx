@@ -228,7 +228,7 @@ export function ContentGenerator({ context }: { context?: CaptionContext }) {
             type="button"
             onClick={generate}
             disabled={busy}
-            className="mt-7 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-b from-brand-500 to-brand-600 px-6 text-base font-medium text-white shadow-[0_0_0_1px_rgb(255_255_255/0.12)_inset,0_10px_40px_-6px_rgb(139_108_255/0.8)] transition-all hover:-translate-y-px disabled:translate-y-0 disabled:opacity-70 sm:w-auto"
+            className="mt-7 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-electric-500 to-brand-500 rtl:bg-gradient-to-l px-6 text-base font-medium text-white shadow-[0_0_0_1px_rgb(255_255_255/0.12)_inset,0_10px_40px_-6px_rgb(139_108_255/0.8)] transition-all hover:-translate-y-px disabled:translate-y-0 disabled:opacity-70 sm:w-auto"
           >
             <Wand2 className="size-4" />
             {busy ? copy.generating : post ? copy.again : copy.generate}

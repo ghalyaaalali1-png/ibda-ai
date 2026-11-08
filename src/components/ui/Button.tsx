@@ -9,8 +9,9 @@ const base =
   "group relative inline-flex items-center justify-center gap-2 rounded-full font-medium transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400 disabled:pointer-events-none disabled:opacity-50";
 
 const variants: Record<Variant, string> = {
+  // Calm blue to violet, mirrored in Arabic so it always runs with the reading direction.
   primary:
-    "bg-gradient-to-b from-brand-500 to-brand-600 text-white shadow-[0_0_0_1px_rgb(255_255_255/0.12)_inset,0_8px_30px_-6px_rgb(139_108_255/0.6)] hover:shadow-[0_0_0_1px_rgb(255_255_255/0.2)_inset,0_10px_40px_-4px_rgb(139_108_255/0.8)] hover:-translate-y-px",
+    "bg-gradient-to-r from-electric-500 to-brand-500 text-white rtl:bg-gradient-to-l shadow-[0_0_0_1px_rgb(255_255_255/0.14)_inset,0_8px_24px_-8px_rgb(107_92_219/0.55)] hover:shadow-[0_0_0_1px_rgb(255_255_255/0.22)_inset,0_10px_32px_-6px_rgb(107_92_219/0.7)] hover:-translate-y-px",
   secondary:
     "glass text-mist hover:bg-white/10 hover:border-white/15",
   ghost: "text-mist/70 hover:text-white",

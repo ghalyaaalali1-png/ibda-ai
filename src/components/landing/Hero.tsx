@@ -22,10 +22,9 @@ export async function Hero() {
         <div className="min-w-0 max-w-xl">
           <Eyebrow>{t.common.tagline}</Eyebrow>
 
-          <h1 className="mt-6 text-[2.5rem] leading-[1.05] font-semibold tracking-tight text-white sm:text-6xl lg:text-[4.1rem] rtl:leading-[1.25]">
+          <h1 className="mt-6 text-[2.5rem] leading-[1.05] font-semibold tracking-tight text-white sm:text-6xl lg:text-[3.6rem] xl:text-[4rem] rtl:leading-[1.25]">
             {hero.titleStart}{" "}
-            {/* Kept on one line in English; the Arabic phrase is longer, so it wraps. */}
-            <span className={t.locale === "en" ? "text-gradient sm:whitespace-nowrap" : "text-gradient"}>
+            <span className="text-gradient">
               {hero.titleHighlight}
             </span>
           </h1>

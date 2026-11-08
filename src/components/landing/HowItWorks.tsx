@@ -7,7 +7,7 @@ export async function HowItWorks() {
   const t = await getServerDictionary();
   const copy = t.landing.howItWorks;
   return (
-    <section id="how-it-works" className="relative py-24 sm:py-32">
+    <section id="how-it-works" className="relative py-20 sm:py-24">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-1/2 -z-10 mx-auto h-[400px] max-w-4xl -translate-y-1/2 rounded-full bg-brand-600/10 blur-[120px]"

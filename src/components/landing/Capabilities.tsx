@@ -17,7 +17,7 @@ export async function Capabilities() {
   const t = await getServerDictionary();
   const copy = t.landing.capabilities;
   return (
-    <section id="capabilities" className="relative py-24 sm:py-32">
+    <section id="capabilities" className="relative py-20 sm:py-24">
       <Container>
         <SectionHeading
           eyebrow={copy.eyebrow}

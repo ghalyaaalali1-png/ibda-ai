@@ -200,7 +200,7 @@ export function RfqDrawer({
             type="button"
             onClick={onMarkSent}
             disabled={drafting || status === "sent"}
-            className="ms-auto inline-flex h-10 items-center gap-1.5 rounded-full bg-gradient-to-b from-brand-500 to-brand-600 px-5 text-sm font-medium text-white shadow-[0_8px_24px_-8px_rgb(139_108_255/0.8)] transition-all hover:-translate-y-px disabled:translate-y-0 disabled:opacity-60"
+            className="ms-auto inline-flex h-10 items-center gap-1.5 rounded-full bg-gradient-to-r from-electric-500 to-brand-500 rtl:bg-gradient-to-l px-5 text-sm font-medium text-white shadow-[0_8px_24px_-8px_rgb(139_108_255/0.8)] transition-all hover:-translate-y-px disabled:translate-y-0 disabled:opacity-60"
           >
             {status === "sent" ? <Check className="size-4" /> : <Send className="size-4 rtl:-scale-x-100" />}
             {status === "sent" ? text.markedSent : text.markSent}

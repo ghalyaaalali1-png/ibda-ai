@@ -6,7 +6,7 @@ export async function ForUae() {
   const t = await getServerDictionary();
   const copy = t.landing.uae;
   return (
-    <section id="uae" className="relative py-24 sm:py-32">
+    <section id="uae" className="relative py-20 sm:py-24">
       <Container>
         <div className="glass relative overflow-hidden rounded-[2rem] p-8 sm:p-12 lg:p-16">
           <div

@@ -8,7 +8,7 @@ export async function FinalCta() {
   const t = await getServerDictionary();
   const copy = t.landing.finalCta;
   return (
-    <section id="get-started" className="relative py-24 sm:py-32">
+    <section id="get-started" className="relative py-20 sm:py-24">
       <Container>
         <div className="relative mx-auto max-w-3xl text-center">
           <div
