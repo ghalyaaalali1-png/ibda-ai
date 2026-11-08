@@ -300,23 +300,22 @@ export const en = {
     },
     howItWorks: {
       eyebrow: "How KHITTA Works",
-      title: "From idea to plan in three steps.",
-      description: "No spreadsheets to set up, no consultants to brief. Share your idea and the agent does the work.",
+      title: "From idea to launch plan in three steps.",
+      description: "No templates or spreadsheets. Describe your idea, and the agent carries out the analysis.",
       steps: [
         {
-          title: "Tell KHITTA your idea",
-          description:
-            "Describe what you want to build in a few sentences — in your own words. No business plan template required.",
+          title: "Describe your business",
+          description: "In one or two sentences: what you plan to sell, where, and your starting budget.",
         },
         {
-          title: "KHITTA researches and analyzes it",
+          title: "KHITTA analyses it",
           description:
-            "The agent works through your launch step by step — researching the market, analyzing feasibility, calculating costs, finding suppliers and checking UAE setup requirements.",
+            "The agent assesses demand and feasibility, calculates costs, pricing and margins, shortlists supplier types and outlines the UAE licensing steps.",
         },
         {
-          title: "Get your launch-ready action plan",
+          title: "Receive your launch plan",
           description:
-            "Clear decisions, cost and pricing calculations, supplier options, UAE setup guidance and the exact next steps to take — in order.",
+            "A clear verdict, the figures behind it and prioritised next steps — saved to your account, editable at any time and available as a PDF.",
         },
       ],
       process: ["Research", "Analyze", "Calculate", "Find", "Guide", "Plan"],
@@ -376,18 +375,18 @@ export const en = {
 
   onboarding: {
     greeting:
-      "Hi, I'm KHITTA. Tell me what you want to build, and I'll help you figure out whether it makes sense and how to launch it.",
+      "Hi, I'm KHITTA. Describe your business idea in one or two sentences — what you plan to sell, where, and your budget — and I'll prepare your launch plan.",
     composerLabel: "Describe your business idea",
-    composerPlaceholder: "Describe your business idea...",
+    composerPlaceholder: "For example: a home bakery in Dubai, selling online, with a budget of AED 15,000",
     composerHint: "Enter to send · Shift + Enter for a new line",
     send: "Send idea",
     tryDemo: "Try the demo",
     reading: "Reading your idea…",
     known: { business: "business type", location: "location", budget: "budget", channel: "sales channel" } as Record<string, string>,
     acknowledgement: (known: string, questions: number) =>
-      `Great — I already have your ${known}. I just need ${
-        questions === 1 ? "one more detail" : "a few more details"
-      } before I start.`,
+      questions === 0
+        ? `Thank you — I have your ${known}. That's everything I need.`
+        : `Thank you — I have your ${known}. I just need ${questions === 1 ? "one more detail" : "two more details"}.`,
     step: (step: number, total: number) => `Step ${step} of ${total}`,
     chooseAnswer: "Choose an answer",
     change: "Change",

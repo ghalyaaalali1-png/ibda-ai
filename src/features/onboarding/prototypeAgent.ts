@@ -74,16 +74,27 @@ const ENGLISH_BUSINESS =
   /\b(?:launch|start|open|build|create|run)\s+(?:an?\s+|my\s+own\s+|my\s+)?(.+?)(?=\s+(?:in|with|for|using)\b|[.,!?]|$)/i;
 const ARABIC_BUSINESS =
   /(?:[أا]فتح|فتح|افتتاح|[أا]طلق|[إا]طلاق|[أا]بد[أا]|بدء|[أا]نشئ|[إا]نشاء|[أا]ؤسس|تأسيس)\s+(.+?)(?=\s+(?:في|بميزانية|برأس|مع|من خلال|عن طريق)\s|[.،,!؟]|$)/;
+// "A home bakery in Dubai, …" / "مخبز منزلي في دبي، …": the business is the opening words.
+const OPENING_BUSINESS =
+  /^(?:an?\s+|my\s+)?(.+?)(?=\s+(?:in|with|for|using|selling|based)\b|\s+(?:في|بميزانية|برأس|أبيع|يبيع)\s|[.،,!?؟]|$)/i;
 
 function findBusiness(idea: string) {
   if (ABAYA.test(idea)) {
     return ONLINE_WORD.test(idea) ? "Online abaya brand" : "Abaya brand";
   }
-  const phrase = (idea.match(ENGLISH_BUSINESS)?.[1] ?? idea.match(ARABIC_BUSINESS)?.[1])?.trim();
+  const phrase = (
+    idea.match(ENGLISH_BUSINESS)?.[1] ??
+    idea.match(ARABIC_BUSINESS)?.[1] ??
+    idea.trim().match(OPENING_BUSINESS)?.[1]
+  )?.trim();
   const text = phrase || idea.trim();
   const short = text.length > 48 ? `${text.slice(0, 45).trimEnd()}…` : text;
   return short.charAt(0).toUpperCase() + short.slice(1);
 }
+
+const MAX_QUESTIONS = 2;
+// For abaya ideas: the two answers that change the plan most (price level and how they're made).
+const ABAYA_ASKED = ["priceRange", "production"];
 
 /** Local, rule-based stand-in for the real KHITTA agent. */
 export const prototypeAgent: OnboardingAgent = {
@@ -103,11 +114,14 @@ export const prototypeAgent: OnboardingAgent = {
     if (budget) facts.push({ id: "budget", label: "Budget", value: budget });
     if (channel) facts.push({ id: "channel", label: "Sales channel", value: channel });
 
+    // At most two short questions, most important first; the plan works out the rest.
     const questions = [
       ...(location ? [] : [locationQuestion]),
       ...(budget ? [] : [budgetQuestion]),
-      ...(isAbaya ? abayaQuestions : generalQuestions.filter((q) => !(channel && q.id === "channel"))),
-    ];
+      ...(isAbaya
+        ? abayaQuestions.filter((q) => ABAYA_ASKED.includes(q.id))
+        : generalQuestions.filter((q) => q.id === "channel" && !channel)),
+    ].slice(0, MAX_QUESTIONS);
     const analysis: IdeaAnalysis = { facts, questions };
     return analysis;
   },

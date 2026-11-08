@@ -91,18 +91,21 @@ export function OnboardingChat() {
               <p className="text-[15px] leading-relaxed text-mist/85 sm:text-base">
                 {t.onboarding.acknowledgement(known, analysis.questions.length)}
               </p>
-              <ul className="mt-4 flex flex-wrap gap-2">
-                {analysis.facts.map((fact) => (
-                  <li
-                    key={fact.id}
-                    className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/[0.06] px-3 py-1.5 text-sm"
-                  >
-                    <Check className="size-3.5 text-emerald-400" />
-                    <span className="text-mist/50">{displayLabel(t, fact.id, fact.label)}</span>
-                    <span className="font-medium text-white">{displayValue(t, fact.value)}</span>
-                  </li>
-                ))}
-              </ul>
+              {/* With nothing left to ask, the summary below lists these; don't show them twice. */}
+              {analysis.questions.length > 0 && (
+                <ul className="mt-4 flex flex-wrap gap-2">
+                  {analysis.facts.map((fact) => (
+                    <li
+                      key={fact.id}
+                      className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/[0.06] px-3 py-1.5 text-sm"
+                    >
+                      <Check className="size-3.5 text-emerald-400" />
+                      <span className="text-mist/50">{displayLabel(t, fact.id, fact.label)}</span>
+                      <span className="font-medium text-white">{displayValue(t, fact.value)}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </AgentMessage>
           )}
 
@@ -154,7 +157,8 @@ export function OnboardingChat() {
           {(status === "complete" || status === "starting") && (
             <AgentMessage>
               <p className="text-[15px] leading-relaxed text-mist/85 sm:text-base">
-                {reactionFor(total) ?? t.onboarding.thanks} {t.onboarding.summaryIntro}
+                {total > 0 && `${reactionFor(total) ?? t.onboarding.thanks} `}
+                {t.onboarding.summaryIntro}
               </p>
               <SummaryCard
                 items={flow.summary}

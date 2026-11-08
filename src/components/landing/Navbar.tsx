@@ -41,12 +41,12 @@ export function Navbar({ signedIn = false }: { signedIn?: boolean }) {
       <Container className="flex h-16 items-center justify-between gap-3">
         <Logo />
 
-        <nav className="hidden items-center gap-1 md:flex" aria-label={t.nav.main}>
+        <nav className="hidden items-center gap-1 lg:flex" aria-label={t.nav.main}>
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="rounded-full px-4 py-2 text-sm text-mist/65 transition-colors hover:text-white"
+              className="rounded-full px-4 py-2 text-sm whitespace-nowrap text-mist/65 transition-colors hover:text-white"
             >
               {t.nav[link.key]}
             </Link>
@@ -57,19 +57,19 @@ export function Navbar({ signedIn = false }: { signedIn?: boolean }) {
           <LanguageSwitcher />
           <Link
             href={account.href}
-            className="hidden rounded-full px-3 py-2 text-sm text-mist/70 transition-colors hover:text-white sm:inline-flex"
+            className="hidden rounded-full px-3 py-2 text-sm whitespace-nowrap text-mist/70 transition-colors hover:text-white sm:inline-flex"
           >
             {account.label}
           </Link>
           <div className="hidden sm:block">
-            <ButtonLink href={routes.start} size="sm">
+            <ButtonLink href={routes.start} size="sm" className="whitespace-nowrap">
               {t.common.startMyBusiness}
             </ButtonLink>
           </div>
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
-            className="grid size-10 place-items-center rounded-full text-mist/80 hover:bg-white/5 md:hidden"
+            className="grid size-10 place-items-center rounded-full text-mist/80 hover:bg-white/5 lg:hidden"
             aria-label={open ? t.nav.closeMenu : t.nav.openMenu}
             aria-expanded={open}
           >
@@ -79,7 +79,7 @@ export function Navbar({ signedIn = false }: { signedIn?: boolean }) {
       </Container>
 
       {open && (
-        <Container className="pb-6 md:hidden">
+        <Container className="pb-6 lg:hidden">
           <nav className="flex flex-col gap-1" aria-label={t.nav.mobile}>
             {navLinks.map((link) => (
               <Link
