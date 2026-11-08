@@ -42,6 +42,7 @@ export const projectRoutes = (id: string) => ({
   marketing: `/projects/${id}/marketing`,
   launchPack: `/projects/${id}/launch-pack`,
   edit: `/projects/${id}/edit`,
+  print: `/projects/${id}/print`,
 });
 
 export type JourneyRoutes = ReturnType<typeof projectRoutes>;

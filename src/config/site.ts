@@ -13,6 +13,7 @@ export const routes = {
   suppliers: "/suppliers",
   marketing: "/marketing",
   launchPack: "/launch-pack",
+  print: "/print",
   login: "/login",
   signup: "/signup",
   projects: "/projects",

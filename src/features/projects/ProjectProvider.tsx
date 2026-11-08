@@ -22,6 +22,7 @@ const sessionRoutes: JourneyRoutes = {
   launchPack: routes.launchPack,
   // Editing needs a saved project; without one it leads to My projects.
   edit: routes.projects,
+  print: routes.print,
 };
 
 /** Links between the journey's pages: inside the saved project, or the no-account pages. */

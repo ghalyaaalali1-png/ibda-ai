@@ -121,6 +121,29 @@ body {
   background-size: 56px 56px;
 }
 
+/* Printing (and "Save as PDF"): white paper, A4, nothing interactive. */
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm 14mm 16mm;
+  }
+  html,
+  body {
+    background: #fff !important;
+    color: #111 !important;
+    /* Otherwise the dark theme colours the page margins. */
+    color-scheme: light;
+  }
+  /* Keep a heading with what follows it. */
+  h2,
+  h3 {
+    break-after: avoid;
+  }
+  [data-print="hide"] {
+    display: none !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Pencil } from "lucide-react";
+import { ArrowLeft, Download, Pencil } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
@@ -67,9 +67,19 @@ export function JourneyTabs() {
             </Link>
           );
         })}
+        <span aria-hidden className="mx-1 h-4 w-px shrink-0 bg-white/10" />
+        {/* Opens the full plan in a new tab, ready to save as PDF. */}
+        <a
+          href={journey.print}
+          target="_blank"
+          rel="noopener"
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm text-brand-300 transition-colors hover:bg-white/5 hover:text-white"
+        >
+          <Download aria-hidden className="size-3.5" />
+          {t.pdf.button}
+        </a>
         {project && (
           <>
-            <span aria-hidden className="mx-1 h-4 w-px shrink-0 bg-white/10" />
             <Link
               href={journey.edit}
               ref={pathname === journey.edit ? activeRef : undefined}
