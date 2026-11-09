@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>KHITTA — Operating and Build Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  @page { size: A4; margin: 0; }
+  :root {
+    --navy: #0c1129; --navy-2: #131a3a; --violet: #6b5cdb; --violet-soft: #ece9fc;
+    --blue: #5f7ee8; --ink: #1d2140; --muted: #5a6080; --line: #e4e5ef; --paper: #fbfbfe;
+    --amber: #b7791f; --amber-soft: #fdf6e8; --red: #b4473b; --red-soft: #fbefed; --green: #2f7d5b; --green-soft: #eaf6f0;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #d9dbe6; }
+  body { font-family: "Geist", -apple-system, "Segoe UI", sans-serif; color: var(--ink); font-size: 10.5pt; line-height: 1.55; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .ar { font-family: "IBM Plex Sans Arabic", sans-serif; }
+  .mono { font-family: "Geist Mono", monospace; }
+
+  .page { width: 210mm; height: 297mm; margin: 10mm auto; background: var(--paper); position: relative; overflow: hidden; padding: 20mm 18mm 22mm; page-break-after: always; break-after: page; }
+  @media print { html, body { background: none; } .page { margin: 0; box-shadow: none; } }
+  .page:last-child { page-break-after: auto; break-after: auto; }
+
+  .eyebrow { color: var(--violet); font-weight: 600; font-size: 10pt; letter-spacing: .02em; }
+  h1.title { font-size: 25pt; line-height: 1.15; margin: 6px 0 10px; color: var(--navy); letter-spacing: -0.01em; }
+  .lead { font-size: 11.5pt; color: var(--muted); margin: 0 0 18px; }
+  h3 { font-size: 13pt; color: var(--navy); margin: 20px 0 8px; }
+  p { margin: 0 0 8px; }
+
+  .footer { position: absolute; left: 18mm; right: 18mm; bottom: 10mm; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--line); padding-top: 8px; font-size: 8.5pt; color: var(--muted); }
+  .footer .brand { font-weight: 700; color: var(--navy); }
+
+  .cards { display: grid; gap: 10px; }
+  .cards.c2 { grid-template-columns: 1fr 1fr; } .cards.c3 { grid-template-columns: 1fr 1fr 1fr; }
+  .card { border: 1px solid var(--line); border-radius: 12px; background: #fff; padding: 12px 14px; }
+  .card .n { color: var(--violet); font-weight: 700; font-size: 15pt; line-height: 1; }
+  .card h4 { margin: 6px 0 4px; font-size: 11pt; color: var(--navy); }
+  .card p { margin: 0; font-size: 9.5pt; color: var(--muted); }
+
+  .flow { display: flex; flex-direction: column; align-items: stretch; gap: 0; }
+  .flow .box { border: 1px solid var(--line); background: #fff; border-radius: 12px; padding: 10px 14px; }
+  .flow .box b { color: var(--navy); }
+  .flow .box span { display: block; color: var(--muted); font-size: 9.5pt; }
+  .flow .arrow { text-align: center; color: var(--violet); font-size: 11pt; line-height: 1.3; }
+  .flow .row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 9.5pt; background: #fff; border-radius: 10px; overflow: hidden; }
+  th { background: var(--violet-soft); color: #2a2160; text-align: left; font-weight: 600; padding: 7px 10px; border: 1px solid var(--line); }
+  td { padding: 7px 10px; border: 1px solid var(--line); vertical-align: top; }
+  td.k { font-weight: 600; color: var(--navy); white-space: nowrap; }
+  code, .code { font-family: "Geist Mono", monospace; font-size: 8.8pt; background: #f1f1f8; padding: 1px 5px; border-radius: 4px; }
+
+  .steps { counter-reset: s; list-style: none; padding: 0; margin: 0; }
+  .steps li { position: relative; padding: 9px 12px 9px 44px; border: 1px solid var(--line); border-radius: 12px; background: #fff; margin-bottom: 7px; }
+  .steps li::before { counter-increment: s; content: counter(s); position: absolute; left: 12px; top: 9px; width: 22px; height: 22px; border-radius: 50%; background: var(--violet); color: #fff; font-weight: 700; font-size: 9.5pt; display: grid; place-items: center; }
+  .steps li b { color: var(--navy); }
+  .steps li span { color: var(--muted); }
+
+  .bullets { list-style: none; padding: 0; margin: 0; }
+  .bullets li { padding-left: 18px; position: relative; margin-bottom: 6px; }
+  .bullets li::before { content: "◆"; position: absolute; left: 0; top: 1px; color: var(--violet); font-size: 8pt; }
+
+  .note { border-radius: 12px; padding: 11px 14px; margin-top: 14px; font-size: 10pt; }
+  .note.violet { background: var(--violet-soft); border: 1px solid #d9d3fa; }
+  .note.amber { background: var(--amber-soft); border: 1px dashed #e3c38a; }
+  .note.red { background: var(--red-soft); border: 1px dashed #e0a49b; }
+  .note.green { background: var(--green-soft); border: 1px solid #c7e5d6; }
+  .note b { color: var(--navy); }
+  .note.red b { color: var(--red); }
+
+  .tree { font-family: "Geist Mono", monospace; font-size: 8.6pt; background: var(--navy); color: #dfe3ff; border-radius: 12px; padding: 12px 14px; line-height: 1.6; white-space: pre; }
+  .tree .c { color: #8f99cf; }
+
+  .phase { display: grid; grid-template-columns: 34px 1fr; gap: 10px; margin-bottom: 8px; }
+  .phase .num { width: 30px; height: 30px; border-radius: 50%; background: var(--navy); color: #fff; display: grid; place-items: center; font-weight: 700; }
+  .phase .body { border: 1px solid var(--line); border-radius: 12px; background: #fff; padding: 8px 12px; }
+  .phase .body b { color: var(--navy); }
+  .phase .body .tag { float: right; font-size: 8.5pt; color: var(--green); background: var(--green-soft); border-radius: 999px; padding: 1px 8px; }
+  .phase .body p { margin: 2px 0 0; color: var(--muted); font-size: 9.3pt; }
+
+  .check { list-style: none; padding: 0; margin: 0; }
+  .check li { border: 1px solid var(--line); background: #fff; border-radius: 10px; padding: 8px 12px 8px 36px; margin-bottom: 6px; position: relative; }
+  .check li::before { content: ""; position: absolute; left: 12px; top: 11px; width: 13px; height: 13px; border: 1.5px solid var(--violet); border-radius: 3px; }
+  .check li b { color: var(--navy); }
+  .check li span { color: var(--muted); }
+
+  /* Cover */
+  .cover { padding: 0; background: var(--navy); color: #fff; }
+  .cover .top { height: 222mm; padding: 34mm 20mm 0; position: relative; background: radial-gradient(120mm 90mm at 85% 15%, rgba(133,118,236,.35), transparent 70%), radial-gradient(110mm 80mm at 10% 85%, rgba(95,126,232,.25), transparent 70%), var(--navy); }
+  .cover .pill { display: inline-block; background: #cfc8ff; color: var(--navy); font-weight: 600; font-size: 10pt; padding: 6px 14px; border-radius: 999px; }
+  .cover .logo { display: flex; align-items: center; gap: 16px; margin-top: 24mm; }
+  .cover .logo svg { width: 30mm; height: 30mm; }
+  .cover .word { font-size: 44pt; font-weight: 700; letter-spacing: .04em; line-height: 1; }
+  .cover .word .bar { color: #6b7194; font-weight: 400; padding: 0 10px; }
+  .cover .tag { margin-top: 6px; letter-spacing: .3em; color: #b6ccff; font-size: 10pt; font-weight: 500; }
+  .cover h2 { font-size: 22pt; margin: 26mm 0 8px; line-height: 1.25; }
+  .cover .sub { font-size: 12pt; color: #c9cdea; max-width: 150mm; }
+  .cover .bottom { height: 75mm; background: #f3f1fd; color: var(--navy); padding: 18mm 20mm; display: flex; justify-content: space-between; align-items: flex-end; }
+  .cover .bottom .big { font-size: 15pt; font-weight: 700; line-height: 1.35; max-width: 120mm; }
+  .cover .bottom .meta { color: var(--muted); font-size: 10pt; text-align: right; }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<section class="page cover">
+  <div class="top">
+    <span class="pill">Operating and Build Guide · First edition</span>
+    <div class="logo">
+      <svg viewBox="0 0 112 112" aria-hidden="true">
+        <defs>
+          <linearGradient id="st" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5ab8ff"/><stop offset="1" stop-color="#3355e8"/></linearGradient>
+          <linearGradient id="ar" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#2f5cf0"/><stop offset=".55" stop-color="#7a6cff"/><stop offset="1" stop-color="#a68bff"/></linearGradient>
+          <linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3b4fd8"/><stop offset="1" stop-color="#9076ff"/></linearGradient>
+        </defs>
+        <rect x="6" y="20" width="29" height="88" rx="4.5" fill="url(#st)"/>
+        <path d="M48 72 L70 72 L105 108 L81 108 Z" fill="url(#lg)"/>
+        <path d="M60 32 L104 32 C86 46 66 60 50 74 C38 84 24 96 10 105 C16 90 26 72 38 58 C44 50 52 40 60 32 Z" fill="url(#ar)"/>
+        <path d="M96 3 Q97.6 11.4 106 13 Q97.6 14.6 96 23 Q94.4 14.6 86 13 Q94.4 11.4 96 3 Z" fill="#7fa8ff"/>
+      </svg>
+      <div>
+        <div class="word">KHITTA<span class="bar">|</span><span class="ar">خِطّة</span></div>
+        <div class="tag">AI BUSINESS PLANNING</div>
+      </div>
+    </div>
+    <h2>How it works, step by step —<br />and how it is built</h2>
+    <p class="sub">From a founder's first sentence to a saved, editable launch plan; from the first line of code to launch.</p>
+  </div>
+  <div class="bottom">
+    <div class="big">This document is the "build map".<br />Each part explains what KHITTA does, what it's built with, and how we know it works.</div>
+    <div class="meta">United Arab Emirates<br />November 2026</div>
+  </div>
+</section>
+
+<!-- 01 -->
+<section class="page">
+  <div class="eyebrow">01 · The big picture</div>
+  <h1 class="title">KHITTA from above</h1>
+  <p class="lead">KHITTA turns a business idea into a launch plan for founders in the UAE. It is made of six parts, each with one clear job:</p>
+  <div class="flow">
+    <div class="box"><b>The interface</b><span>Landing page, short onboarding, plan screens and My projects — in Arabic and English.</span></div>
+    <div class="arrow">▼</div>
+    <div class="box"><b>The agent (Claude)</b><span>Reads the founder's answers and writes the plan in eight sections, in the founder's language.</span></div>
+    <div class="arrow">▼</div>
+    <div class="row">
+      <div class="box"><b>Calculations</b><span>Totals, margins, cash and break-even — worked out by the app, not guessed.</span></div>
+      <div class="box"><b>Official sources</b><span>Licensing guidance limited to a verified list of UAE authorities.</span></div>
+      <div class="box"><b>Translation</b><span>Switches a finished plan to the other language, once, with identical figures.</span></div>
+    </div>
+    <div class="arrow">▼</div>
+    <div class="box"><b>Accounts and storage (Supabase)</b><span>Sign-in, saved projects, every version of the answers and of each plan section.</span></div>
+    <div class="arrow">▼</div>
+    <div class="box"><b>The outputs</b><span>Business Plan, Suppliers, Marketing, Launch Pack — on screen and as a PDF.</span></div>
+  </div>
+  <div class="note violet"><b>The golden rule:</b> each part does one job and can change on its own. The plan is stored as eight separate sections, so an edit only re-creates the sections it affects — the rest stay exactly as they were.</div>
+  <div class="footer"><span class="brand">KHITTA</span><span>Operating and Build Guide</span><span>2</span></div>
+</section>
+
+<!-- 02 -->
+<section class="page">
+  <div class="eyebrow">02 · The founder's journey</div>
+  <h1 class="title">How KHITTA works with a founder, step by step</h1>
+  <ol class="steps">
+    <li><b>Describe the idea.</b> <span>One or two sentences: what they'll sell, where, and the budget — e.g. "a home bakery in Dubai, selling online, budget AED 15,000".</span></li>
+    <li><b>At most two questions.</b> <span>KHITTA reads the sentence and only asks what is missing (location, budget or sales channel). If nothing is missing, it goes straight to the summary.</span></li>
+    <li><b>Confirm the summary.</b> <span>The founder checks the details, changes anything, and starts the analysis. Signed in, the business is saved as a project first.</span></li>
+    <li><b>The analysis.</b> <span>The Agent Workspace shows each stage while Claude prepares the plan — usually about a minute.</span></li>
+    <li><b>The plan.</b> <span>Verdict and score, budget and costs, price and margins, break-even, market, risks, next actions and UAE licensing steps.</span></li>
+    <li><b>Suppliers, Marketing, Launch Pack.</b> <span>Supplier types with quote requests; a 13-week marketing plan with a launch-month calendar; one consolidated launch checklist.</span></li>
+    <li><b>Keep, edit, share.</b> <span>The project lives in My projects; Edit details updates only what changed (with history); Download PDF saves the whole plan.</span></li>
+    <li><b>Any time, either language.</b> <span>EN / عربي switches the whole interface and the plan's content; figures stay the same.</span></li>
+  </ol>
+  <div class="note amber"><b>Without an account</b> the full journey still works in the browser; the plan just isn't saved. After signing in, KHITTA offers to save it to My projects — with no new AI work.</div>
+  <div class="footer"><span class="brand">KHITTA</span><span>Operating and Build Guide</span><span>3</span></div>
+</section>
+
+<!-- 03 -->
+<section class="page">
+  <div class="eyebrow">03 · Inside the agent</div>
+  <h1 class="title">How one plan is made</h1>
+  <p class="lead">Every plan is built from eight sections ("modules"). Each is one request to Claude (model <span class="code">claude-opus-5-5</span>) with its own instructions and a strict output shape:</p>
+  <div class="cards c2">
+    <div class="card"><div class="n">1</div><h4>Assessment</h4><p>Idea summary, target customer, positioning, feasibility verdict, assumptions, open questions.</p></div>
+    <div class="card"><div class="n">2</div><h4>Financials</h4><p>Budget, startup costs, prices, unit costs, monthly sales, market price bands.</p></div>
+    <div class="card"><div class="n">3</div><h4>Narrative</h4><p>Market, risks, ordered next actions, what to source, marketing focus.</p></div>
+    <div class="card"><div class="n">4</div><h4>Setup</h4><p>UAE licence routes, steps, requirements — only from verified official sources.</p></div>
+    <div class="card"><div class="n">5</div><h4>Suppliers</h4><p>Supplier types, first orders and quote questions — sized to the plan's sourcing budget.</p></div>
+    <div class="card"><div class="n">6–8</div><h4>Marketing (3 parts)</h4><p>Strategy and 13-week plan; content, budget split and KPIs; launch-month posts and competitor patterns.</p></div>
+  </div>
+  <h3>The order</h3>
+  <p>Seven sections run at the same time. <b>Suppliers waits for Financials</b>, so first orders fit the money the plan already set aside for stock. Each answer is checked for empty parts and retried once if needed.</p>
+  <h3>The rules the agent follows</h3>
+  <ul class="bullets">
+    <li>Accuracy over completeness. Never invent facts, brands, suppliers, prices, fees, licence names or statistics.</li>
+    <li>Every important figure is labelled: <b>your figure</b>, <b>estimate</b>, or <b>to be confirmed</b>.</li>
+    <li>Licences, fees and eligibility are never stated as fact — the founder is pointed to the official authority.</li>
+    <li>No guarantees of success; planning guidance, not financial or legal advice.</li>
+  </ul>
+  <div class="note red"><b>Written into the code, not left to the AI:</b> Claude can only cite official sources from KHITTA's verified list, for the founder's emirate. Anything else is dropped, and the UAE government portal (u.ae) is shown instead.</div>
+  <div class="footer"><span class="brand">KHITTA</span><span>Operating and Build Guide</span><span>4</span></div>
+</section>
+
+<!-- 04 -->
+<section class="page">
+  <div class="eyebrow">04 · Numbers and the verdict</div>
+  <h1 class="title">Claude estimates the inputs; KHITTA does the maths</h1>
+  <p class="lead">Every total on screen is calculated by the app from Claude's estimates, so the numbers always add up.</p>
+  <table>
+    <tr><th>Figure</th><th>How it's worked out</th></tr>
+    <tr><td class="k">Startup costs</td><td>Claude's cost lines; if they exceed the budget they are scaled to 90% of it, and the rest is kept as a cash reserve.</td></tr>
+    <tr><td class="k">Gross margin</td><td>(Price − product costs) ÷ price.</td></tr>
+    <tr><td class="k">Contribution per sale</td><td>Price − all costs per sale (product, payment, delivery).</td></tr>
+    <tr><td class="k">Cash over 6 months</td><td>Starts at minus the startup spend; each month adds sales × contribution, minus running costs.</td></tr>
+    <tr><td class="k">Break-even</td><td>The first month the cumulative cash turns positive — or "beyond month 6".</td></tr>
+    <tr><td class="k">Marketing budget</td><td>The plan's marketing cost lines, split by Claude's suggested shares.</td></tr>
+  </table>
+  <h3>The verdict</h3>
+  <div class="cards c3">
+    <div class="card"><h4 style="color:var(--green)">GO</h4><p>The idea, budget and plan look workable on what's known.</p></div>
+    <div class="card"><h4 style="color:var(--amber)">CAUTION</h4><p>Workable with specific changes, listed as conditions.</p></div>
+    <div class="card"><h4 style="color:var(--red)">NO-GO</h4><p>A significant issue should be resolved first.</p></div>
+  </div>
+  <h3>Launch readiness (Launch Pack)</h3>
+  <p>Rules over what's already been generated — never a new judgement: <b>Ready to launch</b>, <b>Proceed with conditions</b> (e.g. no break-even in 6 months, requirements to confirm, open questions), or <b>Needs work</b> (e.g. NO-GO, or the price doesn't cover costs).</p>
+  <div class="note violet"><b>Why this matters:</b> the founder can see why the plan says what it says. If the verdict and the numbers disagree, KHITTA shows the disagreement rather than hiding it.</div>
+  <div class="footer"><span class="brand">KHITTA</span><span>Operating and Build Guide</span><span>5</span></div>
+</section>
+
+<!-- 05 -->
+<section class="page">
+  <div class="eyebrow">05 · Two languages</div>
+  <h1 class="title">Arabic and English, switchable at any time</h1>
+  <div class="cards c2">
+    <div class="card"><h4>The interface</h4><p>Every label and message lives in two dictionaries (English and Arabic) that are tested to match. Arabic is right-to-left throughout, with IBM Plex Sans Arabic.</p></div>
+    <div class="card"><h4>The plan's content</h4><p>A new plan is written by Claude in the language the founder is using. Codes and IDs stay in English inside the data.</p></div>
+    <div class="card"><h4>Switching language later</h4><p>The saved plan is translated once and the translation is kept, so switching back and forth is instant afterwards.</p></div>
+    <div class="card"><h4>Same figures, always</h4><p>Only text is translated. Numbers, codes and structure are checked to be identical before a translation is saved.</p></div>
+  </div>
+  <h3>What stays as written</h3>
+  <ul class="bullets">
+    <li>Answers are stored in English codes (e.g. "Online only"), so the plan's input never depends on the interface language.</li>
+    <li>Brand and platform names (Instagram, WhatsApp), official authority names and website addresses.</li>
+    <li>A business name typed in one language is translated for the other and saved with the project.</li>
+  </ul>
+  <div class="note green"><b>Tested:</b> a real Arabic plan, the Arabic demo and translated plans are checked automatically for any English left on screen, and for identical figures.</div>
+  <div class="footer"><span class="brand">KHITTA</span><span>Operating and Build Guide</span><span>6</span></div>
+</section>
+
+<!-- 06 -->
+<section class="page">
+  <div class="eyebrow">06 · Accounts and projects</div>
+  <h1 class="title">Saved, editable, with full history</h1>
+  <table>
+    <tr><th>Feature</th><th>What it does</th></tr>
+    <tr><td class="k">Sign in</td><td>Email and password (with email confirmation), or Continue with Google. Forgot password sends a reset link.</td></tr>
+    <tr><td class="k">My projects</td><td>Every business with its name, emirate, budget, last updated and status. Rename or delete (with confirmation).</td></tr>
+    <tr><td class="k">Tab bar</td><td>One bar on every page of a business: My projects · Workspace · Plan · Suppliers · Marketing · Launch Pack · Download PDF · Edit details.</td></tr>
+    <tr><td class="k">Edit details</td><td>Change the idea or any answer. KHITTA shows which sections will update and which stay, then re-creates only those.</td></tr>
+    <tr><td class="k">History</td><td>Each change is a new version. Any earlier version can be restored exactly as it was — no AI cost.</td></tr>
+    <tr><td class="k">Download PDF</td><td>The whole plan as a clean A4 document with a cover, in the current language.</td></tr>
+  </table>
+  <h3>What an edit updates</h3>
+  <table>
+    <tr><th>You change…</th><th>These sections update</th><th>These stay</th></tr>
+    <tr><td>Budget</td><td>Assessment, financials, market & next steps, suppliers</td><td>Licences, marketing</td></tr>
+    <tr><td>Stage</td><td>Assessment, market & next steps</td><td>Everything else</td></tr>
+    <tr><td>Business or idea</td><td>All sections</td><td>—</td></tr>
+  </table>
+  <div class="note amber"><b>If an update fails</b> part-way, the previous plan stays in place and the edit can simply be tried again.</div>
+  <div class="footer"><span class="brand">KHITTA</span><span>Operating and Build Guide</span><span>7</span></div>
+</section>
+
+<!-- 07 -->
+<section class="page">
+  <div class="eyebrow">07 · Tools</div>
+  <h1 class="title">What KHITTA is built with</h1>
+  <p class="lead">Proven, widely used tools — easy to maintain and to build on with Claude Code.</p>
+  <table>
+    <tr><th>Part</th><th>Tool</th><th>Why</th></tr>
+    <tr><td class="k">Web app</td><td>Next.js 15 · React 19</td><td>Pages and server code in one project; fast, and easy to host.</td></tr>
+    <tr><td class="k">Language</td><td>TypeScript</td><td>Catches mistakes before they reach users.</td></tr>
+    <tr><td class="k">Design</td><td>Tailwind CSS 4</td><td>Consistent look; right-to-left support for Arabic.</td></tr>
+    <tr><td class="k">The agent</td><td>Claude API (claude-opus-5-5)</td><td>Strong reasoning and Arabic; structured answers in a fixed shape.</td></tr>
+    <tr><td class="k">Data checks</td><td>zod</td><td>Every AI answer and saved plan is checked against its shape.</td></tr>
+    <tr><td class="k">Accounts and database</td><td>Supabase (Auth + PostgreSQL)</td><td>Sign-in, Google, and a database where each user only sees their own rows.</td></tr>
+    <tr><td class="k">Fonts</td><td>Geist · IBM Plex Sans Arabic</td><td>Crisp English, natural Arabic.</td></tr>
+    <tr><td class="k">PDF</td><td>The browser's print engine</td><td>Arabic letters join and read right to left correctly.</td></tr>
+    <tr><td class="k">Tests</td><td>Vitest</td><td>Automatic checks on calculations, languages, history and security rules.</td></tr>
+  </table>
+  <div class="note violet"><b>Keys stay on the server.</b> The Claude key and Supabase's secret key are never sent to the browser; the browser only ever uses Supabase's public key, which Row Level Security restricts.</div>
+  <div class="footer"><span class="brand">KHITTA</span><span>Operating and Build Guide</span><span>8</span></div>
+</section>
+
+<!-- 08 -->
+<section class="page">
+  <div class="eyebrow">08 · Data and structure</div>
+  <h1 class="title">What is stored, and how the project is organised</h1>
+  <table>
+    <tr><th>Table</th><th>What's in it</th></tr>
+    <tr><td class="k mono">profiles</td><td>One per user: display name, preferred language.</td></tr>
+    <tr><td class="k mono">projects</td><td>A user's businesses: name (and its translation), status, current version, last updated.</td></tr>
+    <tr><td class="k mono">core_versions</td><td>Every version of the answers: the idea, the answers as given, and the same as typed codes and numbers.</td></tr>
+    <tr><td class="k mono">generation_runs</td><td>Each time Claude worked on a project: language, sections, success or failure.</td></tr>
+    <tr><td class="k mono">module_revisions</td><td>Every saved version of every plan section — never edited, only added to.</td></tr>
+    <tr><td class="k mono">module_translations</td><td>A section's text in the other language, linked to that exact version.</td></tr>
+  </table>
+  <h3>Project structure</h3>
+<div class="tree">ibda-ai/
+├── src/app/                <span class="c"># pages and server routes</span>
+├── src/features/
+│   ├── onboarding/         <span class="c"># the short setup conversation</span>
+│   ├── assessment/         <span class="c"># plan data, saving in the browser, building each screen</span>
+│   ├── plan · suppliers · marketing · launch-pack/   <span class="c"># the result screens and the PDF</span>
+│   ├── plan-modules/       <span class="c"># the 8 sections and what depends on what</span>
+│   ├── projects/           <span class="c"># My projects, editing, history, restore, limits</span>
+│   ├── auth/               <span class="c"># log in, sign up, Google, password reset</span>
+│   └── demo/               <span class="c"># the abaya demo in English and Arabic</span>
+├── src/i18n/               <span class="c"># English and Arabic dictionaries</span>
+├── src/lib/server/         <span class="c"># Claude instructions, generation, translation, AI limits</span>
+├── src/lib/supabase/       <span class="c"># connection to accounts and the database</span>
+├── supabase/migrations/    <span class="c"># database tables and security rules (3 files, in order)</span>
+├── supabase/email-templates/  <span class="c"># branded sign-up and reset emails</span>
+└── docs/khitta-v2/         <span class="c"># decisions record and this guide</span></div>
+  <div class="footer"><span class="brand">KHITTA</span><span>Operating and Build Guide</span><span>9</span></div>
+</section>
+
+<!-- 09 -->
+<section class="page">
+  <div class="eyebrow">09 · Security and privacy</div>
+  <h1 class="title">Rules written into the code</h1>
+  <p class="lead">These aren't policies on paper — each is enforced by the database or the server, whatever the AI says.</p>
+  <table>
+    <tr><th>Rule</th><th>How it's enforced</th></tr>
+    <tr><td class="k">Each user sees only their own data</td><td>Row Level Security on every table; a project link opened by anyone else shows "not found". Tested with 33 automated checks.</td></tr>
+    <tr><td class="k">History can't be rewritten</td><td>Saved versions of answers and plan sections can only be added, never changed.</td></tr>
+    <tr><td class="k">Visitors without an account</td><td>Get no access to any table.</td></tr>
+    <tr><td class="k">Keys never reach the browser</td><td>The Claude key and secrets live only in server settings (<span class="code">.env.local</span>, never committed).</td></tr>
+    <tr><td class="k">AI cost protection</td><td>Hourly limits per person: 6 plans without an account, 10 plans or edits with one, 30 translations, 40 captions.</td></tr>
+    <tr><td class="k">Safe sign-in links</td><td>After signing in, KHITTA only ever redirects inside KHITTA.</td></tr>
+    <tr><td class="k">Honest guidance</td><td>Only verified official sources; figures labelled as estimates; disclaimers on every plan and PDF.</td></tr>
+    <tr><td class="k">Up-to-date libraries</td><td>Security audit: 0 known vulnerabilities at the time of writing.</td></tr>
+  </table>
+  <div class="note red"><b>The rule that never breaks:</b> when in doubt, KHITTA says "to be confirmed" and points to the official authority. An unclear answer is fine; a confident wrong one about licences or fees is not.</div>
+  <div class="footer"><span class="brand">KHITTA</span><span>Operating and Build Guide</span><span>10</span></div>
+</section>
+
+<!-- 10 -->
+<section class="page">
+  <div class="eyebrow">10 · Build phases</div>
+  <h1 class="title">How KHITTA was built, step by step</h1>
+  <div class="phase"><div class="num">0</div><div class="body"><span class="tag">Done</span><b>Foundation</b><p>Competition version frozen; V2 branch; decisions recorded.</p></div></div>
+  <div class="phase"><div class="num">1</div><div class="body"><span class="tag">Done</span><b>The plan as eight sections</b><p>Each section generated and stored on its own, with a map of what depends on what.</p></div></div>
+  <div class="phase"><div class="num">2</div><div class="body"><span class="tag">Done</span><b>KHITTA | خِطّة, Arabic and English</b><p>New name, full right-to-left Arabic, plans written in the founder's language, translation with identical figures.</p></div></div>
+  <div class="phase"><div class="num">3</div><div class="body"><span class="tag">Done</span><b>Accounts and saved projects</b><p>Supabase, email and Google sign-in, My projects, one tab bar across every page.</p></div></div>
+  <div class="phase"><div class="num">4</div><div class="body"><span class="tag">Done</span><b>Edit with history</b><p>Change any answer; only affected sections update; every version kept and restorable.</p></div></div>
+  <div class="phase"><div class="num">5</div><div class="body"><span class="tag">Done</span><b>Logo, PDF and a simpler setup</b><p>The K mark everywhere; Download PDF; one sentence and at most two questions.</p></div></div>
+  <div class="phase"><div class="num">6</div><div class="body"><span class="tag">Done</span><b>New look and safety</b><p>Calmer colours and fonts; password reset; AI limits; rename/delete; keep a plan made before sign-up; branded emails.</p></div></div>
+  <div class="phase"><div class="num">7</div><div class="body"><b>Launch</b><p>Domain, hosting, email sending, Google sign-in publishing and legal pages — see the last page.</p></div></div>
+  <div class="note green"><b>How we knew each phase was done:</b> automated tests (86), type and lint checks, a production build, and a check in the browser in both languages before every commit.</div>
+  <div class="footer"><span class="brand">KHITTA</span><span>Operating and Build Guide</span><span>11</span></div>
+</section>
+
+<!-- 11 -->
+<section class="page">
+  <div class="eyebrow">11 · Running and costs</div>
+  <h1 class="title">What you need to run KHITTA</h1>
+  <h3>Run it on your Mac</h3>
+  <ol class="steps">
+    <li><b>Settings file.</b> <span><span class="code">.env.local</span> holds three values: <span class="code">ANTHROPIC_API_KEY</span>, <span class="code">NEXT_PUBLIC_SUPABASE_URL</span> and <span class="code">NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY</span>. It is never committed.</span></li>
+    <li><b>Database.</b> <span>Run the three files in <span class="code">supabase/migrations</span>, in order, in Supabase's SQL Editor (already done for the current project).</span></li>
+    <li><b>Start.</b> <span><span class="code">npm install</span>, then <span class="code">npm run dev</span>, and open <span class="code">localhost:3000</span>.</span></li>
+    <li><b>Check.</b> <span><span class="code">npm test</span>, <span class="code">npm run lint</span> and <span class="code">npm run build</span> should all pass before any change is saved.</span></li>
+  </ol>
+  <h3>Running costs</h3>
+  <table>
+    <tr><th>Item</th><th>How it's counted</th></tr>
+    <tr><td class="k">Claude (largest cost)</td><td>A new plan is eight requests. An edit only re-creates affected sections; a language switch translates once; restoring a version is free. Check real usage in the Anthropic console and set a spending alert.</td></tr>
+    <tr><td class="k">Supabase</td><td>The free plan covers early use; upgrade as users grow.</td></tr>
+    <tr><td class="k">Hosting</td><td>Low at the start; grows with traffic.</td></tr>
+    <tr><td class="k">Domain and email</td><td>khitta.ae yearly fee; an email sending service for sign-up and reset emails.</td></tr>
+  </table>
+  <div class="note amber"><b>Tip:</b> measure the cost of one full plan and one edit early. That number decides pricing, and whether the hourly limits need adjusting.</div>
+  <div class="footer"><span class="brand">KHITTA</span><span>Operating and Build Guide</span><span>12</span></div>
+</section>
+
+<!-- 12 -->
+<section class="page">
+  <div class="eyebrow">12 · Before launch</div>
+  <h1 class="title">The checklist to go live</h1>
+  <p class="lead">Everything needed to move KHITTA from your Mac to real users:</p>
+  <ul class="check">
+    <li><b>Reserve the domain:</b> <span>khitta.ae through an aeDA-accredited registrar.</span></li>
+    <li><b>Hosting:</b> <span>deploy the app; add the three settings in the host's secret settings (never in code).</span></li>
+    <li><b>Supabase addresses:</b> <span>add the real web address to Site URL and Redirect URLs.</span></li>
+    <li><b>Google sign-in:</b> <span>add the real address in Google Cloud, then publish the app (it is "Testing" today).</span></li>
+    <li><b>Email sending:</b> <span>connect a sending service (custom SMTP) and paste the branded templates from <span class="code">supabase/email-templates</span>.</span></li>
+    <li><b>Legal pages:</b> <span>privacy policy and terms of use, in Arabic and English.</span></li>
+    <li><b>Spending alerts:</b> <span>on the Anthropic and Supabase accounts.</span></li>
+    <li><b>Backups:</b> <span>confirm Supabase's backup schedule for the plan you choose.</span></li>
+    <li><b>Final test:</b> <span>a full journey in both languages, on phone and desktop, on the live address.</span></li>
+  </ul>
+  <div class="note violet" style="margin-top:18px;"><b>Start with the domain and hosting, then email, then Google. Everything else follows.</b></div>
+  <div class="footer"><span class="brand">KHITTA</span><span>Operating and Build Guide</span><span>13</span></div>
+</section>
+
+</body>
+</html>
