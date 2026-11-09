@@ -122,6 +122,20 @@ export function AuthForm({
         </button>
       </form>
 
+      {mode === "signup" && (
+        <p className="mt-4 text-center text-xs leading-relaxed text-mist/45">
+          {t.auth.signup.agreeStart}{" "}
+          <Link href={routes.terms} className="text-mist/70 underline underline-offset-2 hover:text-white">
+            {t.nav.terms}
+          </Link>
+          {t.auth.signup.agreeAnd}
+          <Link href={routes.privacy} className="text-mist/70 underline underline-offset-2 hover:text-white">
+            {t.nav.privacy}
+          </Link>
+          {t.auth.signup.agreeEnd}
+        </p>
+      )}
+
       <p className="mt-6 text-center text-sm text-mist/55">
         {mode === "login" ? t.auth.login.noAccount : t.auth.signup.haveAccount}{" "}
         <Link href={otherHref} className="font-medium text-brand-300 hover:text-brand-200">

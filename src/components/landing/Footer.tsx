@@ -58,6 +58,14 @@ export async function Footer() {
       <div className="border-t border-white/[0.05]">
         <Container className="flex flex-col gap-2 py-6 text-xs text-mist/40 sm:flex-row sm:items-center sm:justify-between">
           <p>{t.nav.copyright(new Date().getFullYear())}</p>
+          <nav aria-label={t.nav.legal} className="flex gap-4">
+            <Link href={routes.privacy} className="transition-colors hover:text-white">
+              {t.nav.privacy}
+            </Link>
+            <Link href={routes.terms} className="transition-colors hover:text-white">
+              {t.nav.terms}
+            </Link>
+          </nav>
           <p>{t.nav.disclaimer}</p>
         </Container>
       </div>
