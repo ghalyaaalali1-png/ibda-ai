@@ -24,9 +24,9 @@ export async function AuthPage({ mode, searchParams }: { mode: "login" | "signup
         <Container className="flex justify-center py-12 sm:py-20">
           <div className="w-full max-w-md">
             <AuthForm mode={mode} next={next} initialError={error === "link" ? "linkInvalid" : error === "google" ? "googleFailed" : undefined} />
-            <p className="mt-6 text-center text-sm text-mist/45">
+            <p className="mt-6 text-center text-sm text-mist/55">
               {t.auth.tryWithout}{" "}
-              <Link href={routes.start} className="text-mist/70 underline-offset-4 hover:text-white hover:underline">
+              <Link href={routes.start} className="text-mist/80 underline underline-offset-4 hover:text-white">
                 {t.auth.tryWithoutLink}
               </Link>
             </p>

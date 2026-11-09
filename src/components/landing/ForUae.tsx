@@ -53,7 +53,7 @@ export async function ForUae() {
                   </div>
                 ))}
               </dl>
-              <p className="mt-10 border-t border-white/[0.06] pt-6 text-xs leading-relaxed text-mist/40">
+              <p className="mt-10 border-t border-white/[0.06] pt-6 text-xs leading-relaxed text-mist/55">
                 {copy.disclaimer}
               </p>
             </div>

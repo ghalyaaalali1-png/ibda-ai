@@ -252,14 +252,14 @@ export function EditProject({ history }: { history: HistoryEntry[] }) {
                     </div>
                   </div>
                 )}
-                <p className="mt-1 text-xs text-mist/45">{updatedOn(entry.createdAt, locale, t)}</p>
+                <p className="mt-1 text-xs text-mist/55">{updatedOn(entry.createdAt, locale, t)}</p>
                 <ul className="mt-2 space-y-1 text-xs text-mist/65">
                   {entry.changes.length === 0 ? (
                     <li>{copy.history.first}</li>
                   ) : (
                     entry.changes.map((c) => (
                       <li key={c.id}>
-                        <span className="text-mist/45">{c.id === "idea" ? copy.idea : displayLabel(t, c.id, c.label)}: </span>
+                        <span className="text-mist/55">{c.id === "idea" ? copy.idea : displayLabel(t, c.id, c.label)}: </span>
                         {c.id === "idea" ? displayValue(t, c.to) : copy.history.changedTo(displayValue(t, c.from), displayValue(t, c.to))}
                       </li>
                     ))

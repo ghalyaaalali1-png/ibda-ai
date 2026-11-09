@@ -19,7 +19,7 @@ export async function LegalPage({ page }: { page: LegalPageId }) {
 
   return (
     <Container className="max-w-3xl py-28 sm:py-36">
-      <p className="text-sm text-mist/45">{doc.updated}</p>
+      <p className="text-sm text-mist/55">{doc.updated}</p>
       <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">{doc.title}</h1>
       <p className="mt-4 text-[15px] leading-relaxed text-mist/70">{doc.intro}</p>
 

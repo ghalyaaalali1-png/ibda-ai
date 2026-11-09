@@ -184,7 +184,7 @@ function Workspace() {
                 </div>
                 <Link
                   href={routes.start}
-                  className="relative mt-5 inline-flex items-center gap-1.5 text-xs text-mist/40 transition-colors hover:text-mist"
+                  className="relative mt-5 inline-flex items-center gap-1.5 text-xs text-mist/55 transition-colors hover:text-mist"
                 >
                   <ArrowLeft className="size-3 rtl:-scale-x-100" />
                   {t.analysis.startOverDifferent}
@@ -259,7 +259,7 @@ function Workspace() {
                   <button
                     type="button"
                     onClick={run.restart}
-                    className="relative mt-5 inline-flex items-center gap-1.5 text-xs text-mist/40 transition-colors hover:text-mist"
+                    className="relative mt-5 inline-flex items-center gap-1.5 text-xs text-mist/55 transition-colors hover:text-mist"
                   >
                     <RotateCcw className="size-3" />
                     {t.analysis.replay}

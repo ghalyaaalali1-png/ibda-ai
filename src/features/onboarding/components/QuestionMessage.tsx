@@ -29,7 +29,7 @@ export function QuestionMessage({
       </p>
       {reaction && <p className="mt-2 text-[15px] text-mist/60">{reaction}</p>}
       <p className="mt-1.5 text-base font-medium text-white sm:text-lg">{prompt}</p>
-      {helper && <p className="mt-1 text-sm text-mist/45">{helper}</p>}
+      {helper && <p className="mt-1 text-sm text-mist/55">{helper}</p>}
       {children}
     </AgentMessage>
   );

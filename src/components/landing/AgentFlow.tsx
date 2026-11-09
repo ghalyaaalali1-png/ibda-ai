@@ -50,7 +50,7 @@ export function AgentFlow() {
             </span>
             <div>
               <p className="text-sm font-medium text-white">{copy.name}</p>
-              <p dir="ltr" className="font-mono text-[11px] text-mist/45">
+              <p dir="ltr" className="font-mono text-[11px] text-mist/55">
                 launch_plan.run()
               </p>
             </div>

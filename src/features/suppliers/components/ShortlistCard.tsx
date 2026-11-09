@@ -80,17 +80,17 @@ export function ShortlistCard({
               <button
                 type="button"
                 onClick={() => onSelectCategory(s)}
-                className="self-start text-[11px] font-medium tracking-wider text-mist/45 uppercase hover:text-brand-300"
+                className="self-start text-[11px] font-medium tracking-wider text-mist/55 uppercase hover:text-brand-300"
               >
                 {category.shortLabel}
               </button>
               <p className="mt-1.5 text-sm font-semibold text-white">{s.name}</p>
-              <p className="mt-0.5 text-xs text-mist/45">{s.location}</p>
+              <p className="mt-0.5 text-xs text-mist/55">{s.location}</p>
               <div className="mt-3">
                 <MatchScore score={s.matchScore} compact />
               </div>
               <div className="mt-3 flex items-baseline justify-between gap-2 border-t border-white/[0.06] pt-3">
-                <span className="text-xs text-mist/45">{item.basis}</span>
+                <span className="text-xs text-mist/55">{item.basis}</span>
                 <span className="text-sm font-medium whitespace-nowrap text-white">{aed(item.estimate)}</span>
               </div>
               <button

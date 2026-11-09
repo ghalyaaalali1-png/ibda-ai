@@ -47,7 +47,7 @@ export function CompareTable({
       label: t.suppliers.card.price,
       cell: (s) => (
         <>
-          {priceLabel(s, t)} <span className="text-mist/40">{s.price.unit}</span>
+          {priceLabel(s, t)} <span className="text-mist/55">{s.price.unit}</span>
           {cheapest === s.id && <Best />}
         </>
       ),
@@ -79,7 +79,7 @@ export function CompareTable({
           </span>
           {copy.title}
         </h2>
-        <p className="text-xs text-mist/45">
+        <p className="text-xs text-mist/55">
           {copy.selected(items.length)}
           {items.length > 1 && !sameCategory && copy.mixed}
         </p>
@@ -95,7 +95,7 @@ export function CompareTable({
             <caption className="sr-only">{copy.caption}</caption>
             <thead>
               <tr>
-                <th scope="col" className="w-28 pb-3 text-start align-bottom text-[11px] font-medium tracking-wider text-mist/40 uppercase">
+                <th scope="col" className="w-28 pb-3 text-start align-bottom text-[11px] font-medium tracking-wider text-mist/55 uppercase">
                   {copy.supplier}
                 </th>
                 {items.map((s) => (
@@ -103,13 +103,13 @@ export function CompareTable({
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <p className="text-sm font-semibold text-white">{s.name}</p>
-                        <p className="text-xs text-mist/45">{s.location}</p>
+                        <p className="text-xs text-mist/55">{s.location}</p>
                       </div>
                       <button
                         type="button"
                         onClick={() => onRemove(s.id)}
                         aria-label={copy.remove(s.name)}
-                        className="grid size-6 shrink-0 place-items-center rounded-full text-mist/40 hover:bg-white/5 hover:text-white"
+                        className="grid size-6 shrink-0 place-items-center rounded-full text-mist/55 hover:bg-white/5 hover:text-white"
                       >
                         <X className="size-3.5" />
                       </button>
@@ -121,7 +121,7 @@ export function CompareTable({
             <tbody>
               {rows.map((row) => (
                 <tr key={row.label} className="border-t border-white/[0.06]">
-                  <th scope="row" className="py-3 pe-2 text-start align-top text-xs font-normal text-mist/45">
+                  <th scope="row" className="py-3 pe-2 text-start align-top text-xs font-normal text-mist/55">
                     {row.label}
                   </th>
                   {items.map((s) => (

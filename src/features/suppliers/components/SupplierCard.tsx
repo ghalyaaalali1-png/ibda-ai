@@ -47,7 +47,7 @@ export function SupplierCard({
                 {copy.pick}
               </span>
             )}
-            <span className="rounded-full border border-white/[0.08] px-2 py-0.5 text-[10px] tracking-wide text-mist/45 uppercase">
+            <span className="rounded-full border border-white/[0.08] px-2 py-0.5 text-[10px] tracking-wide text-mist/55 uppercase">
               {badge}
             </span>
           </div>
@@ -61,7 +61,7 @@ export function SupplierCard({
           </p>
         </div>
         <div className="shrink-0 text-end">
-          <p className="text-[10px] tracking-wider text-mist/40 uppercase">{copy.match}</p>
+          <p className="text-[10px] tracking-wider text-mist/55 uppercase">{copy.match}</p>
           <div className="mt-1.5">
             <MatchScore score={s.matchScore} compact />
           </div>
@@ -69,7 +69,7 @@ export function SupplierCard({
       </div>
 
       <p className="mt-3 text-sm text-mist/70">
-        <span className="text-mist/40">{categoryLabel} · </span>
+        <span className="text-mist/55">{categoryLabel} · </span>
         {s.offering}
       </p>
 
@@ -80,19 +80,19 @@ export function SupplierCard({
           { icon: Clock, label: copy.leadTime, value: leadTimeLabel(s, t) },
         ].map((f) => (
           <div key={f.label} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-2.5">
-            <dt className="flex items-center gap-1 text-[10px] tracking-wide text-mist/40 uppercase">
+            <dt className="flex items-center gap-1 text-[10px] tracking-wide text-mist/55 uppercase">
               <f.icon className="size-3" />
               {f.label}
             </dt>
             <dd className="mt-1 text-[13px] leading-snug font-medium text-white">{f.value}</dd>
-            {f.sub && <dd className="text-[11px] text-mist/40">{f.sub}</dd>}
+            {f.sub && <dd className="text-[11px] text-mist/55">{f.sub}</dd>}
           </div>
         ))}
       </dl>
 
       <div className="mt-4 space-y-1.5 text-[13px] leading-snug">
         <p className="text-mist/80">
-          <span className="text-mist/40">{copy.bestFor}</span>
+          <span className="text-mist/55">{copy.bestFor}</span>
           {s.bestFor}
         </p>
         {s.matchReasons.map((r) => (

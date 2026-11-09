@@ -48,7 +48,7 @@ export function ContentPlan({ plan }: { plan: MarketingPlan }) {
           <li key={p.id} className="flex flex-col rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4">
             <div className="flex items-start justify-between gap-2">
               <p className="text-sm font-semibold text-white">{p.title}</p>
-              <span className="shrink-0 font-mono text-[10px] text-mist/40">{p.phase}</span>
+              <span className="shrink-0 font-mono text-[10px] text-mist/55">{p.phase}</span>
             </div>
             <p className="mt-1 text-xs text-brand-300/90">
               {p.format} · {p.cadence}

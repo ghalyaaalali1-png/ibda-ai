@@ -74,7 +74,7 @@ function ChecklistColumn({ title, items, prefix }: { title: string; items: Check
     <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4">
       <div className="flex items-baseline justify-between">
         <p className="text-sm font-semibold text-white">{title}</p>
-        <span className="font-mono text-[11px] text-mist/45">
+        <span className="font-mono text-[11px] text-mist/55">
           {done.size}/{items.length}
         </span>
       </div>
@@ -89,12 +89,12 @@ function ChecklistColumn({ title, items, prefix }: { title: string; items: Check
               className="mt-0.5 size-4 shrink-0 accent-[#8b6cff]"
             />
             <div className="min-w-0">
-              <label htmlFor={`${prefix}-${i}`} className={cn("text-[13px] leading-snug", done.has(i) ? "text-mist/40 line-through" : "text-mist/85")}>
+              <label htmlFor={`${prefix}-${i}`} className={cn("text-[13px] leading-snug", done.has(i) ? "text-mist/55 line-through" : "text-mist/85")}>
                 {item.text}
               </label>
               <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
                 <FromTag from={item.from} />
-                {item.detail && <span className="text-[11px] text-mist/45">{item.detail}</span>}
+                {item.detail && <span className="text-[11px] text-mist/55">{item.detail}</span>}
               </div>
               {(item.link || item.viaPortal) && (
                 <p className="mt-1">
@@ -149,7 +149,7 @@ export function LaunchPackView({
         <JourneyTabs />
       </header>
 
-      <Container className="space-y-6 py-10 sm:py-14">
+      <Container as="main" className="space-y-6 py-10 sm:py-14">
         {/* Intro */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-2xl">
@@ -200,11 +200,11 @@ export function LaunchPackView({
               <p className="text-[15px] leading-relaxed text-mist/75">{extras.ideaSummary}</p>
               <dl className="mt-5 grid gap-4 sm:grid-cols-2">
                 <div>
-                  <dt className="text-[11px] font-medium tracking-wider text-mist/45 uppercase">{t.common.targetCustomer}</dt>
+                  <dt className="text-[11px] font-medium tracking-wider text-mist/55 uppercase">{t.common.targetCustomer}</dt>
                   <dd className="mt-1 text-[13px] leading-relaxed text-mist/70">{plan.market.targetCustomer}</dd>
                 </div>
                 <div>
-                  <dt className="text-[11px] font-medium tracking-wider text-mist/45 uppercase">{copy.summary.positioning}</dt>
+                  <dt className="text-[11px] font-medium tracking-wider text-mist/55 uppercase">{copy.summary.positioning}</dt>
                   <dd className="mt-1 text-[13px] leading-relaxed text-mist/70">{extras.positioning}</dd>
                 </div>
               </dl>
@@ -226,7 +226,7 @@ export function LaunchPackView({
               {plan.pricing.rationale !== extras.positioning && (
                 <p className="mt-4 text-[13px] leading-relaxed text-mist/65">{plan.pricing.rationale}</p>
               )}
-              <p className="mt-auto pt-5 text-xs text-mist/40">{copy.pricing.footnote}</p>
+              <p className="mt-auto pt-5 text-xs text-mist/55">{copy.pricing.footnote}</p>
             </DashCard>
           </div>
         </div>
@@ -247,24 +247,24 @@ export function LaunchPackView({
                 key={r.supplier + r.category}
                 className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-3.5 text-[13px]"
               >
-                <p className="text-[11px] font-medium tracking-wider text-mist/45 uppercase">{r.category}</p>
+                <p className="text-[11px] font-medium tracking-wider text-mist/55 uppercase">{r.category}</p>
                 <div className="mt-1 flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="font-medium text-white">{r.supplier}</p>
-                    <p className="text-xs text-mist/45">{r.location}</p>
+                    <p className="text-xs text-mist/55">{r.location}</p>
                   </div>
                   <div className="shrink-0 text-end">
                     <p className="font-medium whitespace-nowrap text-white">{aed(r.estimate)}</p>
-                    <p className="text-xs text-mist/45">{r.basis}</p>
+                    <p className="text-xs text-mist/55">{r.basis}</p>
                   </div>
                 </div>
                 <dl className="mt-2.5 grid grid-cols-2 gap-2 text-xs">
                   <div>
-                    <dt className="text-mist/45">{copy.suppliers.minimum}</dt>
+                    <dt className="text-mist/55">{copy.suppliers.minimum}</dt>
                     <dd className="text-mist/75">{r.moq}</dd>
                   </div>
                   <div>
-                    <dt className="text-mist/45">{copy.suppliers.leadTime}</dt>
+                    <dt className="text-mist/55">{copy.suppliers.leadTime}</dt>
                     <dd className="text-mist/75">{r.leadTime}</dd>
                   </div>
                 </dl>
@@ -275,7 +275,7 @@ export function LaunchPackView({
             <table className="w-full min-w-[640px] text-start text-[13px]">
               <caption className="sr-only">{copy.suppliers.caption}</caption>
               <thead>
-                <tr className="text-[11px] font-medium tracking-wider text-mist/45 uppercase">
+                <tr className="text-[11px] font-medium tracking-wider text-mist/55 uppercase">
                   <th scope="col" className="pb-2 text-start font-medium">{copy.suppliers.category}</th>
                   <th scope="col" className="pb-2 text-start font-medium">{copy.suppliers.supplier}</th>
                   <th scope="col" className="pb-2 text-start font-medium">{copy.suppliers.minimum}</th>
@@ -289,13 +289,13 @@ export function LaunchPackView({
                     <td className="py-3 pe-3 text-mist/60">{r.category}</td>
                     <td className="py-3 pe-3">
                       <p className="font-medium text-white">{r.supplier}</p>
-                      <p className="text-xs text-mist/45">{r.location}</p>
+                      <p className="text-xs text-mist/55">{r.location}</p>
                     </td>
                     <td className="py-3 pe-3 text-mist/75">{r.moq}</td>
                     <td className="py-3 pe-3 text-mist/75">{r.leadTime}</td>
                     <td className="py-3 text-end">
                       <p className="font-medium whitespace-nowrap text-white">{aed(r.estimate)}</p>
-                      <p className="text-xs text-mist/45">{r.basis}</p>
+                      <p className="text-xs text-mist/55">{r.basis}</p>
                     </td>
                   </tr>
                 ))}
@@ -310,7 +310,7 @@ export function LaunchPackView({
               {overAllocation > 0 ? copy.suppliers.over(aed(overAllocation)) : copy.suppliers.within}
             </span>
           </div>
-          <p className="mt-3 text-xs text-mist/40">{suppliers.sourceNote}</p>
+          <p className="mt-3 text-xs text-mist/55">{suppliers.sourceNote}</p>
         </DashCard>
 
         {/* Requirements + marketing */}
@@ -323,12 +323,12 @@ export function LaunchPackView({
               action={<span className="text-xs text-mist/50">{displayValue(t, plan.setup.emirate)}</span>}
             >
               <p className="text-[13px] text-mist/65">
-                <span className="text-mist/45">{copy.requirements.activity}</span>
+                <span className="text-mist/55">{copy.requirements.activity}</span>
                 {plan.setup.activity}
               </p>
               {suggestedRoute && (
                 <p className="mt-1 text-[13px] text-mist/65">
-                  <span className="text-mist/45">{copy.requirements.route}</span>
+                  <span className="text-mist/55">{copy.requirements.route}</span>
                   {suggestedRoute.name}
                   {copy.requirements.fee}
                 </p>
@@ -368,10 +368,10 @@ export function LaunchPackView({
                   <li key={w.week} className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-3.5">
                     <div className="flex items-baseline justify-between gap-2">
                       <p className="text-sm font-medium text-white">
-                        <span className="me-1.5 font-mono text-[11px] text-mist/45">{t.common.week(w.week)}</span>
+                        <span className="me-1.5 font-mono text-[11px] text-mist/55">{t.common.week(w.week)}</span>
                         {w.title}
                       </p>
-                      <span className="shrink-0 text-[11px] text-mist/45">
+                      <span className="shrink-0 text-[11px] text-mist/55">
                         {copy.marketing.posts(w.posts, w.planWeek)}
                       </span>
                     </div>
@@ -398,7 +398,7 @@ export function LaunchPackView({
             <ChecklistColumn title={copy.checklist.launch} items={pack.checklist.launch} prefix="launch" />
             <ChecklistColumn title={copy.checklist.after} items={pack.checklist.after} prefix="after" />
           </div>
-          <p className="mt-4 text-xs text-mist/40">{copy.checklist.footnote}</p>
+          <p className="mt-4 text-xs text-mist/55">{copy.checklist.footnote}</p>
         </DashCard>
 
         {/* Outstanding */}
@@ -418,7 +418,7 @@ export function LaunchPackView({
                   <FromTag from={o.from} />
                 </div>
                 <p className="mt-2 text-[13px] leading-snug text-mist/85">{o.text}</p>
-                {o.why && <p className="mt-1 text-xs text-mist/45">{o.why}</p>}
+                {o.why && <p className="mt-1 text-xs text-mist/55">{o.why}</p>}
                 {(o.link || o.viaPortal) && (
                   <p className="mt-1.5">
                     <SourceLink source={o.link} viaPortal={o.viaPortal} />
@@ -429,7 +429,7 @@ export function LaunchPackView({
           </ul>
         </DashCard>
 
-        <p className="flex gap-2 text-xs leading-relaxed text-mist/40">
+        <p className="flex gap-2 text-xs leading-relaxed text-mist/55">
           <Info className="mt-0.5 size-3.5 shrink-0" />
           {copy.disclaimer}
         </p>

@@ -74,14 +74,14 @@ export function CostBreakdown({ plan }: { plan: BusinessPlan }) {
                   <span aria-hidden className="mt-1.5 size-2.5 shrink-0 rounded-sm" style={{ background: row.fill }} />
                   <div>
                     <p className="text-mist/90">{row.label}</p>
-                    <p className="text-xs text-mist/40">{row.note}</p>
+                    <p className="text-xs text-mist/55">{row.note}</p>
                   </div>
                 </div>
               </td>
               <td className="py-2.5 text-end font-medium whitespace-nowrap text-white">
                 {aed(row.amount)}
               </td>
-              <td className="w-14 py-2.5 text-end font-mono text-xs text-mist/45">
+              <td className="w-14 py-2.5 text-end font-mono text-xs text-mist/55">
                 {percent(row.amount, total)}%
               </td>
             </tr>

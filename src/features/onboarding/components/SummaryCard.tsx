@@ -43,7 +43,7 @@ export function SummaryCard({
                     type="button"
                     onClick={() => onEdit(item.questionIndex!)}
                     aria-label={t.onboarding.changeField(label)}
-                    className="grid size-7 place-items-center rounded-full text-mist/35 transition-colors hover:bg-white/5 hover:text-mist"
+                    className="grid size-7 place-items-center rounded-full text-mist/55 transition-colors hover:bg-white/5 hover:text-mist"
                   >
                     <Pencil className="size-3.5" />
                   </button>

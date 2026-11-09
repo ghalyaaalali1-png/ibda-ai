@@ -24,7 +24,7 @@ function PostCard({ post }: { post: CalendarPost }) {
   return (
     <li className="animate-message-in rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4">
       <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5">
-        <span className="font-mono text-[11px] text-mist/45 uppercase">{post.day}</span>
+        <span className="font-mono text-[11px] text-mist/55 uppercase">{post.day}</span>
         <span className="rounded-md bg-brand-500/15 px-1.5 py-0.5 text-[11px] font-medium text-brand-300">
           {post.platform}
         </span>
@@ -40,7 +40,7 @@ function PostCard({ post }: { post: CalendarPost }) {
           type="button"
           onClick={copy}
           aria-label={copied ? t.marketing.launchMonth.copied : t.marketing.launchMonth.copyCaption(post.topic)}
-          className="grid size-7 shrink-0 place-items-center rounded-full text-mist/45 transition-colors hover:bg-white/5 hover:text-white"
+          className="grid size-7 shrink-0 place-items-center rounded-full text-mist/55 transition-colors hover:bg-white/5 hover:text-white"
         >
           {copied ? <Check className="size-3.5 text-emerald-400" /> : <Copy className="size-3.5" />}
         </button>
@@ -82,7 +82,7 @@ export function LaunchMonthCalendar({ launchMonth }: { launchMonth: MarketingPla
                 : "border-white/[0.07] bg-white/[0.02] hover:bg-white/[0.05]",
             )}
           >
-            <p className="font-mono text-[11px] text-mist/45">{t.common.week(w.week)}</p>
+            <p className="font-mono text-[11px] text-mist/55">{t.common.week(w.week)}</p>
             <p className={cn("text-sm font-medium", active === w.week ? "text-white" : "text-mist/70")}>{w.title}</p>
           </button>
         ))}
@@ -102,7 +102,7 @@ export function LaunchMonthCalendar({ launchMonth }: { launchMonth: MarketingPla
         </div>
       )}
 
-      <p className="mt-5 text-xs text-mist/40">
+      <p className="mt-5 text-xs text-mist/55">
         {copy.footnote}
       </p>
     </DashCard>

@@ -19,7 +19,7 @@ export function CompetitorInspiration({ items }: { items: InspirationItem[] }) {
             <p className="text-sm font-semibold text-white">{item.competitorType}</p>
             <dl className="mt-3 space-y-2.5 text-[13px] leading-snug">
               <div>
-                <dt className="text-[11px] font-medium tracking-wider text-mist/45 uppercase">{copy.works}</dt>
+                <dt className="text-[11px] font-medium tracking-wider text-mist/55 uppercase">{copy.works}</dt>
                 <dd className="mt-0.5 text-mist/75">{item.whatWorks}</dd>
               </div>
               <div>
@@ -34,7 +34,7 @@ export function CompetitorInspiration({ items }: { items: InspirationItem[] }) {
           </li>
         ))}
       </ul>
-      <p className="mt-5 flex gap-2 text-xs leading-relaxed text-mist/40">
+      <p className="mt-5 flex gap-2 text-xs leading-relaxed text-mist/55">
         <Info className="mt-0.5 size-3.5 shrink-0" />
         {copy.footnote}
       </p>

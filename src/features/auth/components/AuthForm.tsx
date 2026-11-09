@@ -10,7 +10,7 @@ import { continueWithGoogle, logIn, signUp, type AuthErrorKey, type AuthFormStat
 import { GoogleButton } from "./GoogleButton";
 
 const inputClass =
-  "mt-1.5 block h-11 w-full rounded-xl border border-white/10 bg-white/[0.03] px-3.5 text-[15px] text-white placeholder:text-mist/30 transition-colors focus:border-brand-400/60 focus:bg-white/[0.05] focus:outline-none rtl:text-right";
+  "mt-1.5 block h-11 w-full rounded-xl border border-white/10 bg-white/[0.03] px-3.5 text-[15px] text-white placeholder:text-mist/50 transition-colors focus:border-brand-400/60 focus:bg-white/[0.05] focus:outline-none rtl:text-right";
 
 /**
  * Log-in or sign-up form. `next` is where to go once signed in;
@@ -44,7 +44,7 @@ export function AuthForm({
           {t.auth.signup.checkEmailTitle}
         </h1>
         <p className="mt-3 text-[15px] leading-relaxed text-mist/65">{t.auth.signup.checkEmailBody(state.email)}</p>
-        <p className="mt-2 text-sm text-mist/45">{t.auth.signup.checkEmailHint}</p>
+        <p className="mt-2 text-sm text-mist/55">{t.auth.signup.checkEmailHint}</p>
       </section>
     );
   }
@@ -61,7 +61,7 @@ export function AuthForm({
         <GoogleButton label={t.auth.continueWithGoogle} />
       </form>
 
-      <div className="my-6 flex items-center gap-3 text-xs text-mist/40" aria-hidden>
+      <div className="my-6 flex items-center gap-3 text-xs text-mist/55" aria-hidden>
         <span className="h-px flex-1 bg-white/10" />
         {t.auth.or}
         <span className="h-px flex-1 bg-white/10" />
@@ -71,7 +71,7 @@ export function AuthForm({
         {next && <input type="hidden" name="next" value={next} />}
         {mode === "signup" && (
           <label className="text-sm font-medium text-mist/80">
-            {t.auth.fields.name} <span className="font-normal text-mist/40">({t.auth.fields.nameHint})</span>
+            {t.auth.fields.name} <span className="font-normal text-mist/55">({t.auth.fields.nameHint})</span>
             <input name="name" type="text" autoComplete="name" maxLength={120} className={inputClass} />
           </label>
         )}
@@ -91,7 +91,7 @@ export function AuthForm({
           <span className="flex items-baseline justify-between gap-2">
             <span>
               {t.auth.fields.password}
-              {mode === "signup" && <span className="font-normal text-mist/40"> · {t.auth.fields.passwordHint}</span>}
+              {mode === "signup" && <span className="font-normal text-mist/55"> · {t.auth.fields.passwordHint}</span>}
             </span>
             {mode === "login" && (
               <Link href={routes.forgotPassword} className="text-xs font-normal text-brand-300 hover:text-brand-200">
@@ -123,7 +123,7 @@ export function AuthForm({
       </form>
 
       {mode === "signup" && (
-        <p className="mt-4 text-center text-xs leading-relaxed text-mist/45">
+        <p className="mt-4 text-center text-xs leading-relaxed text-mist/55">
           {t.auth.signup.agreeStart}{" "}
           <Link href={routes.terms} className="text-mist/70 underline underline-offset-2 hover:text-white">
             {t.nav.terms}

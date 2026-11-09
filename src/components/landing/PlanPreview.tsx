@@ -54,7 +54,7 @@ export async function PlanPreview() {
         <figure aria-label={copy.sample} className="glass relative rounded-3xl p-6 shadow-[0_30px_80px_-30px_rgb(61_123_245/0.45)] sm:p-8">
           <figcaption className="flex items-center justify-between gap-3">
             <span className="text-xs font-medium tracking-wide text-mist/50 uppercase rtl:tracking-normal">{copy.sample}</span>
-            <span className="text-xs text-mist/45">{displayValue(t, profileValue(plan.profile, "business") ?? "")}</span>
+            <span className="text-xs text-mist/55">{displayValue(t, profileValue(plan.profile, "business") ?? "")}</span>
           </figcaption>
           <div className="mt-5 flex items-center gap-5">
             <div
@@ -77,7 +77,7 @@ export async function PlanPreview() {
           <dl className="mt-6 grid grid-cols-2 gap-3">
             {tiles.map((tile) => (
               <div key={tile.label} className="rounded-2xl border border-white/[0.07] bg-white/[0.03] p-4">
-                <dt className="text-[11px] font-medium tracking-wider text-mist/45 uppercase rtl:tracking-normal">{tile.label}</dt>
+                <dt className="text-[11px] font-medium tracking-wider text-mist/55 uppercase rtl:tracking-normal">{tile.label}</dt>
                 <dd className="mt-1.5 text-lg font-semibold text-white">{tile.value}</dd>
               </div>
             ))}

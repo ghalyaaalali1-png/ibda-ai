@@ -38,7 +38,7 @@ export function StrategySummary({ strategy }: { strategy: MarketingPlan["strateg
         <dl className="grid gap-5 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
           {blocks.map((b) => (
             <div key={b.label}>
-              <dt className="flex items-center gap-2 text-[11px] font-medium tracking-wider text-mist/45 uppercase">
+              <dt className="flex items-center gap-2 text-[11px] font-medium tracking-wider text-mist/55 uppercase">
                 <b.icon className="size-3.5 text-brand-300" />
                 {b.label}
               </dt>
@@ -48,7 +48,7 @@ export function StrategySummary({ strategy }: { strategy: MarketingPlan["strateg
         </dl>
 
         <div>
-          <p className="flex items-center gap-2 text-[11px] font-medium tracking-wider text-mist/45 uppercase">
+          <p className="flex items-center gap-2 text-[11px] font-medium tracking-wider text-mist/55 uppercase">
             <Megaphone className="size-3.5 text-brand-300" />
             {copy.channels}
           </p>

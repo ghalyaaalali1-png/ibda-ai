@@ -66,7 +66,7 @@ export function MarketingBudget({
                           />
                           <div>
                             <p className="text-mist/90">{l.label}</p>
-                            <p className="text-xs text-mist/40">{l.note}</p>
+                            <p className="text-xs text-mist/55">{l.note}</p>
                           </div>
                         </div>
                       </td>
@@ -80,7 +80,7 @@ export function MarketingBudget({
         })}
       </div>
 
-      <p className="mt-auto pt-5 text-xs leading-relaxed text-mist/40">
+      <p className="mt-auto pt-5 text-xs leading-relaxed text-mist/55">
         {footnote}
       </p>
     </DashCard>

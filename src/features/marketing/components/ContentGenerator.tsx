@@ -55,7 +55,7 @@ function Segmented<T extends string>({
 }) {
   return (
     <div>
-      <p className="text-[11px] font-medium tracking-wider text-mist/45 uppercase">{label}</p>
+      <p className="text-[11px] font-medium tracking-wider text-mist/55 uppercase">{label}</p>
       <div role="radiogroup" aria-label={label} className="mt-2 inline-flex rounded-full border border-white/10 p-0.5">
         {options.map((o) => (
           <button
@@ -179,7 +179,7 @@ export function ContentGenerator({ context }: { context?: CaptionContext }) {
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-mist/55">{copy.description}</p>
 
-          <p className="mt-6 text-[11px] font-medium tracking-wider text-mist/45 uppercase">{copy.contentType}</p>
+          <p className="mt-6 text-[11px] font-medium tracking-wider text-mist/55 uppercase">{copy.contentType}</p>
           <div role="radiogroup" aria-label={copy.contentType} className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
             {contentTypes.map((c) => (
               <button
@@ -198,7 +198,7 @@ export function ContentGenerator({ context }: { context?: CaptionContext }) {
                 <p className={cn("text-[13px] font-medium", type === c.id ? "text-white" : "text-mist/75")}>
                   {context && c.id === "styling" ? copy.productInUse : typeText(c.id).label}
                 </p>
-                <p className="text-[11px] text-mist/45">{typeText(c.id).objective}</p>
+                <p className="text-[11px] text-mist/55">{typeText(c.id).objective}</p>
               </button>
             ))}
           </div>
@@ -242,7 +242,7 @@ export function ContentGenerator({ context }: { context?: CaptionContext }) {
               <span className="size-7 rounded-full bg-gradient-to-br from-brand-400 to-electric-500" aria-hidden />
               <div>
                 <p dir="ltr" className="text-[13px] font-medium text-white">your.brand</p>
-                <p className="text-[11px] text-mist/45">
+                <p className="text-[11px] text-mist/55">
                   {platform === "instagram" ? copy.instagramPost : copy.tiktokVideo} · {objective}
                 </p>
               </div>
@@ -262,7 +262,7 @@ export function ContentGenerator({ context }: { context?: CaptionContext }) {
           <div className="flex-1 px-4 py-4">
             {status === "idle" && (
               <div className="grid h-full place-items-center text-center">
-                <p className="max-w-xs text-sm text-mist/45">
+                <p className="max-w-xs text-sm text-mist/55">
                   {copy.idleStart} <span className="text-mist/75">{copy.generate}</span>
                   {copy.idleEnd}
                 </p>
@@ -292,16 +292,16 @@ export function ContentGenerator({ context }: { context?: CaptionContext }) {
               <div className="flex gap-2">
                 <ImageIcon className="mt-0.5 size-3.5 shrink-0 text-brand-300" />
                 <div>
-                  <dt className="text-[10px] tracking-wider text-mist/40 uppercase">{copy.visual}</dt>
+                  <dt className="text-[10px] tracking-wider text-mist/55 uppercase">{copy.visual}</dt>
                   <dd className="text-xs leading-snug text-mist/70">{post.visual}</dd>
                 </div>
               </div>
               <div className="flex gap-2">
                 <Clock className="mt-0.5 size-3.5 shrink-0 text-brand-300" />
                 <div>
-                  <dt className="text-[10px] tracking-wider text-mist/40 uppercase">{copy.bestTime}</dt>
+                  <dt className="text-[10px] tracking-wider text-mist/55 uppercase">{copy.bestTime}</dt>
                   <dd className="text-xs leading-snug text-mist/70">
-                    {post.bestTime} <span className="text-mist/40">({context ? copy.estimate : copy.demoEstimate})</span>
+                    {post.bestTime} <span className="text-mist/55">({context ? copy.estimate : copy.demoEstimate})</span>
                   </dd>
                 </div>
               </div>

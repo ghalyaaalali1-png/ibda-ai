@@ -74,7 +74,7 @@ export function LaunchCalendar({ phases }: { phases: Phase[] }) {
             )}
           >
             <p className={cn("text-sm font-medium", active === p.id ? "text-white" : "text-mist/70")}>{copy.phases[p.id]}</p>
-            <p className="font-mono text-[11px] text-mist/45">{weeksOf(p)}</p>
+            <p className="font-mono text-[11px] text-mist/55">{weeksOf(p)}</p>
           </button>
         ))}
       </div>
@@ -91,7 +91,7 @@ export function LaunchCalendar({ phases }: { phases: Phase[] }) {
               className="flex animate-message-in gap-4 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4"
             >
               <div className="w-14 shrink-0">
-                <p className="font-mono text-[11px] text-mist/40 uppercase">{copy.week}</p>
+                <p className="font-mono text-[11px] text-mist/55 uppercase">{copy.week}</p>
                 <p className="text-xl font-semibold text-white">{w.week}</p>
               </div>
               <div className="min-w-0 flex-1">

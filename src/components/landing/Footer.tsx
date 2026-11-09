@@ -14,7 +14,7 @@ export async function Footer() {
       <Container className="grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr]">
         <div className="max-w-sm">
           <Logo />
-          <p className="mt-3 text-[11px] tracking-[0.22em] text-mist/45 uppercase rtl:tracking-normal">{t.pdf.tagline}</p>
+          <p className="mt-3 text-[11px] tracking-[0.22em] text-mist/55 uppercase rtl:tracking-normal">{t.pdf.tagline}</p>
           <p className="mt-4 text-sm leading-relaxed text-mist/55">{t.nav.footerTagline}</p>
         </div>
         <nav aria-label={t.nav.footer}>
@@ -56,7 +56,7 @@ export async function Footer() {
         </nav>
       </Container>
       <div className="border-t border-white/[0.05]">
-        <Container className="flex flex-col gap-2 py-6 text-xs text-mist/40 sm:flex-row sm:items-center sm:justify-between">
+        <Container className="flex flex-col gap-2 py-6 text-xs text-mist/55 sm:flex-row sm:items-center sm:justify-between">
           <p>{t.nav.copyright(new Date().getFullYear())}</p>
           <nav aria-label={t.nav.legal} className="flex gap-4">
             <Link href={routes.privacy} className="transition-colors hover:text-white">

@@ -56,7 +56,7 @@ export function MarketingPlanView({
         <JourneyTabs />
       </header>
 
-      <Container className="space-y-6 py-10 sm:py-14">
+      <Container as="main" className="space-y-6 py-10 sm:py-14">
         {/* Intro */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-2xl">
@@ -122,7 +122,7 @@ export function MarketingPlanView({
                   <li key={step} className="flex gap-3 rounded-2xl border border-white/[0.07] bg-ink-900/60 px-4 py-3 text-sm text-mist/85">
                     <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-brand-300" />
                     <span>
-                      <span className="me-1 font-mono text-xs text-mist/40">{i + 1}.</span>
+                      <span className="me-1 font-mono text-xs text-mist/55">{i + 1}.</span>
                       {step}
                     </span>
                   </li>

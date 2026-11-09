@@ -175,7 +175,7 @@ export function BreakEvenChart({ plan }: { plan: BusinessPlan }) {
           { label: copy.runningCosts, value: aed(monthlyRunningCosts) },
         ].map((item) => (
           <div key={item.label} className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-3.5">
-            <dt className="text-[11px] font-medium tracking-wider text-mist/45 uppercase">{item.label}</dt>
+            <dt className="text-[11px] font-medium tracking-wider text-mist/55 uppercase">{item.label}</dt>
             <dd className="mt-1 text-base font-semibold text-white">{item.value}</dd>
           </div>
         ))}

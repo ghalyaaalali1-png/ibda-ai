@@ -37,7 +37,7 @@ export function StageTimeline({
               status === "active" &&
                 "border-brand-400/30 bg-brand-500/[0.07] shadow-[0_0_50px_-20px_rgb(139_108_255/0.7)]",
               status === "done" && "border-white/[0.06] bg-white/[0.02]",
-              status === "pending" && "border-white/[0.04] opacity-50",
+              status === "pending" && "border-white/[0.04]",
             )}
           >
             <div className="flex items-center gap-4">
@@ -59,12 +59,17 @@ export function StageTimeline({
               </span>
 
               <div className="min-w-0 flex-1">
-                <p className="font-mono text-[11px] tracking-wider text-mist/40 uppercase">
+                <p className="font-mono text-[11px] tracking-wider text-mist/55 uppercase">
                   {t.analysis.stageNumber(i + 1)}
                 </p>
-                <h3 className="mt-0.5 text-[15px] font-semibold text-white sm:text-base">
+                <h2
+                  className={cn(
+                    "mt-0.5 text-[15px] font-semibold sm:text-base",
+                    status === "pending" ? "text-mist/70" : "text-white",
+                  )}
+                >
                   {stage.title}
-                </h3>
+                </h2>
               </div>
 
               <span
@@ -72,7 +77,7 @@ export function StageTimeline({
                   "shrink-0 text-xs font-medium",
                   status === "done" && "text-emerald-300",
                   status === "active" && "text-brand-300",
-                  status === "pending" && (halted ? "text-[#fcc95a]" : "text-mist/40"),
+                  status === "pending" && (halted ? "text-[#fcc95a]" : "text-mist/55"),
                 )}
               >
                 {status === "done"

@@ -84,7 +84,7 @@ export function SuppliersWorkspace({
         <JourneyTabs />
       </header>
 
-      <Container className="space-y-6 py-10 sm:py-14">
+      <Container as="main" className="space-y-6 py-10 sm:py-14">
         {/* Intro */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-2xl">

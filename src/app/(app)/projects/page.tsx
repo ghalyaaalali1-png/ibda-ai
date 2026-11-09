@@ -66,7 +66,7 @@ function ProjectCard({ project, t, locale }: { project: ProjectSummary; t: Dicti
           )}
         </dl>
         <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-5">
-          <p className="flex items-center gap-1.5 text-xs text-mist/45">
+          <p className="flex items-center gap-1.5 text-xs text-mist/55">
             {copy.updated(updatedOn(project.updatedAt, locale, t))}
             <ArrowRight
               aria-hidden

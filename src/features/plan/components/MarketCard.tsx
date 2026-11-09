@@ -34,7 +34,7 @@ export function MarketCard({ plan }: { plan: BusinessPlan }) {
           <dl className="mt-5 grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
             {market.signals.map((s) => (
               <div key={s.label} className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-3.5">
-                <dt className="text-[11px] font-medium tracking-wider text-mist/45 uppercase">{s.label}</dt>
+                <dt className="text-[11px] font-medium tracking-wider text-mist/55 uppercase">{s.label}</dt>
                 <dd className="mt-1 text-base font-semibold text-white">{s.value}</dd>
                 <dd className="mt-1 text-xs leading-snug text-mist/50">{s.detail}</dd>
               </div>
@@ -53,13 +53,13 @@ export function MarketCard({ plan }: { plan: BusinessPlan }) {
         <div dir="ltr">
           <div className="flex items-baseline justify-between">
             <Caption>{t.plan.market.bands(unitTitle)}</Caption>
-            <span className="text-[11px] text-mist/35">{market.priceBandsNote}</span>
+            <span className="text-[11px] text-mist/55">{market.priceBandsNote}</span>
           </div>
           <ul className="mt-4 space-y-4 py-2">
             <li>
               <p className="text-xs font-medium text-brand-300">
                 {t.plan.market.yourRange}{" "}
-                <span className="font-normal text-mist/45">
+                <span className="font-normal text-mist/55">
                   {pricing.min.toLocaleString("en-US")}–{pricing.max.toLocaleString("en-US")}
                 </span>
               </p>
@@ -74,7 +74,7 @@ export function MarketCard({ plan }: { plan: BusinessPlan }) {
               <li key={band.label}>
                 <p className="text-xs text-mist/60">
                   {band.label}{" "}
-                  <span className="text-mist/35">
+                  <span className="text-mist/55">
                     {band.min.toLocaleString("en-US")}–{band.max.toLocaleString("en-US")}
                     {band.max >= AXIS_MAX ? "+" : ""}
                   </span>
@@ -98,7 +98,7 @@ export function MarketCard({ plan }: { plan: BusinessPlan }) {
             {AXIS_TICKS.map((t) => (
               <span
                 key={t}
-                className="absolute top-1 -translate-x-1/2 font-mono text-[10px] text-mist/35 first:translate-x-0 last:-translate-x-full"
+                className="absolute top-1 -translate-x-1/2 font-mono text-[10px] text-mist/55 first:translate-x-0 last:-translate-x-full"
                 style={{ left: pct(t) }}
               >
                 {tickLabel(t)}

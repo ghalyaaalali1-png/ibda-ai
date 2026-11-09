@@ -103,7 +103,7 @@ export function RfqDrawer({
             <h2 id="rfq-title" className="mt-1 truncate text-lg font-semibold text-white">
               {supplier.name}
             </h2>
-            <p className="text-xs text-mist/45">{supplier.location}</p>
+            <p className="text-xs text-mist/55">{supplier.location}</p>
           </div>
           <button
             ref={closeRef}
@@ -117,7 +117,7 @@ export function RfqDrawer({
         </div>
 
         <div className="flex-1 overflow-y-auto px-5 py-5 sm:px-6">
-          <p className="text-[11px] font-medium tracking-wider text-mist/45 uppercase">
+          <p className="text-[11px] font-medium tracking-wider text-mist/55 uppercase">
             {text.using}
           </p>
           <ul className="mt-2 flex flex-wrap gap-1.5">
@@ -129,7 +129,7 @@ export function RfqDrawer({
           </ul>
 
           <div className="mt-5 flex items-center justify-between gap-3">
-            <span className="text-[11px] font-medium tracking-wider text-mist/45 uppercase">{text.tone}</span>
+            <span className="text-[11px] font-medium tracking-wider text-mist/55 uppercase">{text.tone}</span>
             <div role="radiogroup" aria-label={text.tone} className="inline-flex rounded-full border border-white/10 p-0.5">
               {(["formal", "concise"] as const).map((option) => (
                 <button
@@ -157,7 +157,7 @@ export function RfqDrawer({
             ) : (
               <div className="animate-message-in space-y-3">
                 <label className="block">
-                  <span className="text-[11px] font-medium tracking-wider text-mist/45 uppercase">{text.subject}</span>
+                  <span className="text-[11px] font-medium tracking-wider text-mist/55 uppercase">{text.subject}</span>
                   {/* The enquiry is written in English, the usual language with UAE suppliers. */}
                   <input
                     dir="auto"
@@ -167,7 +167,7 @@ export function RfqDrawer({
                   />
                 </label>
                 <label className="block">
-                  <span className="text-[11px] font-medium tracking-wider text-mist/45 uppercase">{text.message}</span>
+                  <span className="text-[11px] font-medium tracking-wider text-mist/55 uppercase">{text.message}</span>
                   <textarea
                     dir="auto"
                     value={body}
@@ -180,7 +180,7 @@ export function RfqDrawer({
             )}
           </div>
 
-          <p className="mt-4 flex gap-2 text-[11px] leading-relaxed text-mist/40">
+          <p className="mt-4 flex gap-2 text-[11px] leading-relaxed text-mist/55">
             <Info className="mt-0.5 size-3.5 shrink-0" />
             {contactNote}
           </p>

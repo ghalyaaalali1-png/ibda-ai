@@ -29,7 +29,7 @@ export function SetupCard({ plan }: { plan: BusinessPlan }) {
     >
       <p className="text-[15px] leading-relaxed text-mist/65">{setup.summary}</p>
       <p className="mt-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3.5 py-2.5 text-[13px] text-mist/75">
-        <span className="text-mist/45">{copy.activity}</span>
+        <span className="text-mist/55">{copy.activity}</span>
         {setup.activity}
       </p>
 
@@ -105,7 +105,7 @@ export function SetupCard({ plan }: { plan: BusinessPlan }) {
                 {items.map((r) => (
                   <li key={r.item} className="text-[13px] leading-snug">
                     <p className="text-mist/85">{r.item}</p>
-                    <p className="mt-0.5 text-mist/45">{r.why}</p>
+                    <p className="mt-0.5 text-mist/55">{r.why}</p>
                     <p className="mt-1">
                       <SourceLink source={r.authority} viaPortal={r.viaPortal} />
                     </p>
@@ -124,7 +124,7 @@ export function SetupCard({ plan }: { plan: BusinessPlan }) {
           {setup.sources.map((source) => (
             <li key={source.id} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
               <SourceLink source={source} asAuthority={false} />
-              <p className="mt-1 text-[11px] leading-snug text-mist/45">
+              <p className="mt-1 text-[11px] leading-snug text-mist/55">
                 {t.sources.government(source.scope === "Federal" ? t.sources.federal : displayValue(t, source.scope))} ·{" "}
                 {sourceText(source, locale).covers}
               </p>
@@ -133,7 +133,7 @@ export function SetupCard({ plan }: { plan: BusinessPlan }) {
         </ul>
       </div>
 
-      <p className="mt-6 flex gap-2 border-t border-white/[0.06] pt-4 text-xs leading-relaxed text-mist/40">
+      <p className="mt-6 flex gap-2 border-t border-white/[0.06] pt-4 text-xs leading-relaxed text-mist/55">
         <Info className="mt-0.5 size-3.5 shrink-0" />
         {copy.disclaimer}
       </p>

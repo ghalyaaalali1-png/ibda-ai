@@ -39,7 +39,7 @@ function ScoreRing({ score }: { score: number }) {
       </svg>
       <div className="text-center">
         <p className="text-4xl font-semibold tracking-tight text-white">{score}</p>
-        <p className="text-[11px] text-mist/45">{t.plan.decision.viability}</p>
+        <p className="text-[11px] text-mist/55">{t.plan.decision.viability}</p>
       </div>
     </div>
   );
@@ -73,7 +73,7 @@ export function DecisionCard({ decision }: { decision: BusinessPlan["decision"] 
               {labels[decision.verdict]}
             </span>
             {/* Where this verdict sits on the scale */}
-            <ol className="flex items-center gap-1 font-mono text-[10px] text-mist/40" aria-label={t.plan.decision.scale}>
+            <ol className="flex items-center gap-1 font-mono text-[10px] text-mist/55" aria-label={t.plan.decision.scale}>
               {(Object.keys(verdicts) as Decision[]).map((d) => (
                 <li
                   key={d}

@@ -39,7 +39,7 @@ export function MetricTiles({ plan }: { plan: BusinessPlan }) {
         <p className="mt-2 text-xs text-mist/50">
           {tiles.allocated(aed(allocated), aed(plan.budget.reserve))}
         </p>
-        {plan.budget.basis && <p className="mt-1 text-xs text-mist/40">{plan.budget.basis}</p>}
+        {plan.budget.basis && <p className="mt-1 text-xs text-mist/55">{plan.budget.basis}</p>}
       </Tile>
 
       <Tile label={tiles.price} value={aedRange(pricing.min, pricing.max)}>

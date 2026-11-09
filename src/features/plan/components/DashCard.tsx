@@ -45,7 +45,7 @@ export function DashCard({
 /** Small uppercase caption used above figures. */
 export function Caption({ children }: { children: ReactNode }) {
   return (
-    <p className="text-[11px] font-medium tracking-wider text-mist/45 uppercase">
+    <p className="text-[11px] font-medium tracking-wider text-mist/55 uppercase">
       {children}
     </p>
   );

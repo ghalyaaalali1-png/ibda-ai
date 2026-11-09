@@ -52,7 +52,7 @@ export function UserMessage({
           type="button"
           onClick={onEdit}
           aria-label={editLabel}
-          className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs text-mist/45 transition-colors hover:bg-white/5 hover:text-mist focus-visible:outline-2 focus-visible:outline-brand-400 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
+          className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs text-mist/55 transition-colors hover:bg-white/5 hover:text-mist focus-visible:outline-2 focus-visible:outline-brand-400 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
         >
           <Pencil className="size-3" />
           {t.onboarding.change}

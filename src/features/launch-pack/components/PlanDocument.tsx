@@ -121,7 +121,7 @@ export function PlanDocument() {
   return (
     <div className="min-h-dvh bg-[#e9ebf3] py-8 print:bg-white print:py-0">
       {/* Toolbar: on screen only. */}
-      <div data-print="hide" className="mx-auto mb-6 flex max-w-[210mm] flex-wrap items-center justify-between gap-3 px-4 print:hidden">
+      <header data-print="hide" className="mx-auto mb-6 flex max-w-[210mm] flex-wrap items-center justify-between gap-3 px-4 print:hidden">
         <Link href={journey.plan} className="inline-flex items-center gap-1.5 text-sm text-[#2a2160] hover:underline">
           <ArrowLeft aria-hidden className="size-4 rtl:-scale-x-100" />
           {p.back}
@@ -137,9 +137,9 @@ export function PlanDocument() {
             {p.save}
           </button>
         </div>
-      </div>
+      </header>
 
-      <article className="mx-auto max-w-[210mm] bg-white px-[14mm] py-[16mm] text-neutral-900 shadow-xl print:max-w-none print:p-0 print:shadow-none">
+      <main className="mx-auto max-w-[210mm] bg-white px-[14mm] py-[16mm] text-neutral-900 shadow-xl print:max-w-none print:p-0 print:shadow-none">
         {/* Cover */}
         <header className="flex flex-col items-start gap-6 border-b border-neutral-200 pb-10 print:border-0 print:pt-[55mm]">
           <div className="flex items-center gap-3">
@@ -434,7 +434,7 @@ export function PlanDocument() {
         )}
 
         <p className="mt-10 border-t border-neutral-200 pt-4 text-[11.5px] leading-relaxed text-neutral-500">{t.launchPack.disclaimer}</p>
-      </article>
+      </main>
     </div>
   );
 }

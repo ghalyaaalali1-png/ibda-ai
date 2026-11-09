@@ -17,7 +17,7 @@ import {
 import type { AccountDetails } from "../server";
 
 const inputClass =
-  "mt-1.5 block h-11 w-full rounded-xl border border-white/10 bg-white/[0.03] px-3.5 text-[15px] text-white placeholder:text-mist/30 transition-colors focus:border-brand-400/60 focus:bg-white/[0.05] focus:outline-none";
+  "mt-1.5 block h-11 w-full rounded-xl border border-white/10 bg-white/[0.03] px-3.5 text-[15px] text-white placeholder:text-mist/50 transition-colors focus:border-brand-400/60 focus:bg-white/[0.05] focus:outline-none";
 
 function Card({
   icon: Icon,
@@ -101,7 +101,7 @@ function NameForm({ account }: { account: AccountDetails }) {
         >
           {account.email}
         </p>
-        <p className="mt-1.5 text-xs font-normal text-mist/45">
+        <p className="mt-1.5 text-xs font-normal text-mist/55">
           {copy.emailNote}
         </p>
       </div>
@@ -151,7 +151,7 @@ function PasswordForm({ account }: { account: AccountDetails }) {
       </label>
       <label className="text-sm font-medium text-mist/80">
         {t.auth.reset.newPassword}
-        <span className="font-normal text-mist/40">
+        <span className="font-normal text-mist/55">
           {" "}
           · {t.auth.fields.passwordHint}
         </span>

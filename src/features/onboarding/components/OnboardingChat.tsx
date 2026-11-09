@@ -75,6 +75,7 @@ export function OnboardingChat() {
       />
 
       <main className="mx-auto w-full max-w-2xl px-5 pt-12 pb-32 sm:px-8 sm:pt-20">
+        <h1 className="sr-only">{t.meta.pages.start.title}</h1>
         <div role="log" aria-live="polite" className="flex flex-col gap-8">
           <AgentMessage>
             <p className="text-lg leading-relaxed text-white sm:text-xl">{t.onboarding.greeting}</p>

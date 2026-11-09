@@ -39,7 +39,7 @@ export function ActivityPanel({
     <aside className="glass flex flex-col overflow-hidden rounded-3xl lg:max-h-[calc(100dvh-8rem)]">
       <div className="flex items-center justify-between border-b border-white/[0.06] px-5 py-4">
         <h2 className="text-sm font-semibold text-white">{t.analysis.activityTitle}</h2>
-        <span className="font-mono text-[11px] text-mist/45">
+        <span className="font-mono text-[11px] text-mist/55">
           {t.analysis.activityCounts(log.length, actions)}
         </span>
       </div>
@@ -65,7 +65,7 @@ export function ActivityPanel({
                 />
                 {t.analysis.actions[entry.action] ?? entry.action}
               </span>
-              <span className="font-mono text-[11px] text-mist/35">
+              <span className="font-mono text-[11px] text-mist/55">
                 {formatTime(entry.atMs)}
               </span>
             </div>
@@ -79,7 +79,7 @@ export function ActivityPanel({
         )}
       </ol>
 
-      <p className="flex items-center gap-2 border-t border-white/[0.06] px-5 py-3 text-[11px] text-mist/40">
+      <p className="flex items-center gap-2 border-t border-white/[0.06] px-5 py-3 text-[11px] text-mist/55">
         <Info className="size-3.5 shrink-0" />
         {live ? t.analysis.footerLive : t.analysis.footerDemo}
       </p>

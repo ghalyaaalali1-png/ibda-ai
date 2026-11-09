@@ -65,6 +65,14 @@ body {
   color: var(--color-mist);
 }
 
+/* A clear keyboard-focus outline on every link and control (components may set their own). */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--color-brand-400);
+    outline-offset: 2px;
+  }
+}
+
 /*
  * Arabic interface: IBM Plex Sans Arabic (its variable is set on <html>, so it
  * resolves here), and no letter-spacing (it breaks joined Arabic letters).

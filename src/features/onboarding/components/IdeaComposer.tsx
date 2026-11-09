@@ -51,10 +51,10 @@ export function IdeaComposer({ onSubmit }: { onSubmit: (idea: string) => void })
           autoFocus
           dir="auto"
           placeholder={t.onboarding.composerPlaceholder}
-          className="block w-full resize-none bg-transparent px-4 pt-3 pb-14 text-base leading-relaxed text-white placeholder:text-mist/35 focus:outline-none sm:text-lg"
+          className="block w-full resize-none bg-transparent px-4 pt-3 pb-14 text-base leading-relaxed text-white placeholder:text-mist/50 focus:outline-none sm:text-lg"
         />
         <div className="absolute inset-x-4 bottom-3 flex items-center justify-between gap-3">
-          <span className="hidden text-xs text-mist/35 sm:block">{t.onboarding.composerHint}</span>
+          <span className="hidden text-xs text-mist/55 sm:block">{t.onboarding.composerHint}</span>
           <button
             type="submit"
             disabled={!canSend}
@@ -72,7 +72,7 @@ export function IdeaComposer({ onSubmit }: { onSubmit: (idea: string) => void })
       </form>
 
       <div className="mt-5">
-        <p className="text-xs font-medium tracking-wide text-mist/40 uppercase">{t.onboarding.tryDemo}</p>
+        <p className="text-xs font-medium tracking-wide text-mist/55 uppercase">{t.onboarding.tryDemo}</p>
         <button
           type="button"
           onClick={fillDemo}

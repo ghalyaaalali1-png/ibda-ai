@@ -42,7 +42,7 @@ export function NextActionsCard({ plan }: { plan: BusinessPlan }) {
               </div>
               <p className="mt-1 text-[13px] text-mist/50">{action.detail}</p>
             </div>
-            <span className="shrink-0 pt-0.5 font-mono text-[11px] text-mist/40">{action.timing}</span>
+            <span className="shrink-0 pt-0.5 font-mono text-[11px] text-mist/55">{action.timing}</span>
           </li>
         ))}
       </ol>
