@@ -25,40 +25,43 @@ function Section({ title, children, newPage = false }: { title: string; children
 }
 
 function Table({ head, rows, foot }: { head: string[]; rows: React.ReactNode[][]; foot?: React.ReactNode[] }) {
+  // On a narrow screen a wide table scrolls sideways instead of being cut off; print is unaffected.
   return (
-    <table className="w-full border-collapse text-[13px]">
-      <thead>
-        <tr className="bg-[#f1effc] text-start text-[#2a2160]">
-          {head.map((h, i) => (
-            <th key={i} className="border border-neutral-200 px-2.5 py-1.5 text-start font-semibold">
-              {h}
-            </th>
+    <div className="overflow-x-auto print:overflow-visible">
+      <table className="w-full border-collapse text-[13px]">
+        <thead>
+          <tr className="bg-[#f1effc] text-start text-[#2a2160]">
+            {head.map((h, i) => (
+              <th key={i} className="border border-neutral-200 px-2.5 py-1.5 text-start font-semibold">
+                {h}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, r) => (
+            <tr key={r} className="break-inside-avoid">
+              {row.map((cell, c) => (
+                <td key={c} className="border border-neutral-200 px-2.5 py-1.5 align-top">
+                  {cell}
+                </td>
+              ))}
+            </tr>
           ))}
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((row, r) => (
-          <tr key={r} className="break-inside-avoid">
-            {row.map((cell, c) => (
-              <td key={c} className="border border-neutral-200 px-2.5 py-1.5 align-top">
-                {cell}
-              </td>
-            ))}
-          </tr>
-        ))}
-      </tbody>
-      {foot && (
-        <tfoot>
-          <tr className="font-semibold">
-            {foot.map((cell, c) => (
-              <td key={c} className="border border-neutral-200 px-2.5 py-1.5">
-                {cell}
-              </td>
-            ))}
-          </tr>
-        </tfoot>
-      )}
-    </table>
+        </tbody>
+        {foot && (
+          <tfoot>
+            <tr className="font-semibold">
+              {foot.map((cell, c) => (
+                <td key={c} className="border border-neutral-200 px-2.5 py-1.5">
+                  {cell}
+                </td>
+              ))}
+            </tr>
+          </tfoot>
+        )}
+      </table>
+    </div>
   );
 }
 

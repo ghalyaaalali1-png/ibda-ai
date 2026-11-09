@@ -240,7 +240,38 @@ export function LaunchPackView({
           icon={Truck}
           action={<span className="text-xs text-mist/50">{supplierLabel}</span>}
         >
-          <div className="-mx-5 overflow-x-auto px-5 sm:mx-0 sm:px-0">
+          {/* Phones: one card per supplier, so nothing hides off-screen. */}
+          <ul className="space-y-3 sm:hidden">
+            {pack.shortlist.rows.map((r) => (
+              <li
+                key={r.supplier + r.category}
+                className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-3.5 text-[13px]"
+              >
+                <p className="text-[11px] font-medium tracking-wider text-mist/45 uppercase">{r.category}</p>
+                <div className="mt-1 flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-medium text-white">{r.supplier}</p>
+                    <p className="text-xs text-mist/45">{r.location}</p>
+                  </div>
+                  <div className="shrink-0 text-end">
+                    <p className="font-medium whitespace-nowrap text-white">{aed(r.estimate)}</p>
+                    <p className="text-xs text-mist/45">{r.basis}</p>
+                  </div>
+                </div>
+                <dl className="mt-2.5 grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <dt className="text-mist/45">{copy.suppliers.minimum}</dt>
+                    <dd className="text-mist/75">{r.moq}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-mist/45">{copy.suppliers.leadTime}</dt>
+                    <dd className="text-mist/75">{r.leadTime}</dd>
+                  </div>
+                </dl>
+              </li>
+            ))}
+          </ul>
+          <div className="hidden overflow-x-auto sm:block">
             <table className="w-full min-w-[640px] text-start text-[13px]">
               <caption className="sr-only">{copy.suppliers.caption}</caption>
               <thead>
