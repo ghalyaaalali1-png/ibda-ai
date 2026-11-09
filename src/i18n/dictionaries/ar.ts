@@ -23,6 +23,17 @@ export const ar: Dictionary = {
     list,
   },
 
+  statusPage: {
+    notFoundCode: "404",
+    notFoundTitle: "لم نجد هذه الصفحة",
+    notFoundBody: "قد يكون الرابط مكتوباً بشكل خاطئ، أو نُقلت الصفحة. إذا كانت أحد مشاريعك، تأكّد من تسجيل الدخول بالحساب المالك لها.",
+    errorTitle: "حدث خطأ ما",
+    errorBody: "واجهت هذه الصفحة مشكلة. مشاريعك المحفوظة في أمان. حاول مجدداً، أو عُد إلى الصفحة الرئيسية.",
+    tryAgain: "حاول مجدداً",
+    home: "الذهاب إلى الصفحة الرئيسية",
+    myProjects: "مشاريعي",
+  },
+
   common: {
     brand: "KHITTA",
     brandArabic: "خِطّة",

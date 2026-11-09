@@ -24,6 +24,17 @@ export const en = {
       items.length <= 1 ? items.join("") : `${items.slice(0, -1).join(", ")} and ${items.at(-1)}`,
   },
 
+  statusPage: {
+    notFoundCode: "404",
+    notFoundTitle: "We couldn't find that page",
+    notFoundBody: "The link may be mistyped, or the page may have moved. If it's one of your projects, make sure you're signed in to the account that owns it.",
+    errorTitle: "Something went wrong",
+    errorBody: "This page ran into a problem. Your saved projects are safe. Try again, or go back to the home page.",
+    tryAgain: "Try again",
+    home: "Go to home page",
+    myProjects: "My projects",
+  },
+
   common: {
     brand: "KHITTA",
     brandArabic: "خِطّة",
