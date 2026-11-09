@@ -28,9 +28,25 @@ const plexArabic = IBM_Plex_Sans_Arabic({
   weight: ["400", "500", "600", "700"],
 });
 
+/** The public web address, for full links in shared previews (set NEXT_PUBLIC_SITE_URL when hosted). */
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getServerDictionary();
-  return { title: t.meta.title, description: t.meta.description };
+  // The preview image itself comes from opengraph-image.png / twitter-image.png in this folder.
+  return {
+    metadataBase: new URL(siteUrl),
+    title: t.meta.title,
+    description: t.meta.description,
+    openGraph: {
+      type: "website",
+      siteName: "KHITTA | خِطّة",
+      title: t.meta.title,
+      description: t.meta.description,
+      locale: t.locale === "ar" ? "ar_AE" : "en_AE",
+    },
+    twitter: { card: "summary_large_image", title: t.meta.title, description: t.meta.description },
+  };
 }
 
 export default async function RootLayout({
