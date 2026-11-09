@@ -1,11 +1,11 @@
-import { ArrowRight, FolderOpen, Loader2, LogOut, Plus } from "lucide-react";
+import { ArrowRight, FolderOpen, Loader2, Plus } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { routes } from "@/config/site";
 import { ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
-import { logOut } from "@/features/auth/actions";
+import { SignedInActions } from "@/features/account/components/SignedInActions";
 import { AuthHeader } from "@/features/auth/components/AuthHeader";
 import { currentUser } from "@/features/auth/session";
 import { profileValue } from "@/features/launch-profile/profile";
@@ -95,19 +95,7 @@ export default async function ProjectsPage() {
 
   return (
     <>
-      <AuthHeader
-        actions={
-          <form action={logOut}>
-            <button
-              type="submit"
-              className="inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-sm text-mist/60 transition-colors hover:bg-white/5 hover:text-white"
-            >
-              <LogOut aria-hidden className="size-3.5 rtl:-scale-x-100" />
-              {t.auth.logOut}
-            </button>
-          </form>
-        }
-      />
+      <AuthHeader actions={<SignedInActions page="projects" />} />
       <main>
         <Container className="py-12 sm:py-16">
           <div className="flex flex-wrap items-end justify-between gap-4">

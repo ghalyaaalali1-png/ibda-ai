@@ -19,6 +19,7 @@ export const routes = {
   forgotPassword: "/forgot-password",
   resetPassword: "/reset-password",
   projects: "/projects",
+  account: "/account",
   privacy: "/privacy",
   terms: "/terms",
   authCallback: "/auth/callback",
