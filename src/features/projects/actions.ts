@@ -118,3 +118,18 @@ export async function saveGuestPlan(input: unknown): Promise<SaveProjectResult> 
     return { status: "failed" };
   }
 }
+
+/**
+ * Turns the read-only share link on (a new random code) or off (the old
+ * link stops working). Returns the code while sharing is on.
+ */
+export async function setSharing(id: string, on: boolean): Promise<{ ok: boolean; token: string | null }> {
+  if (!isProjectId(id) || !(await currentUser())) return { ok: false, token: null };
+  const supabase = await createSupabaseServerClient();
+  const token = on ? crypto.randomUUID() : null;
+  // Only a finished plan can be shared; turning a link off always works.
+  let query = supabase.from("projects").update({ share_token: token }).eq("id", id);
+  if (on) query = query.eq("status", "ready");
+  const { data } = await query.select("share_token");
+  return data?.length ? { ok: true, token: data[0].share_token as string | null } : { ok: false, token: null };
+}

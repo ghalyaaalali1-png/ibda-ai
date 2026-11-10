@@ -21,6 +21,8 @@ export type ProjectView = {
   state: "notGenerated" | "ready" | "needsTranslation";
   assessment: InitialAssessment | null;
   updatedAt: string;
+  /** The read-only share link's code while sharing is on (owners only; never in a shared view). */
+  shareToken: string | null;
 };
 
 /** One card on My projects. */

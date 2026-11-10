@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Download, Loader2 } from "lucide-react";
+import { ArrowLeft, Download, Eye, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef } from "react";
 import { KhittaMark } from "@/components/ui/KhittaMark";
@@ -71,7 +71,7 @@ function Table({ head, rows, foot }: { head: string[]; rows: React.ReactNode[][]
  * It opens the print window by itself; choosing "Save as PDF" there saves it.
  * The browser draws it, so Arabic shapes and reads right to left correctly.
  */
-export function PlanDocument() {
+export function PlanDocument({ shared = false }: { shared?: boolean } = {}) {
   const { t, locale } = useI18n();
   const view = useAssessmentView();
   const journey = useJourneyRoutes();
@@ -91,10 +91,11 @@ export function PlanDocument() {
     if (!ready || printed.current) return;
     printed.current = true;
     document.title = `${business || t.common.brand} — ${p.docTitle}`;
-    if (new URLSearchParams(window.location.search).has("preview")) return;
+    // A shared plan, or ?preview, only shows the document.
+    if (shared || new URLSearchParams(window.location.search).has("preview")) return;
     const timer = setTimeout(() => window.print(), 600);
     return () => clearTimeout(timer);
-  }, [ready, business, p.docTitle, t.common.brand]);
+  }, [ready, business, p.docTitle, t.common.brand, shared]);
 
   if (view.kind === "checking" || view.kind === "translating") {
     return (
@@ -122,10 +123,17 @@ export function PlanDocument() {
     <div className="min-h-dvh bg-[#e9ebf3] py-8 print:bg-white print:py-0">
       {/* Toolbar: on screen only. */}
       <header data-print="hide" className="mx-auto mb-6 flex max-w-[210mm] flex-wrap items-center justify-between gap-3 px-4 print:hidden">
-        <Link href={journey.plan} className="inline-flex items-center gap-1.5 text-sm text-[#2a2160] hover:underline">
-          <ArrowLeft aria-hidden className="size-4 rtl:-scale-x-100" />
-          {p.back}
-        </Link>
+        {shared ? (
+          <p className="inline-flex items-center gap-1.5 rounded-full bg-[#ece9fc] px-3 py-1 text-sm font-medium text-[#2a2160]">
+            <Eye aria-hidden className="size-4" />
+            {t.share.badge}
+          </p>
+        ) : (
+          <Link href={journey.plan} className="inline-flex items-center gap-1.5 text-sm text-[#2a2160] hover:underline">
+            <ArrowLeft aria-hidden className="size-4 rtl:-scale-x-100" />
+            {p.back}
+          </Link>
+        )}
         <div className="flex items-center gap-3">
           <span className="text-xs text-neutral-600">{p.toolbarHint}</span>
           <button
@@ -435,6 +443,14 @@ export function PlanDocument() {
 
         <p className="mt-10 border-t border-neutral-200 pt-4 text-[11.5px] leading-relaxed text-neutral-500">{t.launchPack.disclaimer}</p>
       </main>
+      {shared && (
+        <footer data-print="hide" className="mx-auto mt-6 flex max-w-[210mm] flex-wrap items-center justify-between gap-3 px-4 text-sm text-neutral-600 print:hidden">
+          <span>{t.share.viewerNote}</span>
+          <Link href="/" className="font-medium text-[#2a2160] underline underline-offset-4">
+            {t.share.makeYourOwn}
+          </Link>
+        </footer>
+      )}
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { routes } from "@/config/site";
 import { Container } from "@/components/ui/Container";
 import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
+import { ShareButton } from "./components/ShareButton";
 import { useJourneyRoutes, useProject } from "./ProjectProvider";
 
 /**
@@ -94,6 +95,7 @@ export function JourneyTabs() {
               <Pencil aria-hidden className="size-3.5" />
               {t.edit.tab}
             </Link>
+            <ShareButton />
           </>
         )}
       </Container>

@@ -24,6 +24,27 @@ export const en = {
       items.length <= 1 ? items.join("") : `${items.slice(0, -1).join(", ")} and ${items.at(-1)}`,
   },
 
+  share: {
+    button: "Share",
+    title: "Share this plan",
+    offBody:
+      "Create a read-only link to this plan. Anyone with the link can view it and save it as a PDF, but they can't change anything or see the rest of your account.",
+    create: "Create link",
+    working: "Please wait…",
+    onBody: "Anyone with this link can view this plan, read-only. It always shows the latest version.",
+    linkLabel: "Share link",
+    copy: "Copy link",
+    copied: "Copied",
+    turnOff: "Turn off link",
+    turnOffHint: "Turning it off stops the link working straight away. You can create a new one at any time.",
+    close: "Close",
+    failed: "That didn't work. Please try again.",
+    notReady: "You can share this plan once it's ready.",
+    badge: "Shared plan · read-only",
+    viewerNote: "This plan was shared with you. Prepared with KHITTA.",
+    makeYourOwn: "Make your own plan",
+  },
+
   statusPage: {
     notFoundCode: "404",
     notFoundTitle: "We couldn't find that page",

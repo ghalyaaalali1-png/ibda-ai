@@ -25,6 +25,7 @@ type ProjectRow = {
   status: ProjectStatus;
   current_core_version_id: string | null;
   updated_at: string;
+  share_token: string | null;
 };
 
 export type CoreVersionRow = { id: string; idea: string; answers: LaunchProfile };
@@ -82,7 +83,7 @@ export async function loadProject(supabase: Db, id: string) {
   if (!isProjectId(id)) return null;
   const { data: project } = await supabase
     .from("projects")
-    .select("id, name, name_translations, status, current_core_version_id, updated_at")
+    .select("id, name, name_translations, status, current_core_version_id, updated_at, share_token")
     .eq("id", id)
     .maybeSingle<ProjectRow>();
   if (!project?.current_core_version_id) return null;
@@ -156,6 +157,7 @@ export async function projectView(id: string, locale: Locale): Promise<ProjectVi
     state: !revisions ? "notGenerated" : assessment && nameReady ? "ready" : "needsTranslation",
     assessment: assessment && nameReady ? assessment : null,
     updatedAt: project.updated_at,
+    shareToken: project.share_token,
   };
 }
 
