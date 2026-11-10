@@ -106,7 +106,7 @@
 <!-- COVER -->
 <section class="page cover">
   <div class="top">
-    <span class="pill">Operating and Build Guide · First edition</span>
+    <span class="pill">Operating and Build Guide · Second edition</span>
     <div class="logo">
       <svg viewBox="0 0 112 112" aria-hidden="true">
         <defs>
@@ -255,10 +255,12 @@
     <tr><th>Feature</th><th>What it does</th></tr>
     <tr><td class="k">Sign in</td><td>Email and password (with email confirmation), or Continue with Google. Forgot password sends a reset link.</td></tr>
     <tr><td class="k">My projects</td><td>Every business with its name, emirate, budget, last updated and status. Rename or delete (with confirmation).</td></tr>
-    <tr><td class="k">Tab bar</td><td>One bar on every page of a business: My projects · Workspace · Plan · Suppliers · Marketing · Launch Pack · Download PDF · Edit details.</td></tr>
+    <tr><td class="k">Tab bar</td><td>One bar on every page of a business: My projects · Workspace · Plan · Suppliers · Marketing · Launch Pack · Download PDF · Edit details · Share.</td></tr>
     <tr><td class="k">Edit details</td><td>Change the idea or any answer. KHITTA shows which sections will update and which stay, then re-creates only those.</td></tr>
     <tr><td class="k">History</td><td>Each change is a new version. Any earlier version can be restored exactly as it was — no AI cost.</td></tr>
     <tr><td class="k">Download PDF</td><td>The whole plan as a clean A4 document with a cover, in the current language.</td></tr>
+    <tr><td class="k">Share</td><td>A read-only link to the full plan for a partner or investor. Always the latest version; the owner can turn it off at any time.</td></tr>
+    <tr><td class="k">Account settings</td><td>Change name or password, or permanently delete the account with everything in it.</td></tr>
   </table>
   <h3>What an edit updates</h3>
   <table>
@@ -299,7 +301,7 @@
   <table>
     <tr><th>Table</th><th>What's in it</th></tr>
     <tr><td class="k mono">profiles</td><td>One per user: display name, preferred language.</td></tr>
-    <tr><td class="k mono">projects</td><td>A user's businesses: name (and its translation), status, current version, last updated.</td></tr>
+    <tr><td class="k mono">projects</td><td>A user's businesses: name (and its translation), status, current version, last updated, and the share-link code while sharing is on.</td></tr>
     <tr><td class="k mono">core_versions</td><td>Every version of the answers: the idea, the answers as given, and the same as typed codes and numbers.</td></tr>
     <tr><td class="k mono">generation_runs</td><td>Each time Claude worked on a project: language, sections, success or failure.</td></tr>
     <tr><td class="k mono">module_revisions</td><td>Every saved version of every plan section — never edited, only added to.</td></tr>
@@ -314,12 +316,13 @@
 │   ├── plan · suppliers · marketing · launch-pack/   <span class="c"># the result screens and the PDF</span>
 │   ├── plan-modules/       <span class="c"># the 8 sections and what depends on what</span>
 │   ├── projects/           <span class="c"># My projects, editing, history, restore, limits</span>
-│   ├── auth/               <span class="c"># log in, sign up, Google, password reset</span>
+│   ├── auth/ · account/    <span class="c"># log in, sign up, Google, password reset, account settings</span>
+│   ├── legal/              <span class="c"># privacy policy and terms of use, in both languages</span>
 │   └── demo/               <span class="c"># the abaya demo in English and Arabic</span>
 ├── src/i18n/               <span class="c"># English and Arabic dictionaries</span>
 ├── src/lib/server/         <span class="c"># Claude instructions, generation, translation, AI limits</span>
 ├── src/lib/supabase/       <span class="c"># connection to accounts and the database</span>
-├── supabase/migrations/    <span class="c"># database tables and security rules (3 files, in order)</span>
+├── supabase/migrations/    <span class="c"># database tables and security rules (5 files, in order)</span>
 ├── supabase/email-templates/  <span class="c"># branded sign-up and reset emails</span>
 └── docs/khitta-v2/         <span class="c"># decisions record and this guide</span></div>
   <div class="footer"><span class="brand">KHITTA</span><span>Operating and Build Guide</span><span>9</span></div>
@@ -332,9 +335,10 @@
   <p class="lead">These aren't policies on paper — each is enforced by the database or the server, whatever the AI says.</p>
   <table>
     <tr><th>Rule</th><th>How it's enforced</th></tr>
-    <tr><td class="k">Each user sees only their own data</td><td>Row Level Security on every table; a project link opened by anyone else shows "not found". Tested with 33 automated checks.</td></tr>
+    <tr><td class="k">Each user sees only their own data</td><td>Row Level Security on every table; a project link opened by anyone else shows "not found". Tested with 60 automated database checks.</td></tr>
     <tr><td class="k">History can't be rewritten</td><td>Saved versions of answers and plan sections can only be added, never changed.</td></tr>
-    <tr><td class="k">Visitors without an account</td><td>Get no access to any table.</td></tr>
+    <tr><td class="k">Visitors without an account</td><td>Get no access to any table — only to one shared plan, through its exact link, and only while the owner keeps sharing on.</td></tr>
+    <tr><td class="k">Deleting an account</td><td>Removes only that person's own account and everything in it, never anyone else's.</td></tr>
     <tr><td class="k">Keys never reach the browser</td><td>The Claude key and secrets live only in server settings (<span class="code">.env.local</span>, never committed).</td></tr>
     <tr><td class="k">AI cost protection</td><td>Hourly limits per person: 6 plans without an account, 10 plans or edits with one, 30 translations, 40 captions.</td></tr>
     <tr><td class="k">Safe sign-in links</td><td>After signing in, KHITTA only ever redirects inside KHITTA.</td></tr>
@@ -356,7 +360,8 @@
   <div class="phase"><div class="num">4</div><div class="body"><span class="tag">Done</span><b>Edit with history</b><p>Change any answer; only affected sections update; every version kept and restorable.</p></div></div>
   <div class="phase"><div class="num">5</div><div class="body"><span class="tag">Done</span><b>Logo, PDF and a simpler setup</b><p>The K mark everywhere; Download PDF; one sentence and at most two questions.</p></div></div>
   <div class="phase"><div class="num">6</div><div class="body"><span class="tag">Done</span><b>New look and safety</b><p>Calmer colours and fonts; password reset; AI limits; rename/delete; keep a plan made before sign-up; branded emails.</p></div></div>
-  <div class="phase"><div class="num">7</div><div class="body"><b>Launch</b><p>Domain, hosting, email sending, Google sign-in publishing and legal pages — see the last page.</p></div></div>
+  <div class="phase"><div class="num">7</div><div class="body"><span class="tag">Done</span><b>Ready for real users</b><p>Phone fixes; privacy and terms; account settings; error pages; link previews; accessibility; share a plan.</p></div></div>
+  <div class="phase"><div class="num">8</div><div class="body"><b>Launch</b><p>Domain, hosting, email sending, Google sign-in publishing and a legal review — see the last page.</p></div></div>
   <div class="note green"><b>How we knew each phase was done:</b> automated tests (86), type and lint checks, a production build, and a check in the browser in both languages before every commit.</div>
   <div class="footer"><span class="brand">KHITTA</span><span>Operating and Build Guide</span><span>11</span></div>
 </section>
@@ -367,8 +372,8 @@
   <h1 class="title">What you need to run KHITTA</h1>
   <h3>Run it on your Mac</h3>
   <ol class="steps">
-    <li><b>Settings file.</b> <span><span class="code">.env.local</span> holds three values: <span class="code">ANTHROPIC_API_KEY</span>, <span class="code">NEXT_PUBLIC_SUPABASE_URL</span> and <span class="code">NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY</span>. It is never committed.</span></li>
-    <li><b>Database.</b> <span>Run the three files in <span class="code">supabase/migrations</span>, in order, in Supabase's SQL Editor (already done for the current project).</span></li>
+    <li><b>Settings file.</b> <span><span class="code">.env.local</span> holds <span class="code">ANTHROPIC_API_KEY</span>, <span class="code">NEXT_PUBLIC_SUPABASE_URL</span> and <span class="code">NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY</span> (plus <span class="code">NEXT_PUBLIC_SITE_URL</span> once hosted). It is never committed.</span></li>
+    <li><b>Database.</b> <span>Run the five files in <span class="code">supabase/migrations</span>, in order, in Supabase's SQL Editor (already done for the current project).</span></li>
     <li><b>Start.</b> <span><span class="code">npm install</span>, then <span class="code">npm run dev</span>, and open <span class="code">localhost:3000</span>.</span></li>
     <li><b>Check.</b> <span><span class="code">npm test</span>, <span class="code">npm run lint</span> and <span class="code">npm run build</span> should all pass before any change is saved.</span></li>
   </ol>
@@ -391,11 +396,11 @@
   <p class="lead">Everything needed to move KHITTA from your Mac to real users:</p>
   <ul class="check">
     <li><b>Reserve the domain:</b> <span>khitta.ae through an aeDA-accredited registrar.</span></li>
-    <li><b>Hosting:</b> <span>deploy the app; add the three settings in the host's secret settings (never in code).</span></li>
+    <li><b>Hosting:</b> <span>deploy the app; add the settings in the host's secret settings (never in code), including <span class="code">NEXT_PUBLIC_SITE_URL</span> for link previews.</span></li>
     <li><b>Supabase addresses:</b> <span>add the real web address to Site URL and Redirect URLs.</span></li>
     <li><b>Google sign-in:</b> <span>add the real address in Google Cloud, then publish the app (it is "Testing" today).</span></li>
     <li><b>Email sending:</b> <span>connect a sending service (custom SMTP) and paste the branded templates from <span class="code">supabase/email-templates</span>.</span></li>
-    <li><b>Legal pages:</b> <span>privacy policy and terms of use, in Arabic and English.</span></li>
+    <li><b>Legal review:</b> <span>have a UAE lawyer review the privacy policy and terms, and make sure hello@khitta.ae receives mail.</span></li>
     <li><b>Spending alerts:</b> <span>on the Anthropic and Supabase accounts.</span></li>
     <li><b>Backups:</b> <span>confirm Supabase's backup schedule for the plan you choose.</span></li>
     <li><b>Final test:</b> <span>a full journey in both languages, on phone and desktop, on the live address.</span></li>
