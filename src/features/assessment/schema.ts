@@ -161,43 +161,45 @@ export type PlanInputs = z.infer<typeof planFinancialsSchema> & z.infer<typeof p
  * trader"), never named businesses — no research has been done yet (Agent
  * Guide Step 2). Kept flat to stay within the structured-output grammar limit.
  */
+const supplierCategorySchema = z.object({
+  label: z.string().describe('Category name, e.g. "Fresh produce"'),
+  summary: z.string().describe("One sentence on what this business needs from it"),
+  rfqNeed: z.string().describe('What the enquiry asks for, completing "We are looking for …", with realistic first-order quantities'),
+  rfqQuestions: z.array(z.string()).describe("4 questions to ask suppliers in this category"),
+});
+
+const supplierOptionSchema = z.object({
+  category: z.string().describe("Exactly one of the category labels above"),
+  name: z.string().describe('A supplier TYPE, e.g. "Wholesale produce trader" — never a business name'),
+  location: z.string().describe('Where to find this type in the UAE, as a general area or channel, e.g. "Al Aweer market area · Dubai" or "Online B2B marketplaces"'),
+  overseas: z.boolean(),
+  offering: z.string().describe("Max ~8 words"),
+  priceMinAed: z.number(),
+  priceMaxAed: z.number(),
+  priceUnit: z.string().describe('e.g. "per kg", "per unit", "per month"'),
+  moqValue: z.number().describe("Typical minimum order; 0 if none"),
+  moqUnit: z.string(),
+  leadMinDays: z.number(),
+  leadMaxDays: z.number(),
+  bestFor: z.string().describe("Max ~8 words"),
+  matchScore: z.number().describe("0-100 fit with this business's budget, quantities and positioning"),
+  matchReasons: z.array(z.string()).describe("1-2 short reasons"),
+  watchOut: z.string().describe('One short caution, or "" if none'),
+  recommended: z.boolean().describe("true for exactly one option per category"),
+  firstOrderEstimateAed: z.number().describe("Estimated cost of the first order from this option"),
+  firstOrderBasis: z.string().describe('What that estimate covers, max ~6 words, e.g. "2 weeks of ingredients"'),
+});
+
 export const suppliersSchema = z.object({
   intro: z.string().describe("One sentence in KHITTA's voice on how it organised sourcing for this business"),
-  categories: z
-    .array(
-      z.object({
-        label: z.string().describe('Category name, e.g. "Fresh produce"'),
-        summary: z.string().describe("One sentence on what this business needs from it"),
-        rfqNeed: z.string().describe('What the enquiry asks for, completing "We are looking for …", with realistic first-order quantities'),
-        rfqQuestions: z.array(z.string()).describe("4 questions to ask suppliers in this category"),
-      }),
-    )
-    .describe("3-4 supplier categories this business needs"),
-  options: z
-    .array(
-      z.object({
-        category: z.string().describe("Exactly one of the category labels above"),
-        name: z.string().describe('A supplier TYPE, e.g. "Wholesale produce trader" — never a business name'),
-        location: z.string().describe('Where to find this type in the UAE, as a general area or channel, e.g. "Al Aweer market area · Dubai" or "Online B2B marketplaces"'),
-        overseas: z.boolean(),
-        offering: z.string().describe("Max ~8 words"),
-        priceMinAed: z.number(),
-        priceMaxAed: z.number(),
-        priceUnit: z.string().describe('e.g. "per kg", "per unit", "per month"'),
-        moqValue: z.number().describe("Typical minimum order; 0 if none"),
-        moqUnit: z.string(),
-        leadMinDays: z.number(),
-        leadMaxDays: z.number(),
-        bestFor: z.string().describe("Max ~8 words"),
-        matchScore: z.number().describe("0-100 fit with this business's budget, quantities and positioning"),
-        matchReasons: z.array(z.string()).describe("1-2 short reasons"),
-        watchOut: z.string().describe('One short caution, or "" if none'),
-        recommended: z.boolean().describe("true for exactly one option per category"),
-        firstOrderEstimateAed: z.number().describe("Estimated cost of the first order from this option"),
-        firstOrderBasis: z.string().describe('What that estimate covers, max ~6 words, e.g. "2 weeks of ingredients"'),
-      }),
-    )
-    .describe("3 options per category"),
+  categories: z.array(supplierCategorySchema).describe("3-4 supplier categories this business needs"),
+  options: z.array(supplierOptionSchema).describe("3 options per category"),
+});
+
+/** One supplier category the founder asked for by name, with its options (added to the Suppliers screen). */
+export const supplierItemSchema = z.object({
+  category: supplierCategorySchema,
+  options: z.array(supplierOptionSchema).describe("3 options for this category; category is its label"),
 });
 
 /* Marketing screen inputs (Agent Guide Step 4), split in two to stay within the grammar limit. */

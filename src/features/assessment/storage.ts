@@ -16,6 +16,7 @@ import { useI18n } from "@/i18n/I18nProvider";
 import { useProject } from "@/features/projects/ProjectProvider";
 import type { ProjectView } from "@/features/projects/types";
 import { useRouter } from "next/navigation";
+import { withoutSupplierCategory, withSupplierItem, type SupplierItemOutput, type SuppliersOutput } from "@/features/suppliers/items";
 import type { AssessmentRequest, InitialAssessment } from "./schema";
 
 export type AssessmentState =
@@ -478,4 +479,39 @@ export function markGuestPlanHandled() {
   } catch {
     // Storage unavailable: the offer may appear again, which is harmless.
   }
+}
+
+/**
+ * The guest plan with its supplier section changed, saved in this language.
+ * Its other-language copy is dropped, to be translated again when needed.
+ */
+function saveGuestSuppliers(locale: Locale, change: (s: SuppliersOutput) => SuppliersOutput) {
+  const input = currentAssessmentInput();
+  const stored = readStored();
+  const assessment = stored && stored.key === keyFor(input) ? inLocale(stored, locale) : null;
+  if (!stored || !assessment) throw new Error("Your plan isn't available in this browser tab any more.");
+  const suppliers = change(assessment.suppliers as SuppliersOutput);
+  save({ key: stored.key, locale, assessment: { ...assessment, suppliers }, businessNames: stored.businessNames });
+}
+
+/** Asks Claude for a supplier group for one more item, and adds it to the guest plan in this browser tab. */
+export async function addGuestSupplierItem(item: string, locale: Locale) {
+  const input = currentAssessmentInput();
+  const stored = readStored();
+  const current = stored ? inLocale(stored, locale) : null;
+  const existing = current?.suppliers.categories.map((c) => c.label) ?? [];
+  const reply = (await post(
+    "/api/suppliers/item",
+    { ...input, locale, item, existing },
+    "We couldn't find suppliers for that item. Please try again.",
+    "That took too long. Please try again.",
+    false,
+  )) as { item?: string; group?: SupplierItemOutput };
+  if (!reply.group || !reply.item) throw new Error("We couldn't find suppliers for that item. Please try again.");
+  saveGuestSuppliers(locale, (s) => withSupplierItem(s, reply.item!, reply.group!));
+}
+
+/** Removes a supplier group from the guest plan in this browser tab. */
+export function removeGuestSupplierGroup(label: string, locale: Locale) {
+  saveGuestSuppliers(locale, (s) => withoutSupplierCategory(s, label));
 }

@@ -6,6 +6,7 @@ import { moduleDefinitions } from "@/features/plan-modules/registry";
 import type { ModuleKey, ModuleOutputs } from "@/features/plan-modules/types";
 import { changedFields, coreInfoFromProfile, coreInfoSchema } from "@/features/project/coreInfo";
 import { latestRevisions, loadProject } from "@/features/projects/server";
+import type { SuppliersOutput } from "@/features/suppliers/items";
 import { getLocale } from "@/i18n/server";
 import { hasAnthropicKey, IBDA_MODEL } from "@/lib/server/anthropic";
 import { businessNameIn, fail, generationFailure, plainLabels } from "@/lib/server/assessmentOutput";
@@ -97,7 +98,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   try {
     // Modules not being regenerated feed the ones that read them, as saved.
     const existing = Object.fromEntries([...revisions.entries()].map(([k, r]) => [k, r.output])) as Partial<ModuleOutputs>;
-    const generated = await runModules({ idea, profile, locale }, keys, existing);
+    // Items the founder asked suppliers for by name are kept if the supplier section is rebuilt.
+    const requested = ((existing.suppliers as SuppliersOutput | undefined)?.requested ?? []).map((r) => r.item);
+    const generated = await runModules({ idea, profile, locale }, keys, existing, requested);
     const ids = Object.fromEntries(keys.map((k) => [k, crypto.randomUUID()])) as Partial<Record<ModuleKey, string>>;
     const { error: saveError } = await supabase.from("module_revisions").insert(
       keys.map((k) => ({

@@ -13,6 +13,8 @@ export const hourlyLimits = {
   assessment: 6,
   /** A full plan, or an edit, in a saved project (counted from its generation runs). */
   projectGeneration: 10,
+  /** One more supplier group for an item the founder names, without an account. */
+  supplierItem: 20,
   translation: 30,
   caption: 40,
 } as const;

@@ -1,8 +1,9 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Info, Megaphone, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Info, Loader2, Megaphone, Sparkles, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { displayError } from "@/i18n";
 import { Container } from "@/components/ui/Container";
 import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
 import { Logo } from "@/components/ui/Logo";
@@ -10,6 +11,7 @@ import { useI18n } from "@/i18n/I18nProvider";
 import { JourneyTabs } from "@/features/projects/JourneyTabs";
 import { useJourneyRoutes } from "@/features/projects/ProjectProvider";
 import type { SupplierCategory, SupplierScreenData } from "../types";
+import { AddSupplierItem, type SupplierEditor } from "./AddSupplierItem";
 import { CategoryTabs } from "./CategoryTabs";
 import { CompareTable } from "./CompareTable";
 import { RfqDrawer, type RfqStatus } from "./RfqDrawer";
@@ -21,10 +23,13 @@ const MAX_COMPARE = 4;
 export function SuppliersWorkspace({
   data,
   budget,
+  editor,
 }: {
   data: SupplierScreenData;
   /** Startup budget from the plan, for the shortlist summary. */
   budget: number;
+  /** Adding and removing supplier groups (not in the demo). */
+  editor?: SupplierEditor;
 }) {
   const { t } = useI18n();
   const journey = useJourneyRoutes();
@@ -58,6 +63,40 @@ export function SuppliersWorkspace({
     if (!rfqFor) return;
     setRfqStatus((s) => (s[rfqFor] ? s : { ...s, [rfqFor]: "drafted" }));
   }, [rfqFor]);
+
+  // Show a newly added group; if the open group was removed, show the first one.
+  const categoryCount = useRef(categories.length);
+  const [selectLabel, setSelectLabel] = useState<string | null>(null);
+  useEffect(() => {
+    const grew = categories.length > categoryCount.current;
+    categoryCount.current = categories.length;
+    const wanted = selectLabel
+      ? categories.find((c) => c.label.toLowerCase().includes(selectLabel.toLowerCase()))
+      : undefined;
+    if (wanted) {
+      setCategory(wanted.id);
+      setSelectLabel(null);
+    } else if (grew) setCategory(categories[categories.length - 1].id);
+    else if (!categories.some((c) => c.id === category) && categories[0]) setCategory(categories[0].id);
+  }, [categories, category, selectLabel]);
+
+  const [confirmRemove, setConfirmRemove] = useState(false);
+  useEffect(() => setConfirmRemove(false), [category]);
+  const [removing, setRemoving] = useState(false);
+  const [removeError, setRemoveError] = useState<string | null>(null);
+  const removeGroup = async () => {
+    if (!editor || !activeCategory) return;
+    setRemoving(true);
+    setRemoveError(null);
+    try {
+      await editor.remove(activeCategory.label);
+      setConfirmRemove(false);
+    } catch (error) {
+      setRemoveError(error instanceof Error ? displayError(t, error.message) : t.suppliers.addItem.failed);
+    } finally {
+      setRemoving(false);
+    }
+  };
 
   const rfqCounts = Object.values(rfqStatus);
   const sentCount = rfqCounts.filter((s) => s === "sent").length;
@@ -118,14 +157,59 @@ export function SuppliersWorkspace({
           }}
         />
 
+        {editor && (
+          <AddSupplierItem
+            editor={editor}
+            onAdded={(result, item) => {
+              if (result === "exists") setSelectLabel(item);
+              document.getElementById("all-suppliers")?.scrollIntoView({ behavior: "smooth" });
+            }}
+          />
+        )}
+
         {/* Browse by category */}
         <section id="all-suppliers" aria-labelledby="browse-title" className="scroll-mt-24 pt-4">
           <div className="flex flex-col gap-1">
             <h2 id="browse-title" className="text-xl font-semibold tracking-tight text-white">
               {t.suppliers.browseTitle}
             </h2>
-            <p className="text-sm text-mist/50">{activeCategory.summary}</p>
+            <p className="text-sm text-mist/55">{activeCategory.summary}</p>
           </div>
+          {editor && categories.length > 1 && (
+            <div className="mt-2">
+              {confirmRemove ? (
+                <div className="flex flex-wrap items-center gap-2 text-sm">
+                  <span className="text-mist/70">{t.suppliers.addItem.removeConfirm(activeCategory.label)}</span>
+                  <button
+                    type="button"
+                    disabled={removing}
+                    onClick={() => void removeGroup()}
+                    className="inline-flex h-8 items-center gap-1.5 rounded-full bg-red-500/90 px-3 text-sm font-medium text-white hover:bg-red-500 disabled:opacity-50"
+                  >
+                    {removing && <Loader2 aria-hidden className="size-3.5 animate-spin" />}
+                    {t.suppliers.addItem.removeYes}
+                  </button>
+                  <button type="button" onClick={() => setConfirmRemove(false)} className="h-8 rounded-full px-3 text-sm text-mist/70 hover:text-white">
+                    {t.suppliers.addItem.cancel}
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setConfirmRemove(true)}
+                  className="inline-flex items-center gap-1.5 text-xs text-mist/55 transition-colors hover:text-red-300"
+                >
+                  <Trash2 aria-hidden className="size-3.5" />
+                  {t.suppliers.addItem.remove}
+                </button>
+              )}
+              {removeError && (
+                <p role="alert" className="mt-2 text-sm text-[#fcc95a]">
+                  {removeError}
+                </p>
+              )}
+            </div>
+          )}
           <div className="mt-5">
             <CategoryTabs categories={categories} counts={counts} active={category} onChange={setCategory} />
           </div>

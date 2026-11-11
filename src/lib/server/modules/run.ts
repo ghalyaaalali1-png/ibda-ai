@@ -13,8 +13,9 @@ export function runModules(
   input: AssessmentRequest,
   keys: readonly ModuleKey[] = moduleKeys,
   existing: Partial<ModuleOutputs> = {},
+  supplierItems: string[] = [],
 ) {
-  const ctx: GenerationContext = { ...input, founderInput: founderInputFor(input) };
+  const ctx: GenerationContext = { ...input, founderInput: founderInputFor(input), supplierItems };
   const run = ((key: ModuleKey, upstream: Partial<ModuleOutputs>) =>
     (moduleGenerators[key] as (c: GenerationContext, u: Partial<ModuleOutputs>) => Promise<unknown>)(ctx, upstream)) as ModuleRunner;
   return runInDependencyOrder(keys, run, existing);

@@ -9,6 +9,7 @@ import {
   planFinancialsSchema,
   planNarrativeSchema,
   setupSchema,
+  supplierItemSchema,
   suppliersSchema,
   type AssessmentRequest,
 } from "@/features/assessment/schema";
@@ -23,10 +24,16 @@ import {
   suppliersSystemPrompt,
 } from "@/lib/server/ibda-agent-guide";
 import { inLanguage } from "@/lib/server/language";
+import { relinkRequested } from "@/features/suppliers/items";
+import type { Locale } from "@/i18n/config";
 import { ask, emptyParts } from "./ask";
 
-/** What every module generator is given: the founder's answers, their text as sent to Claude, and the language to write in. */
-export type GenerationContext = AssessmentRequest & { founderInput: string };
+/**
+ * What every module generator is given: the founder's answers, their text as
+ * sent to Claude, the language to write in, and any items the founder asked
+ * suppliers for by name (kept when the supplier section is rebuilt).
+ */
+export type GenerationContext = AssessmentRequest & { founderInput: string; supplierItems?: string[] };
 
 type Generator<K extends ModuleKey> = (ctx: GenerationContext, upstream: Partial<ModuleOutputs>) => Promise<ModuleOutputs[K]>;
 
@@ -98,11 +105,16 @@ export const moduleGenerators: { [K in ModuleKey]: Generator<K> } = {
     ),
 
   // Reads the financial plan so its first orders fit the plan's sourcing budget.
-  suppliers: ({ founderInput, locale }, upstream) =>
-    ask(inLanguage(suppliersSystemPrompt, locale), suppliersSchema, founderInput, `Prepare the supplier categories, supplier types and enquiry details for this founder's first launch.${supplierBudgetBrief(upstream.financials!)}`, (o) =>
+  suppliers: async ({ founderInput, locale, supplierItems = [] }, upstream) => {
+    const asked = supplierItems.length
+      ? `\n\nThe founder also asked for suppliers for these items by name: ${supplierItems.map((i) => `"${i}"`).join(", ")}. In addition to the categories you choose, include one category for each of these items, named after it, with 3 options each.`
+      : "";
+    const output = await ask(inLanguage(suppliersSystemPrompt, locale), suppliersSchema, founderInput, `Prepare the supplier categories, supplier types and enquiry details for this founder's first launch.${supplierBudgetBrief(upstream.financials!)}${asked}`, (o) =>
       emptyParts({ categories: o.categories, options: o.options }),
       "low",
-    ),
+    );
+    return relinkRequested(output, supplierItems);
+  },
 
   marketing_strategy: ({ founderInput, locale }) =>
     ask(inLanguage(marketingSystemPrompt, locale), marketingStrategySchema, founderInput, "Prepare the launch marketing strategy and 13-week calendar for this founder's business.", (o) =>
@@ -133,3 +145,23 @@ export const moduleGenerators: { [K in ModuleKey]: Generator<K> } = {
       "low",
     ),
 };
+
+/**
+ * One supplier category for an item the founder asked for by name ("cups",
+ * "staff shirts"), with 3 supplier types, sized to their startup budget and
+ * different from the categories they already have.
+ */
+export function generateSupplierItem(
+  input: AssessmentRequest & { locale: Locale },
+  item: string,
+  existingLabels: string[],
+  financials?: z.infer<typeof planFinancialsSchema>,
+) {
+  const budget = financials ? aedText(financials.budget.amountAed) : "their stated budget";
+  const have = existingLabels.length ? ` They already have supplier categories for: ${existingLabels.join("; ")}. Don't repeat those.` : "";
+  const task = `The founder asked for suppliers for one more item: "${item}". Prepare ONE supplier category for exactly this item (name the category after it), with 3 supplier-type options in that category. Their total startup budget is ${budget}; keep the first order small and realistic for a cautious launch.${have} If the item doesn't fit this business, still answer for the item as asked.`;
+  return ask(inLanguage(suppliersSystemPrompt, input.locale), supplierItemSchema, founderInputFor(input), task, (o) =>
+    emptyParts({ "category.label": o.category.label, options: o.options }),
+    "low",
+  );
+}
