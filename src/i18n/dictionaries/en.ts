@@ -528,6 +528,13 @@ export const en = {
         : `Thank you — I have your ${known}. I just need ${questions === 1 ? "one more detail" : "two more details"}.`,
     step: (step: number, total: number) => `Step ${step} of ${total}`,
     chooseAnswer: "Choose an answer",
+    amount: {
+      label: "Your budget in AED",
+      placeholder: "e.g. 40,000",
+      submit: "Continue",
+      orChoose: "Not sure? Choose a range:",
+      invalid: "Enter an amount in AED, for example 40,000.",
+    },
     change: "Change",
     changeAnswer: (label: string) => `Change answer: ${label}`,
     thanks: "Thanks — that's everything I need.",
@@ -544,7 +551,7 @@ export const en = {
     /** Question copy by question id; options are shown by stored value. */
     questions: {
       location: { prompt: "Which emirate are you planning to launch in?", helper: "Setup options and costs differ between emirates." },
-      budget: { prompt: "Roughly what budget are you starting with?", helper: "I'll use this to check what's realistic for your launch." },
+      budget: { prompt: "What budget are you starting with?", helper: "Type the amount, or choose a range. I'll use it to check what's realistic for your launch." },
       abayaType: {
         prompt: "What type of abayas are you planning to sell?",
         helper: "This shapes your fabric costs, suppliers and who you're selling to.",

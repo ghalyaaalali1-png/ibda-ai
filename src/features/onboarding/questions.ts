@@ -13,6 +13,7 @@ export const budgetQuestion: Question = {
   id: "budget",
   options: ["Under AED 25,000", "AED 25,000–75,000", "AED 75,000–150,000", "AED 150,000+"],
   summaryLabel: "Budget",
+  input: "amount",
 };
 
 /** Questions for the primary demo scenario: an online abaya brand. */

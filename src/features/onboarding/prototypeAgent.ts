@@ -26,7 +26,7 @@ function findEmirate(idea: string) {
 }
 
 /** Arabic-Indic digits and separators as ASCII, so amounts parse the same way. */
-const toAsciiDigits = (text: string) =>
+export const toAsciiDigits = (text: string) =>
   text
     .replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x0660))
     .replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 0x06f0))

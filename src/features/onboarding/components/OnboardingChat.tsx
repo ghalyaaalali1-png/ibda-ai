@@ -13,7 +13,7 @@ import { useOnboarding } from "../useOnboarding";
 import { IdeaComposer } from "./IdeaComposer";
 import { AgentMessage, TypingIndicator, UserMessage } from "./Messages";
 import { OnboardingHeader } from "./OnboardingHeader";
-import { OptionChips } from "./OptionChips";
+import { AnswerOptions } from "./AnswerOptions";
 import { QuestionMessage } from "./QuestionMessage";
 import { SummaryCard } from "./SummaryCard";
 
@@ -116,7 +116,7 @@ export function OnboardingChat() {
               // Changing this answer: ask again in place, keeping the other answers.
               <div key={questions[i].id} ref={editRef} className="scroll-my-24">
                 <QuestionMessage question={questions[i]} step={i + 1} total={total} reaction={reactionFor(i)}>
-                  <OptionChips options={questions[i].options} onSelect={flow.answer} />
+                  <AnswerOptions question={questions[i]} onSelect={flow.answer} />
                 </QuestionMessage>
               </div>
             ) : (
@@ -146,10 +146,7 @@ export function OnboardingChat() {
               total={total}
               reaction={reactionFor(currentIndex)}
             >
-              <OptionChips
-                options={questions[currentIndex].options}
-                onSelect={flow.answer}
-              />
+              <AnswerOptions question={questions[currentIndex]} onSelect={flow.answer} />
             </QuestionMessage>
           )}
 

@@ -8,6 +8,8 @@ export type Question = {
   options: string[];
   /** Label stored with this answer (in English, like the answer). */
   summaryLabel: string;
+  /** "amount": the founder can type an exact figure in AED; the options stay as quick choices. */
+  input?: "amount";
   /** Question copy from an agent that writes its own; the dictionary's copy for this id is shown when there is one. */
   prompt?: string;
   helper?: string;

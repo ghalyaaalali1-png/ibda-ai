@@ -558,6 +558,13 @@ export const ar: Dictionary = {
         : `شكراً، أصبح لديّ ${known}. أحتاج ${questions === 1 ? "معلومة واحدة إضافية" : "معلومتين إضافيتين"} فقط.`,
     step: (step: number, total: number) => `الخطوة ${step} من ${total}`,
     chooseAnswer: "اختر إجابة",
+    amount: {
+      label: "ميزانيتك بالدرهم",
+      placeholder: "مثال: 40,000",
+      submit: "متابعة",
+      orChoose: "لست متأكداً؟ اختر نطاقاً:",
+      invalid: "أدخل مبلغاً بالدرهم، مثل 40,000.",
+    },
     change: "تعديل",
     changeAnswer: (label: string) => `تعديل الإجابة: ${label}`,
     thanks: "شكراً، هذا كل ما أحتاجه.",
@@ -572,7 +579,7 @@ export const ar: Dictionary = {
     progressLabel: "تقدّم الإعداد",
     questions: {
       location: { prompt: "في أي إمارة تخطط للإطلاق؟", helper: "خيارات التأسيس وتكاليفه تختلف من إمارة لأخرى." },
-      budget: { prompt: "كم الميزانية التي ستبدأ بها تقريباً؟", helper: "سأستخدمها لأعرف ما هو واقعي لإطلاقك." },
+      budget: { prompt: "كم الميزانية التي ستبدأ بها؟", helper: "اكتب المبلغ أو اختر نطاقاً، وسأستخدمه لأعرف ما هو واقعي لإطلاقك." },
       abayaType: { prompt: "ما نوع العبايات التي تخطط لبيعها؟", helper: "هذا يحدد تكلفة القماش والموردين والفئة التي تبيع لها." },
       priceRange: { prompt: "ما نطاق السعر الذي تستهدفه؟", helper: "سأستخدمه لمقارنة هامش ربحك بميزانيتك." },
       designCount: {
